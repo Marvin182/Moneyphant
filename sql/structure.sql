@@ -1,0 +1,37 @@
+
+create table evolution (
+	id integer primary key,
+	upTs integer not null default 0,
+	downTs integer not null default 0,
+	ups text not null,
+	downs text not null
+);
+
+create table account (
+	id integer primary key autoincrement,
+	isOwn bool not null default 0,
+	name varchar(128) not null default '',
+	owner varchar(128) not null,
+	iban varchar(64) not null default '',
+	bic varchar(32) not null default '',
+	accountNumber varchar(32) not null default '',
+	bankCode varchar(32) not null default ''
+);
+
+create table transfer (
+	id integer primary key autoincrement,
+	date integer not null,
+	toId integer not null,
+	fromId integer not null,
+	reference text not null,
+	amount integer not null,
+	note text not null default '',
+	checked bool not null default 0
+);
+
+create table tag (
+	accountId integer not null default -1,
+	transferId integer not null default -1,
+	name varchar(32),
+	primary key (accountId, transferId, name)
+);

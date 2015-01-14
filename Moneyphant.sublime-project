@@ -1,0 +1,17 @@
+{
+	"folders":
+	[
+		{
+			"follow_symlinks": true,
+			"path": "."
+		},
+		{
+			"follow_symlinks": true,
+			"path": "/Users/marvin/lib/sqlpp11/include/sqlpp11"
+		},
+		{
+			"follow_symlinks": true,
+			"path": "/Users/marvin/lib/sqlpp11-connector-sqlite3/src"
+		}
+	]
+}
