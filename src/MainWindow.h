@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 #include "Global.h"
+#include "AccountManager.h"
+#include "TransferManager.h"
 
 namespace Ui {
 	class MainWindow;
@@ -21,6 +23,9 @@ private:
 
 	std::shared_ptr<sqlpp::sqlite3::connection_config> dbConfig;
 	Db db;
+
+	AccountManager* accountManager;
+	TransferManager* transferManager;
 
 	void openDb();
 };

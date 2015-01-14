@@ -18,7 +18,9 @@ SOURCES += src/main.cpp\
         src/Global.cpp \
         src/Evolutions.cpp \
     src/StatementReader.cpp \
-    src/Transfer.cpp
+    src/Transfer.cpp \
+    src/AccountManager.cpp \
+    src/TransferManager.cpp
 
 HEADERS  += src/Global.h \
         src/MainWindow.h \
@@ -26,7 +28,9 @@ HEADERS  += src/Global.h \
         src/Evolutions.h \
         src/db.h \
     src/StatementReader.h \
-    src/Transfer.h
+    src/Transfer.h \
+    src/AccountManager.h \
+    src/TransferManager.h
 
 FORMS    += ui/mainwindow.ui
 
