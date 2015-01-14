@@ -8,6 +8,10 @@ QMAKE_CXXFLAGS_WARN_ON -= -W
 TARGET = Moneyphant
 TEMPLATE = app
 
+ICON = icon.icns
+QMAKE_INFO_PLIST = Info.plist
+OTHER_FILES += Info.plist
+
 SOURCES += src/main.cpp\
         src/MainWindow.cpp \
         src/Account.cpp \
