@@ -1,15 +1,15 @@
 #include "Global.h"
 
 const char* cstr(string s) {
-	return s.toLocal8Bit().constData();
+	return s.toUtf8().constData();
 }
 
 std::string str(string s) {
-	return s.toLocal8Bit().constData();
+	return s.toStdString();
 }
 
 QString qstr(std::string s) {
-	return s.c_str();
+	return QString::fromStdString(s);
 }
 
 std::ostream& operator<<(std::ostream& os, const QString& s) {

@@ -30,8 +30,15 @@ create table transfer (
 );
 
 create table tag (
-	accountId integer not null default -1,
-	transferId integer not null default -1,
+	accountId integer not null default '-1',
+	transferId integer not null default '-1',
 	name varchar(32),
 	primary key (accountId, transferId, name)
+);
+
+create table budget (
+	id integer primary key autoincrement,
+	name varchar(64) not null,
+	amount integer not null,
+	keepSavings bool not null default 1
 );

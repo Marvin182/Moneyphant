@@ -20,7 +20,11 @@ SOURCES += src/main.cpp\
     src/StatementReader.cpp \
     src/Transfer.cpp \
     src/AccountManager.cpp \
-    src/TransferManager.cpp
+    src/TransferManager.cpp \
+    src/TableManager.cpp \
+    src/AccountModel.cpp \
+    src/TagLabel.cpp \
+    src/Tag.cpp
 
 HEADERS  += src/Global.h \
         src/MainWindow.h \
@@ -30,7 +34,11 @@ HEADERS  += src/Global.h \
     src/StatementReader.h \
     src/Transfer.h \
     src/AccountManager.h \
-    src/TransferManager.h
+    src/TransferManager.h \
+    src/TableManager.h \
+    src/AccountModel.h \
+    src/TagLabel.h \
+    src/Tag.h
 
 FORMS    += ui/mainwindow.ui
 

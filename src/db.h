@@ -396,5 +396,71 @@ namespace db
       };
     };
   };
+  namespace Tag_
+  {
+    struct AccountId
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "accountId"; }
+        template<typename T>
+        struct _member_t
+          {
+            T accountId;
+            T& operator()() { return accountId; }
+            const T& operator()() const { return accountId; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::integer>;
+    };
+    struct TransferId
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "transferId"; }
+        template<typename T>
+        struct _member_t
+          {
+            T transferId;
+            T& operator()() { return transferId; }
+            const T& operator()() const { return transferId; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::integer>;
+    };
+    struct Name
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "name"; }
+        template<typename T>
+        struct _member_t
+          {
+            T name;
+            T& operator()() { return name; }
+            const T& operator()() const { return name; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::varchar, sqlpp::tag::can_be_null>;
+    };
+  }
+
+  struct Tag: sqlpp::table_t<Tag,
+               Tag_::AccountId,
+               Tag_::TransferId,
+               Tag_::Name>
+  {
+    struct _name_t
+    {
+      static constexpr const char* _get_name() { return "tag"; }
+      template<typename T>
+      struct _member_t
+      {
+        T tag;
+        T& operator()() { return tag; }
+        const T& operator()() const { return tag; }
+      };
+    };
+  };
 }
 #endif

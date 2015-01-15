@@ -178,6 +178,7 @@ int StatementReader::find(Account& account) {
 	if (!accs.empty()) {
 		assert(accs.begin() != accs.end());
 		int id = accs.front().id;
+		// TODO check if there is really just one matching entry
 		account.id = id;
 		assert(id >= 0);
 		return id;
@@ -196,6 +197,7 @@ int StatementReader::find(Transfer& transfer) {
 	if (!trs.empty()) {
 		assert(trs.begin() != trs.end());
 		int id = trs.front().id;
+		// TODO check if there is really just one matching entry
 		transfer.id = id;
 		assert(id >= 0);
 		return id;

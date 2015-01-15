@@ -12,6 +12,7 @@ using namespace sqlpp;
 using Db = std::shared_ptr<sqlpp::sqlite3::connection>;
 
 using string = const QString&;
+
 const char* cstr(string s);
 std::string str(string s);
 QString qstr(std::string s);

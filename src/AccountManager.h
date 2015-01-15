@@ -3,8 +3,10 @@
 
 #include "Global.h"
 #include <QTableWidget>
+#include "TableManager.h"
+#include "db.h"
 
-class AccountManager : public QObject {
+class AccountManager : public QObject, public TableManager {
 	Q_OBJECT
 
 public:
@@ -12,6 +14,9 @@ public:
 
 public slots:
 	void reload();
+
+private slots:
+	void onCellChanged(int row, int column);
 
 private:
 	Db db;
