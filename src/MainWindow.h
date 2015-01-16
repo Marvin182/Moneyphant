@@ -4,7 +4,7 @@
 #include "Global.h"
 #include "TransferManager.h"
 #include "AccountModel.h"
-#include "Tag.h"
+#include "TagHelper.h"
 #include <QMainWindow>
 #include <QModelIndex>
 
@@ -21,10 +21,11 @@ public:
 	~MainWindow();
 
 private slots:
-	void onAccountEntered(const QModelIndex& index);
-	void addAccountTag();
-	void removeAccountTag(Tag t);
-	
+	void setCurrentAccount(const QModelIndex& index);
+	void showSelectedAccounts(const QItemSelection& selected, const QItemSelection& deseceted);
+	void updateAccountInfo();
+	void updateAccountDetails(const Account& account);
+
 private:
 	Ui::MainWindow *ui;
 
@@ -32,6 +33,7 @@ private:
 	Db db;
 
 	int currentAccountId;
+	TagHelper* tagHelper;
 	AccountModel* accountModel;
 	TransferManager* transferManager;
 

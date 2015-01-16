@@ -398,35 +398,20 @@ namespace db
   };
   namespace Tag_
   {
-    struct AccountId
+    struct Id
     {
       struct _name_t
       {
-        static constexpr const char* _get_name() { return "accountId"; }
+        static constexpr const char* _get_name() { return "id"; }
         template<typename T>
         struct _member_t
           {
-            T accountId;
-            T& operator()() { return accountId; }
-            const T& operator()() const { return accountId; }
+            T id;
+            T& operator()() { return id; }
+            const T& operator()() const { return id; }
           };
       };
-      using _traits = sqlpp::make_traits<sqlpp::integer>;
-    };
-    struct TransferId
-    {
-      struct _name_t
-      {
-        static constexpr const char* _get_name() { return "transferId"; }
-        template<typename T>
-        struct _member_t
-          {
-            T transferId;
-            T& operator()() { return transferId; }
-            const T& operator()() const { return transferId; }
-          };
-      };
-      using _traits = sqlpp::make_traits<sqlpp::integer>;
+      using _traits = sqlpp::make_traits<sqlpp::integer, sqlpp::tag::can_be_null>;
     };
     struct Name
     {
@@ -446,8 +431,7 @@ namespace db
   }
 
   struct Tag: sqlpp::table_t<Tag,
-               Tag_::AccountId,
-               Tag_::TransferId,
+               Tag_::Id,
                Tag_::Name>
   {
     struct _name_t
@@ -459,6 +443,188 @@ namespace db
         T tag;
         T& operator()() { return tag; }
         const T& operator()() const { return tag; }
+      };
+    };
+  };
+  namespace AccountTag_
+  {
+    struct TagId
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "tagId"; }
+        template<typename T>
+        struct _member_t
+          {
+            T tagId;
+            T& operator()() { return tagId; }
+            const T& operator()() const { return tagId; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::integer, sqlpp::tag::require_insert>;
+    };
+    struct AccountId
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "accountId"; }
+        template<typename T>
+        struct _member_t
+          {
+            T accountId;
+            T& operator()() { return accountId; }
+            const T& operator()() const { return accountId; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::integer, sqlpp::tag::require_insert>;
+    };
+  }
+
+  struct AccountTag: sqlpp::table_t<AccountTag,
+               AccountTag_::TagId,
+               AccountTag_::AccountId>
+  {
+    struct _name_t
+    {
+      static constexpr const char* _get_name() { return "accountTag"; }
+      template<typename T>
+      struct _member_t
+      {
+        T accountTag;
+        T& operator()() { return accountTag; }
+        const T& operator()() const { return accountTag; }
+      };
+    };
+  };
+  namespace TransferTag_
+  {
+    struct TagId
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "tagId"; }
+        template<typename T>
+        struct _member_t
+          {
+            T tagId;
+            T& operator()() { return tagId; }
+            const T& operator()() const { return tagId; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::integer, sqlpp::tag::require_insert>;
+    };
+    struct TransferId
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "transferId"; }
+        template<typename T>
+        struct _member_t
+          {
+            T transferId;
+            T& operator()() { return transferId; }
+            const T& operator()() const { return transferId; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::integer, sqlpp::tag::require_insert>;
+    };
+  }
+
+  struct TransferTag: sqlpp::table_t<TransferTag,
+               TransferTag_::TagId,
+               TransferTag_::TransferId>
+  {
+    struct _name_t
+    {
+      static constexpr const char* _get_name() { return "transferTag"; }
+      template<typename T>
+      struct _member_t
+      {
+        T transferTag;
+        T& operator()() { return transferTag; }
+        const T& operator()() const { return transferTag; }
+      };
+    };
+  };
+  namespace Budget_
+  {
+    struct Id
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "id"; }
+        template<typename T>
+        struct _member_t
+          {
+            T id;
+            T& operator()() { return id; }
+            const T& operator()() const { return id; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::integer, sqlpp::tag::can_be_null>;
+    };
+    struct Name
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "name"; }
+        template<typename T>
+        struct _member_t
+          {
+            T name;
+            T& operator()() { return name; }
+            const T& operator()() const { return name; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::varchar, sqlpp::tag::require_insert>;
+    };
+    struct Amount
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "amount"; }
+        template<typename T>
+        struct _member_t
+          {
+            T amount;
+            T& operator()() { return amount; }
+            const T& operator()() const { return amount; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::integer, sqlpp::tag::require_insert>;
+    };
+    struct KeepSavings
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "keepSavings"; }
+        template<typename T>
+        struct _member_t
+          {
+            T keepSavings;
+            T& operator()() { return keepSavings; }
+            const T& operator()() const { return keepSavings; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::boolean>;
+    };
+  }
+
+  struct Budget: sqlpp::table_t<Budget,
+               Budget_::Id,
+               Budget_::Name,
+               Budget_::Amount,
+               Budget_::KeepSavings>
+  {
+    struct _name_t
+    {
+      static constexpr const char* _get_name() { return "budget"; }
+      template<typename T>
+      struct _member_t
+      {
+        T budget;
+        T& operator()() { return budget; }
+        const T& operator()() const { return budget; }
       };
     };
   };

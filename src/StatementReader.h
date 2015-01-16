@@ -17,6 +17,7 @@ protected:
 	Db db;
 
 	void parseMBSStatements(QFile& file);
+	void parseAccountFile(QFile& file);
 	void parseMastercardStatements(QFile& file);
 	Transfer::Acc acc(string owner, string iban, string bic);
 
@@ -24,6 +25,7 @@ protected:
 	int find(Transfer& transfer);
 
 	int add(Account& account);
+	void insert(Account& account);
 	int add(Transfer& transfer);
 
 	int findOrAdd(Account& account);

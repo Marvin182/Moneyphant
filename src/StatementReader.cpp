@@ -27,6 +27,10 @@ void StatementReader::importMissingStatementsCsv(string path) {
 	auto header = file.readLine();
 	auto headerSize = header.split(';').length();
 	switch (headerSize) {
+		case 7:
+		case 8:
+			parseAccountFile(file);
+			break;
 		case 11:
 			parseMBSStatements(file);
 			break;
@@ -37,6 +41,21 @@ void StatementReader::importMissingStatementsCsv(string path) {
 			assert(false && "unknown statement header");
 	}
 	assert(file.atEnd() && "parsing did not parse whole file");
+}
+
+void StatementReader::parseAccountFile(QFile& file) {
+	while (!file.atEnd()) {
+		auto line = QString(file.readLine());
+		auto fields = line.split(';');
+		if (fields.size() == 7) {
+			Account a(-1, fields[0] == "1", fields[1], fields[2], fields[3], fields[4], fields[5], fields[6].trimmed());
+			findOrAdd(a);
+			assert(a.id >= 0);
+		} else {
+			assert(fields.size() == 8);
+			Account a(fields[0].toInt(), fields[1] == "1", fields[2], fields[3], fields[4], fields[5], fields[6], fields[7].trimmed());
+		}
+	}
 }
 
 void StatementReader::parseMBSStatements(QFile& file) {
@@ -55,6 +74,10 @@ void StatementReader::parseMBSStatements(QFile& file) {
 		auto from = acc("", fields[0], "");
 		auto to = acc(fields[5], fields[6], fields[7]);
 		assert(from.id >= 0 && to.id >= 0);
+		if (from.id == to.id) {
+			std::cout << from << " -> " << to << std::endl << line << std::endl;
+		}
+
 		assert(from.id != to.id); // accounts are not allowed to match
 		Transfer t(fields[1], from, to, fields[4], fields[8]);
 		findOrAdd(t);
@@ -206,6 +229,8 @@ int StatementReader::find(Transfer& transfer) {
 }
 
 int StatementReader::add(Account& account) {
+	assert(account.id == -1);
+
 	db::Account acc;
 	int id = db->run(insert_into(acc).set(acc.name = str(account.name),
 										acc.owner = str(account.owner),
@@ -216,6 +241,20 @@ int StatementReader::add(Account& account) {
 	assert(id >= 0);
 	account.id = id;
 	return id;
+}
+
+void StatementReader::insert(Account& account) {
+	assert(account.id >= 0);
+	
+	db::Account acc;
+	assert(db->run(select(count(acc.id)).from(acc).where(acc.id == account.id)).front().count == 0);
+	db->run(insert_into(acc).set(acc.id = account.id,
+										acc.name = str(account.name),
+										acc.owner = str(account.owner),
+										acc.iban = str(account.iban),
+										acc.bic = str(account.bic),
+										acc.accountNumber = str(account.accountNumber),
+										acc.bankCode = str(account.bankCode)));
 }
 
 int StatementReader::add(Transfer& transfer) {

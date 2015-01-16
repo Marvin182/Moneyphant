@@ -22,6 +22,8 @@ public:
 	bool setData(const QModelIndex& index, const QVariant & value, int role = Qt::EditRole);
 	Qt::ItemFlags flags(const QModelIndex& index) const;
 
+	void createBackup(string path);
+
 	const Account& operator[](int id) const;
 	const Account& get(int row) const;
 

@@ -27,6 +27,11 @@ Account::Account(string owner, string iban, string bic) :
 			this->bic = "";
 		}
 	}
+
+	if (accountNumber.isEmpty() && !bankCode.isEmpty()) {
+		accountNumber = bankCode;
+		name = "Bank";
+	}
 }
 
 bool Account::isSpecial() const {
