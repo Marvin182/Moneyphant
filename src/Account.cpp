@@ -5,11 +5,6 @@ Account::Account() :
 	id(-1)
 {}
 
-Account::Account(int id, bool isOwn, string name, string owner, string iban, string bic, string accountNumber, string branchCode) :
-	id(id), isOwn(isOwn), name(name), owner(owner), iban(iban), bic(bic), accountNumber(accountNumber), bankCode(branchCode)
-{
-}
-
 Account::Account(string owner, string iban, string bic) :
 	id(-1), isOwn(false), name(owner), owner(owner), iban(iban), bic(bic), accountNumber(""), bankCode("")
 {
@@ -33,6 +28,17 @@ Account::Account(string owner, string iban, string bic) :
 		name = "Bank";
 	}
 }
+
+Account::Account(int id, bool isOwn, string name, string owner, string iban, string bic, string accountNumber, string branchCode) :
+	id(id),
+	isOwn(isOwn),
+	name(name),
+	owner(owner),
+	iban(iban),
+	bic(bic),
+	accountNumber(accountNumber),
+	bankCode(branchCode)
+{}
 
 bool Account::isSpecial() const {
 	return iban.length() > 1 && iban[0] == QChar('#');

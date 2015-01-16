@@ -3,15 +3,8 @@
 #include <iostream>
 #include "Transfer.h"
 
-Transfer::Transfer(int id, const QDateTime& date, const Acc& from, const Acc& to, string reference, int amount, string note, bool checked) :
-	id(id),
-	date(date),
-	from(from),
-	to(to),
-	reference(reference),
-	amount(amount),
-	note(note),
-	checked(checked)
+Transfer::Transfer() :
+	id(-1)
 {}
 
 Transfer::Transfer(string dateStr, const Acc& from, const Acc& to, string reference, string amountStr) :
@@ -32,6 +25,17 @@ Transfer::Transfer(string dateStr, const Acc& from, const Acc& to, string refere
 	amount = QString(amountStr).replace(',', '.').toDouble() * 100;
 	assert(amount != 0);
 }
+
+Transfer::Transfer(int id, const QDateTime& date, const Acc& from, const Acc& to, string reference, int amount, string note, bool checked) :
+	id(id),
+	date(date),
+	from(from),
+	to(to),
+	reference(reference),
+	amount(amount),
+	note(note),
+	checked(checked)
+{}
 
 bool Transfer::operator==(const Transfer& tr) const {
 	return date == tr.date &&

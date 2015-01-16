@@ -10,7 +10,9 @@ struct Transfer {
 	struct Acc {
 		int id;
 		QString name;
-		//Account get() const;
+		Acc() :
+			id(-1)
+		 {}
 		Acc(int id, string name) :
 			id(id),
 			name(name)
@@ -32,13 +34,14 @@ struct Transfer {
 	QString note;
 	bool checked;
 
-	Transfer(int id, const QDateTime& date, const Acc& from, const Acc& to, string reference, int amount, string note, bool checked);
+	Transfer();
 	Transfer(string dateStr, const Acc& from, const Acc& to, string reference, string amountStr);
+	Transfer(int id, const QDateTime& date, const Acc& from, const Acc& to, string reference, int amount, string note, bool checked);
 
 	qint64 dateMs() const { return date.toMSecsSinceEpoch(); }
 	QString dateStr() const { return date.toString("dd.MM.yyyy"); }
 
-	QString amountStr() const { return QString::number(amount / 100.0, 'f', 2); }
+	QString amountStr() const { return QString("%1 €").arg(amount / 100.0, 0, 'f', 2); }
 
 	bool operator==(const Transfer& tr) const;
 	bool operator<(const Transfer& tr) const;

@@ -1,17 +1,17 @@
-#ifndef ACCOUNT_MODEL_H
-#define ACCOUNT_MODEL_H
+#ifndef TRANSFER_MODEL_H
+#define TRANSFER_MODEL_H
 
 #include "Global.h"
-#include "Account.h"
+#include "Transfer.h"
 #include <vector>
 #include <unordered_map>
 #include <QAbstractTableModel>
 
-class AccountModel : public QAbstractTableModel {
+class TransferModel : public QAbstractTableModel {
 	Q_OBJECT
 
 public:
-	AccountModel(Db db, QObject* parent = 0);
+	TransferModel(Db db, QObject* parent = 0);
 
 	int rowCount(const QModelIndex& parent = QModelIndex()) const;
 	int columnCount(const QModelIndex& parent = QModelIndex()) const;
@@ -22,21 +22,20 @@ public:
 	bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole);
 	Qt::ItemFlags flags(const QModelIndex& index) const;
 
-	const Account& operator[](int id) const;
-	const Account& get(int row) const;
+	const Transfer& operator[](int id) const;
+	const Transfer& get(int row) const;
 	
 public slots:
 	void reloadCache();
 	void createBackup(const QString& path);
-	void mergeAccounts(int firstId, int secondId);
 
 private:
 	Db db;
 
 	std::unordered_map<int, int> id2Row;
-	std::vector<Account> cachedAccounts;
+	std::vector<Transfer> cachedTransfers;
 
-	Account& accountById(int id);
+	Transfer& transferById(int id);
 };
 
-#endif // ACCOUNT_MODEL_H
+#endif // TRANSFER_MODEL_H

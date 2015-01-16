@@ -2,8 +2,8 @@
 #define MAINWINDOW_H
 
 #include "Global.h"
-#include "TransferManager.h"
 #include "AccountModel.h"
+#include "TransferModel.h"
 #include "TagHelper.h"
 #include <QMainWindow>
 #include <QSortFilterProxyModel>
@@ -33,11 +33,15 @@ private:
 	std::shared_ptr<sqlpp::sqlite3::connection_config> dbConfig;
 	Db db;
 
-	int currentAccountId;
 	TagHelper* tagHelper;
+	
+	int currentAccountId;
 	AccountModel* accountModel;
 	QSortFilterProxyModel* accountProxyModel;
-	TransferManager* transferManager;
+	
+	int currentTransferId;
+	TransferModel* transferModel;
+	QSortFilterProxyModel* transferProxyModel;
 
 	void openDb();
 	void setupAccountTab();

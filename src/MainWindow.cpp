@@ -19,7 +19,11 @@ MainWindow::MainWindow(QWidget *parent) :
 	dbConfig(nullptr),
 	db(nullptr),
 	currentAccountId(-1),
-	accountModel(nullptr)
+	accountModel(nullptr),
+	accountProxyModel(nullptr),
+	currentTransferId(-1),
+	transferModel(nullptr),
+	transferProxyModel(nullptr)
 {
 	ui->setupUi(this);
 
@@ -32,6 +36,18 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	setupAccountTab();
 	setupTransferTab();
+}
+
+MainWindow::~MainWindow() {
+	auto now = QDateTime::currentDateTime().toString("yyyy-MM-dd_hh-mm-ss");
+
+	assert(accountModel != nullptr);
+	accountModel->createBackup(QString("%1/%2.accounts.csv").arg(BackupFolder).arg(now));
+	
+	assert(transferModel != nullptr);
+	transferModel->createBackup(QString("%1/%2.transfers.csv").arg(BackupFolder).arg(now));
+
+	delete ui;
 }
 
 void MainWindow::setCurrentAccount(const QModelIndex& idx) {
@@ -158,23 +174,43 @@ void MainWindow::setupAccountTab() {
 	ui->accountView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 	ui->accountView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
 	ui->accountView->horizontalHeader()->setDefaultSectionSize(60);
-	ui->accountView->horizontalHeader()->hideSection(7);
 	
 	connect(ui->accountSearch, SIGNAL(textChanged(const QString&)), accountProxyModel, SLOT(setFilterWildcard(const QString&)));
 }
 
 void MainWindow::setupTransferTab() {
-	transferManager = new TransferManager(db, ui->transferTable, this);
-	transferManager->reload();
-}
+	transferModel = new TransferModel(db, this);
 
-MainWindow::~MainWindow() {
-	auto now = QDateTime::currentDateTime().toString("yyyy-MM-dd_hh-mm-ss");
+	// setup proxy model for sorting and filtering
+	transferProxyModel = new QSortFilterProxyModel(this);
+	transferProxyModel->setSourceModel(transferModel);
+	transferProxyModel->setFilterKeyColumn(1);
+	transferProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+	transferProxyModel->setFilterRole(Qt::UserRole + 1);
 
-	assert(accountModel != nullptr);
-	accountModel->createBackup(QString("%1/%2.accounts.csv").arg(BackupFolder).arg(now));
+	ui->transferView->setModel(transferProxyModel);
+	ui->transferView->setSortingEnabled(true);
 
-	delete ui;
+	// mouse tracking for hover
+	ui->transferView->setSelectionBehavior(QAbstractItemView::SelectRows);
+	ui->transferView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+	ui->transferView->setMouseTracking(true);
+	// connect(ui->transferView, SIGNAL(entered(const QModelIndex&)), this, SLOT(setCurrentTransfer(const QModelIndex&)));
+	// connect(ui->transferView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SLOT(showSelectedTransfers(const QItemSelection&, const QItemSelection&)));
+	// connect(ui->transferTags, SIGNAL(tagsAdded(QStringList, const std::vector<int>&)), tagHelper, SLOT(addTransferTags(QStringList, const std::vector<int>&)));
+	// connect(ui->transferTags, SIGNAL(tagsRemoved(QStringList, const std::vector<int>&)), tagHelper, SLOT(removeTransferTags(QStringList, const std::vector<int>&)));
+
+	// configure headers
+	ui->transferView->verticalHeader()->hide();
+	ui->transferView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+	ui->transferView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
+	ui->transferView->horizontalHeader()->setSectionResizeMode(4, QHeaderView::Fixed);
+	ui->transferView->horizontalHeader()->setSectionResizeMode(5, QHeaderView::Fixed);
+	ui->transferView->horizontalHeader()->setDefaultSectionSize(80);
+	ui->transferView->horizontalHeader()->hideSection(1);
+	
+	connect(ui->transferSearch, SIGNAL(textChanged(const QString&)), transferProxyModel, SLOT(setFilterWildcard(const QString&)));
 }
 
 void MainWindow::openDb() {
