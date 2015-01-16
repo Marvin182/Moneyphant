@@ -22,19 +22,21 @@ public:
 	bool setData(const QModelIndex& index, const QVariant & value, int role = Qt::EditRole);
 	Qt::ItemFlags flags(const QModelIndex& index) const;
 
-	void createBackup(string path);
-
 	const Account& operator[](int id) const;
 	const Account& get(int row) const;
-
+	
 public slots:
 	void reloadCache();
+	void createBackup(const QString& path);
+	void mergeAccounts(int firstId, int secondId);
 
 private:
 	Db db;
 
 	std::unordered_map<int, int> id2Row;
 	std::vector<Account> cachedAccounts;
+
+	Account& accountById(int id);
 };
 
 #endif // ACCOUNT_MODEL_H

@@ -6,7 +6,7 @@
 #include "AccountModel.h"
 #include "TagHelper.h"
 #include <QMainWindow>
-#include <QModelIndex>
+#include <QSortFilterProxyModel>
 
 namespace Ui {
 	class MainWindow;
@@ -25,6 +25,7 @@ private slots:
 	void showSelectedAccounts(const QItemSelection& selected, const QItemSelection& deseceted);
 	void updateAccountInfo();
 	void updateAccountDetails(const Account& account);
+	void mergeAccounts();
 
 private:
 	Ui::MainWindow *ui;
@@ -35,6 +36,7 @@ private:
 	int currentAccountId;
 	TagHelper* tagHelper;
 	AccountModel* accountModel;
+	QSortFilterProxyModel* accountProxyModel;
 	TransferManager* transferManager;
 
 	void openDb();

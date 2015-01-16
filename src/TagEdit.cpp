@@ -1,13 +1,43 @@
 #include "TagEdit.h"
+#include "Global.h"
 #include <QRegExp>
-#include <iostream>
+
 TagEdit::TagEdit(QWidget* parent) : 
-	QPlainTextEdit(parent)
+	QPlainTextEdit(parent),
+	oldTags(),
+	accountIds()
 {}
 
-void TagEdit::focusOutEvent(QFocusEvent* event) {
+std::pair<QStringList, QStringList> TagEdit::tagChanges() {
 	auto tags = document()->toPlainText().split(QRegExp("\\s*[;,]\\s*"));
-	
+	auto changes = std::make_pair(QStringList(), QStringList());
+	return changes;
+	for (const auto& t : tags) {
+		if (!oldTags.contains(t)) {
+			// added
+			changes.first << t;
+		}
+	}
+
+	for (const auto& t : oldTags) {
+		if (!tags.contains(t)) {
+			// removed
+			changes.second << t;
+		}
+	}
+
+	return changes;
+}
+
+void TagEdit::focusOutEvent(QFocusEvent* event) {
+	QStringList tags;
+	for (const auto& t : document()->toPlainText().split(QRegExp("[;,]"))) {
+		auto tag = t.trimmed();
+		if (!tag.isEmpty()) {
+			tags << tag;
+		}
+	}
+
 	QStringList newTags;
 	for (const auto& t : tags) {
 		if (!oldTags.contains(t)) {
@@ -15,7 +45,7 @@ void TagEdit::focusOutEvent(QFocusEvent* event) {
 		}
 	}
 	if (!newTags.isEmpty()) {
-		emit tagsAdded(newTags);
+		emit tagsAdded(newTags, accountIds);
 	}
 
 	QStringList removedTags;
@@ -25,13 +55,17 @@ void TagEdit::focusOutEvent(QFocusEvent* event) {
 		}
 	}
 	if (!removedTags.isEmpty()) {
-		emit tagsRemoved(removedTags);
+		emit tagsRemoved(removedTags, accountIds);
 	}
 
-	setTags(tags);
+	oldTags = tags;
+	document()->setPlainText(tags.join("; "));
 }
 
-void TagEdit::setTags(const QStringList& tags) {
-	document()->setPlainText(tags.join("; "));
+void TagEdit::setTags(const QStringList& tags, const std::vector<int>& accountIds) {
+	focusOutEvent(nullptr);
+	this->accountIds = accountIds;
+
 	oldTags = tags;
+	document()->setPlainText(tags.join("; "));
 }

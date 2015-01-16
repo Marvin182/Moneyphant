@@ -8,7 +8,6 @@
 #include <QDir>
 #include <QStringList>
 #include <QDateTime>
-#include <QSortFilterProxyModel>
 
 const char* DbPath = "db.sqlite";
 const char* StatementFolder = "/Users/marvin/Workspace/Moneyphant/statements/";
@@ -35,12 +34,18 @@ MainWindow::MainWindow(QWidget *parent) :
 	setupTransferTab();
 }
 
-void MainWindow::setCurrentAccount(const QModelIndex& index) {
+void MainWindow::setCurrentAccount(const QModelIndex& idx) {
 	assert(accountModel != nullptr);
-	currentAccountId = accountModel->get(index.row()).id;
-	
+	assert(accountProxyModel != nullptr);
+
+	const auto& index = accountProxyModel->mapToSource(idx);
+	int id = accountModel->get(index.row()).id;
+	if (currentAccountId == id) {
+		return;
+	}
+	currentAccountId = id;
+
 	auto selectionModel = ui->accountView->selectionModel();
-	assert(selectionModel != nullptr);
 	if (!selectionModel->hasSelection()) {
 		tagHelper->setAccountIds({currentAccountId});
 	}
@@ -49,7 +54,8 @@ void MainWindow::setCurrentAccount(const QModelIndex& index) {
 }
 
 void MainWindow::showSelectedAccounts(const QItemSelection& selected, const QItemSelection& deseceted) {
-	for (const auto& index : deseceted.indexes()) {
+	for (const auto& idx : deseceted.indexes()) {
+		const auto& index = accountProxyModel->mapToSource(idx);
 		if (index.column() != 0) {
 			continue;
 		}
@@ -57,7 +63,8 @@ void MainWindow::showSelectedAccounts(const QItemSelection& selected, const QIte
 		tagHelper->removeAccountId(id);
 	}
 
-	for (const auto& index : selected.indexes()) {
+	for (const auto& idx : selected.indexes()) {
+		const auto& index = accountProxyModel->mapToSource(idx);
 		if (index.column() != 0) {
 			continue;
 		}
@@ -72,20 +79,25 @@ void MainWindow::updateAccountInfo() {
 	assert(currentAccountId >= 0);
 
 	const auto& ids = tagHelper->accountIds();
-	assert(!ids.empty());
-	// ui->accountName->setEnabled(ids.size() == 1);
-	ui->accountTags->setEnabled(!ids.empty());
-	ui->moreAccountTags->setText("");
+	auto selectionModel = ui->accountView->selectionModel();
 
-	if (ids.size() == 1) {
+	// ui->accountName->setEnabled(ids.size() == 1);
+	ui->accountTags->setEnabled(selectionModel->hasSelection());
+	ui->moreAccountTags->setText("");
+	ui->mergeAccounts->setVisible(ids.size() == 2);
+	ui->actionMerge_Selected_Accounts->setEnabled(ids.size() == 2);
+
+	if (ids.empty()) {
+		return;
+	} else if (ids.size() == 1) {
 		updateAccountDetails((*accountModel)[ids.front()]);
-		ui->accountTags->setTags(tagHelper->getAccountTags());
+		ui->accountTags->setTags(tagHelper->getAccountTags(), tagHelper->accountIds());
 	} else {
 		const auto& currentAccount = (*accountModel)[currentAccountId];
 		updateAccountDetails(currentAccount);
 
 		const auto& commonTags = tagHelper->getAccountTags();
-		ui->accountTags->setTags(commonTags);
+		ui->accountTags->setTags(commonTags, tagHelper->accountIds());
 
 		const auto& currentAccountTags = tagHelper->getAccountTags({currentAccountId});
 		QStringList moreTags;
@@ -100,17 +112,25 @@ void MainWindow::updateAccountInfo() {
 
 void MainWindow::updateAccountDetails(const Account& account) {
 	ui->accountName->setText(account.name);
+	ui->accountOwner->setText(account.owner);
 	ui->accountIban->setText(account.iban);
 	ui->accountBic->setText(account.bic);
 	ui->accountAccountNumber->setText(account.accountNumber);
 	ui->accountBankCode->setText(account.bankCode);
 }
 
+void MainWindow::mergeAccounts() {
+	assert(tagHelper->accountIds().size() == 2);
+	accountModel->mergeAccounts(tagHelper->accountIds().front(), tagHelper->accountIds().back());
+	ui->accountView->selectionModel()->clearSelection();
+	tagHelper->setAccountIds({});
+}
+
 void MainWindow::setupAccountTab() {
 	accountModel = new AccountModel(db, this);
 
 	// setup proxy model for sorting and filtering
-	auto accountProxyModel = new QSortFilterProxyModel(this);
+	accountProxyModel = new QSortFilterProxyModel(this);
 	accountProxyModel->setSourceModel(accountModel);
 	accountProxyModel->setFilterKeyColumn(1);
 	accountProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
@@ -126,8 +146,12 @@ void MainWindow::setupAccountTab() {
 	ui->accountView->setMouseTracking(true);
 	connect(ui->accountView, SIGNAL(entered(const QModelIndex&)), this, SLOT(setCurrentAccount(const QModelIndex&)));
 	connect(ui->accountView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SLOT(showSelectedAccounts(const QItemSelection&, const QItemSelection&)));
-	connect(ui->accountTags, SIGNAL(tagsAdded(QStringList)), tagHelper, SLOT(addAccountTags(QStringList)));
-	connect(ui->accountTags, SIGNAL(tagsRemoved(QStringList)), tagHelper, SLOT(removeAccountTags(QStringList)));
+	connect(ui->accountTags, SIGNAL(tagsAdded(QStringList, const std::vector<int>&)), tagHelper, SLOT(addAccountTags(QStringList, const std::vector<int>&)));
+	connect(ui->accountTags, SIGNAL(tagsRemoved(QStringList, const std::vector<int>&)), tagHelper, SLOT(removeAccountTags(QStringList, const std::vector<int>&)));
+	connect(ui->actionMerge_Selected_Accounts, SIGNAL(triggered()), this, SLOT(mergeAccounts()));
+	connect(ui->mergeAccounts, SIGNAL(clicked()), this, SLOT(mergeAccounts()));
+
+	ui->mergeAccounts->setVisible(false);
 
 	// configure headers
 	ui->accountView->verticalHeader()->hide();

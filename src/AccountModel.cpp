@@ -104,7 +104,8 @@ bool AccountModel::setData(const QModelIndex& index, const QVariant& value, int 
 							acc.iban = str(a.iban),
 							acc.bic = str(a.bic),
 							acc.accountNumber = str(a.accountNumber),
-							acc.bankCode = str(a.bankCode)).where(acc.id == a.id));
+							acc.bankCode = str(a.bankCode)
+						).where(acc.id == a.id));
 
 	emit dataChanged(index, index);
 	return true;
@@ -133,17 +134,9 @@ const Account& AccountModel::get(int row) const {
 	return cachedAccounts[row];
 }
 
-void AccountModel::createBackup(string path) {
-	QFile file(path);
-	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-		assert(false && "Could not open accounts backup file");
-	}
-	for (const auto& a : cachedAccounts) {
-		file.write(QString("%1;%2;%3;%4;%5;%6;%7;%8\n").arg(a.id).arg(a.isOwn ? '1' : '0').arg(a.name).arg(a.owner).arg(a.iban).arg(a.bic).arg(a.accountNumber).arg(a.bankCode).toLocal8Bit());
-	}
-}
-
 void AccountModel::reloadCache() {
+	emit beginResetModel();
+
 	db::Account acc;
 	int rowCount = db->run(select(count(acc.id)).from(acc).where(true)).front().count;
 	cachedAccounts.clear();
@@ -154,5 +147,70 @@ void AccountModel::reloadCache() {
 		id2Row[a.id] = row++;
 		cachedAccounts.push_back({(int)a.id, a.isOwn, qstr(a.name), qstr(a.owner), qstr(a.iban), qstr(a.bic), qstr(a.accountNumber), qstr(a.bankCode)});
 	}
+
+	emit endResetModel();
+}
+
+void AccountModel::createBackup(const QString& path) {
+	QFile file(path);
+	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+		assert(false && "Could not open accounts backup file");
+	}
+	for (const auto& a : cachedAccounts) {
+		file.write(QString("%1;%2;%3;%4;%5;%6;%7;%8\n").arg(a.id).arg(a.isOwn ? '1' : '0').arg(a.name).arg(a.owner).arg(a.iban).arg(a.bic).arg(a.accountNumber).arg(a.bankCode).toLocal8Bit());
+	}
+}
+
+void AccountModel::mergeAccounts(int firstId, int secondId) {
+	auto& first = accountById(firstId);
+	auto& second = accountById(secondId);
+
+	db::Account acc;
+	db::Transfer tr;
+	db::AccountTag accTag;
+
+	// update first account with merged information
+	first.isOwn = first.isOwn | second.isOwn;
+	if (first.name.isEmpty()) first.name = second.name;
+	if (first.owner.isEmpty()) first.owner = second.owner;
+	if (first.iban.isEmpty()) first.iban = second.iban;
+	if (first.bic.isEmpty()) first.bic = second.bic;
+	if (first.accountNumber.isEmpty()) first.accountNumber = second.accountNumber;
+	if (first.bankCode.isEmpty()) first.bankCode = second.bankCode;
+	db->run(update(acc).set(acc.isOwn = first.isOwn,
+							acc.name = str(first.name),
+							acc.owner = str(first.owner),
+							acc.iban = str(first.iban),
+							acc.bic = str(first.bic),
+							acc.accountNumber = str(first.accountNumber),
+							acc.bankCode = str(first.bankCode)
+						).where(acc.id == first.id));
+
+	// combine tags
+	std::vector<int> firstTagsIds;
+	for (const auto& t: db->run(select(accTag.tagId).from(accTag).where(accTag.accountId == first.id))) {
+		firstTagsIds.push_back(t.tagId);
+	}
+	auto tagIds = value_list_t<std::vector<int>>(firstTagsIds);
+	for (const auto& t : db->run(select(accTag.tagId).from(accTag).where(accTag.accountId == second.id and accTag.tagId.not_in(tagIds)))) {
+		db->run(insert_into(accTag).set(accTag.tagId = t.tagId, accTag.accountId = first.id));
+	}
+	db->run(remove_from(accTag).where(accTag.accountId == second.id));
+
+	// update transfers to use the first account
+	db->run(update(tr).set(tr.fromId = first.id).where(tr.fromId == second.id));
+	db->run(update(tr).set(tr.toId = first.id).where(tr.toId == second.id));
+
+	// clean second account from db
+	db->run(remove_from(acc).where(acc.id == second.id));
+
+	reloadCache(); // yes, too expensive, but I don't feel like writing code to update cachedAccounts and id2Row and view
+}
+
+Account& AccountModel::accountById(int id) {
+	assert(id >= 0 && id2Row.find(id) != id2Row.end());
+	int row = id2Row.at(id);
+	assert(row >= 0 && row < cachedAccounts.size());
+	return cachedAccounts[row];
 }
 

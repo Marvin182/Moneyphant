@@ -101,6 +101,20 @@
               </widget>
              </item>
              <item>
+              <widget class="QLabel" name="label_5">
+               <property name="text">
+                <string>Owner:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="accountOwner">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QLabel" name="label">
                <property name="text">
                 <string>IBAN:</string>
@@ -199,6 +213,13 @@
                </property>
               </spacer>
              </item>
+             <item>
+              <widget class="QPushButton" name="mergeAccounts">
+               <property name="text">
+                <string>Merge Accounts</string>
+               </property>
+              </widget>
+             </item>
             </layout>
            </widget>
           </item>
@@ -219,6 +240,19 @@
      <height>22</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuAccounts">
+    <property name="title">
+     <string>Accounts</string>
+    </property>
+    <addaction name="actionMerge_Selected_Accounts"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuAccounts"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -229,6 +263,17 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionMerge_Selected_Accounts">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Merge Selected Accounts</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>

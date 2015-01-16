@@ -53,12 +53,9 @@ QStringList TagHelper::getAccountTags(TagHelper::IdList& customAccIds) {
 
 		auto ids = value_list_t<std::vector<int>>(accIds);
 		for (const auto& t : db->run(select(tag.id, tag.name).from(tag, accTag).where(tag.id == accTag.tagId and accTag.accountId.in(ids)).order_by(tag.id))) {
-			std::cout << "tagId = " << t.id << " currentTagId = " << currentTagId << "\n";
 			if (t.id == currentTagId) {
-				std::cout << "\tseenCount++ " << seenCount << "\n";
 				seenCount++;
 			} else {
-				std::cout << "\tseenCount " << seenCount << " accIds.size() = " << accIds.size() << "\n";
 				if (seenCount == accIds.size()) {
 					tags << currentTagName;
 				}
@@ -72,7 +69,7 @@ QStringList TagHelper::getAccountTags(TagHelper::IdList& customAccIds) {
 	return tags;
 }
 
-void TagHelper::addAccountTags(const QStringList& tags, TagHelper::IdList& customAccIds) {
+void TagHelper::addAccountTags(QStringList tags, const std::vector<int>& customAccIds) {
 	auto accIds = customAccIds.empty() ? accountIds() : customAccIds;
 
 	for (int accId : accIds) {
@@ -86,12 +83,13 @@ void TagHelper::addAccountTags(const QStringList& tags, TagHelper::IdList& custo
 	}
 }
 
-void TagHelper::removeAccountTags(const QStringList& tags, TagHelper::IdList& customAccIds) {
+void TagHelper::removeAccountTags(QStringList tags, const std::vector<int>& customAccIds) {
 	auto accIds = customAccIds.empty() ? accountIds() : customAccIds;
 
 	for (int accId : accIds) {
 		assert(accId >= 0);
 		for (const auto& t : tags) {
+			assert(!t.isEmpty());
 			int tid = tagId(t);
 			assert(tid >= 0);
 			assert(1 == db->run(select(count(accTag.tagId)).from(accTag).where(accTag.tagId == tid and accTag.accountId == accId)).front().count);
