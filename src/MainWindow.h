@@ -35,6 +35,9 @@ private slots:
 
 	void resetTransferStats();
 	void addToTransferStats(int transferId);
+	void removeFromTransferStats(int transferId);
+
+	void clickedTransferFilterMonthLink();
 
 private:
 	Ui::MainWindow *ui;
@@ -56,6 +59,7 @@ private:
 	void openDb();
 	void setupAccountTab();
 	void setupTransferTab();
+	void createTransferFilterMonthLinks();
 };
 
 #endif // MAINWINDOW_H

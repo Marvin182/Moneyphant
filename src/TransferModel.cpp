@@ -3,7 +3,7 @@
 #include <QFile>
 #include <QColor>
 
-constexpr int COLUMNS_COUNT = 6;
+constexpr int COLUMNS_COUNT = 7;
 
 SQLPP_ALIAS_PROVIDER(fromName)
 SQLPP_ALIAS_PROVIDER(toName)
@@ -46,6 +46,7 @@ QVariant TransferModel::data(const QModelIndex& index, int role) const {
 		case Qt::CheckStateRole:
 			switch (index.column()) {
 				case 5:	return t.checked ? Qt::Checked : Qt::Unchecked;
+				case 6:	return t.internal ? Qt::Checked : Qt::Unchecked;
 			}
 			break;
 		case Qt::ForegroundRole:
@@ -74,7 +75,8 @@ QVariant TransferModel::headerData(int section, Qt::Orientation orientation, int
 			case 3: return tr("Reference");
 			case 4: return tr("Amount");
 			case 5: return tr("Checked");
-			default: assert(false && "code should not be reached");
+			case 6: return tr("Internal");
+			default: assert(false && "invalid section");
 		}
 	}
 	
@@ -88,13 +90,22 @@ bool TransferModel::setData(const QModelIndex& index, const QVariant& value, int
 	assert(index.column() >= 0 && index.column() < COLUMNS_COUNT);
 	
 	db::Transfer tr;
-	if (index.column() == 5) {
-		assert(value.canConvert<bool>());
-		assert(value.toBool() != t.checked);
-		t.checked = value.toBool();
-		db->run(update(tr).set(tr.checked = t.checked).where(tr.id == t.id));
-	} else {
-		assert(false);
+	switch (index.column()) {
+		case 5:
+			assert(value.canConvert<bool>());
+			assert(value.toBool() != t.checked);
+			t.checked = value.toBool();
+			db->run(update(tr).set(tr.checked = t.checked).where(tr.id == t.id));
+			break;
+		case 6:
+			assert(value.canConvert<bool>());
+			assert(value.toBool() != t.internal);
+			t.internal = value.toBool();
+			db->run(update(tr).set(tr.internal = t.internal).where(tr.id == t.id));
+			break;
+		default:
+			assert(false && "cannot setDate for read only column");
+			break;
 	}
 
 	emit dataChanged(index, index);
@@ -105,6 +116,7 @@ Qt::ItemFlags TransferModel::flags(const QModelIndex& index) const {
 	auto commonFlags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 	switch (index.column()) {
 		case 5:
+		case 6:
 			return commonFlags | Qt::ItemIsUserCheckable;
 		default:
 			return commonFlags;
@@ -138,7 +150,7 @@ void TransferModel::reloadCache() {
 	for (const auto& t : db->run(select(all_of(tr), accFrom.name.as(fromName), accTo.name.as(toName)).from(tr, accFrom, accTo).
 									where(tr.fromId == accFrom.id and tr.toId == accTo.id))) {
 		id2Row[t.id] = row++;
-		cachedTransfers.push_back({(int)t.id, QDateTime::fromMSecsSinceEpoch(t.date), Transfer::Acc(t.fromId, qstr(t.fromName)), Transfer::Acc(t.toId, qstr(t.toName)), qstr(t.reference), (int)t.amount, qstr(t.note), t.checked});
+		cachedTransfers.push_back({(int)t.id, QDateTime::fromMSecsSinceEpoch(t.date), Transfer::Acc(t.fromId, qstr(t.fromName)), Transfer::Acc(t.toId, qstr(t.toName)), qstr(t.reference), (int)t.amount, qstr(t.note), t.checked, t.internal});
 	}
 
 	emit endResetModel();
@@ -150,7 +162,7 @@ void TransferModel::createBackup(const QString& path) {
 		assert(false && "Could not open accounts backup file");
 	}
 	for (const auto& t : cachedTransfers) {
-		file.write((QString("%1;%2;%3;%4;%5;%6;%7;%8").arg(t.id).arg(t.dateMs()).arg(t.from.id).arg(t.from.name).arg(t.to.id).arg(t.to.name).arg(t.reference).arg(t.amount) + QString(";%1;%2\n").arg(t.note).arg(t.checked ? "1" : "0")).toLocal8Bit());
+		file.write((QString("%1;%2;%3;%4;%5;%6;%7;%8").arg(t.id).arg(t.dateMs()).arg(t.from.id).arg(t.from.name).arg(t.to.id).arg(t.to.name).arg(t.reference).arg(t.amount) + QString(";%1;%2;%3\n").arg(t.note).arg(t.checked ? "1" : "0").arg(t.internal ? "1" : "0")).toLocal8Bit());
 	}
 }
 

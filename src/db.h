@@ -357,21 +357,6 @@ namespace db
       };
       using _traits = sqlpp::make_traits<sqlpp::text>;
     };
-    struct Internal
-    {
-      struct _name_t
-      {
-        static constexpr const char* _get_name() { return "internal"; }
-        template<typename T>
-        struct _member_t
-          {
-            T internal;
-            T& operator()() { return internal; }
-            const T& operator()() const { return internal; }
-          };
-      };
-      using _traits = sqlpp::make_traits<sqlpp::boolean>;
-    };
     struct Checked
     {
       struct _name_t
@@ -387,6 +372,21 @@ namespace db
       };
       using _traits = sqlpp::make_traits<sqlpp::boolean>;
     };
+    struct Internal
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "internal"; }
+        template<typename T>
+        struct _member_t
+          {
+            T internal;
+            T& operator()() { return internal; }
+            const T& operator()() const { return internal; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::boolean>;
+    };
   }
 
   struct Transfer: sqlpp::table_t<Transfer,
@@ -397,8 +397,8 @@ namespace db
                Transfer_::Reference,
                Transfer_::Amount,
                Transfer_::Note,
-               Transfer_::Internal,
-               Transfer_::Checked>
+               Transfer_::Checked,
+               Transfer_::Internal>
   {
     struct _name_t
     {

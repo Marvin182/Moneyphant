@@ -8,6 +8,7 @@
 #include <QDir>
 #include <QStringList>
 #include <QDateTime>
+#include <QLabel>
 
 const char* DbPath = "db.sqlite";
 const char* StatementFolder = "/Users/marvin/Workspace/Moneyphant/statements/";
@@ -225,7 +226,7 @@ void MainWindow::updateTransferInfo() {
 }
 
 void MainWindow::resetTransferStats() {
-	transferStats.reset();
+	transferStats.clear();
 	addToTransferStats(-1);
 }
 
@@ -234,12 +235,25 @@ void MainWindow::addToTransferStats(int transferId) {
 		const auto& transfer = (*transferModel)[transferId];
 		const auto& from = (*accountModel)[transfer.from.id];
 		const auto& to = (*accountModel)[transfer.to.id];
-		transferStats.add(transfer.amount, from.isOwn && to.isOwn);
+		transferStats.add(transfer, transfer.internal || (from.isOwn && to.isOwn));
 	}
 
-	ui->trStatsRevenues->setText(euro(transferStats.revenues));
-	ui->trStatsExpenses->setText(euro(transferStats.expenses));
-	ui->trStatsInternal->setText(euro(transferStats.internal));
+	ui->trStatsRevenues->setText(euro(transferStats.revenues()));
+	ui->trStatsExpenses->setText(euro(transferStats.expenses()));
+	ui->trStatsInternal->setText(euro(transferStats.internal()));
+	ui->trStatsProfit->setText(euro(transferStats.profit()));
+}
+
+void MainWindow::removeFromTransferStats(int transferId) {
+	assert(transferId >= 0);
+	const auto& transfer = (*transferModel)[transferId];
+	const auto& from = (*accountModel)[transfer.from.id];
+	const auto& to = (*accountModel)[transfer.to.id];
+	transferStats.remove(transfer, transfer.internal || (from.isOwn && to.isOwn));
+
+	ui->trStatsRevenues->setText(euro(transferStats.revenues()));
+	ui->trStatsExpenses->setText(euro(transferStats.expenses()));
+	ui->trStatsInternal->setText(euro(transferStats.internal()));
 	ui->trStatsProfit->setText(euro(transferStats.profit()));
 }
 
@@ -291,10 +305,12 @@ void MainWindow::setupTransferTab() {
 	connect(ui->trFilterStartDate, SIGNAL(dateTimeChanged(const QDateTime&)), transferProxyModel, SLOT(setStartDate(const QDateTime&)));
 	connect(ui->trFilterEndDate, SIGNAL(dateTimeChanged(const QDateTime&)), transferProxyModel, SLOT(setEndDate(const QDateTime&)));
 	// connect reference and tags
+	createTransferFilterMonthLinks();
 
 	// stats
 	connect(transferProxyModel, SIGNAL(resetStats()), this, SLOT(resetTransferStats()));
 	connect(transferProxyModel, SIGNAL(addToStats(int)), this, SLOT(addToTransferStats(int)));
+	connect(transferProxyModel, SIGNAL(removeFromStats(int)), this, SLOT(removeFromTransferStats(int)));
 
 	// main view
 	ui->transferView->setModel(transferProxyModel);
@@ -303,7 +319,8 @@ void MainWindow::setupTransferTab() {
 	ui->transferView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed); // Date
 	ui->transferView->horizontalHeader()->setSectionResizeMode(4, QHeaderView::Fixed); // Amount
 	ui->transferView->horizontalHeader()->setSectionResizeMode(5, QHeaderView::Fixed); // Checked
-	ui->transferView->horizontalHeader()->setDefaultSectionSize(80);
+	ui->transferView->horizontalHeader()->setSectionResizeMode(6, QHeaderView::Fixed); // Internal
+	ui->transferView->horizontalHeader()->setDefaultSectionSize(100);
 	ui->transferView->horizontalHeader()->hideSection(1); // From Account
 
 	// enable sorting
@@ -318,6 +335,61 @@ void MainWindow::setupTransferTab() {
 	// connect(ui->transferView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SLOT(showSelectedTransfers(const QItemSelection&, const QItemSelection&)));
 	// connect(ui->transferTags, SIGNAL(tagsAdded(QStringList, const std::vector<int>&)), tagHelper, SLOT(addTransferTags(QStringList, const std::vector<int>&)));
 	// connect(ui->transferTags, SIGNAL(tagsRemoved(QStringList, const std::vector<int>&)), tagHelper, SLOT(removeTransferTags(QStringList, const std::vector<int>&)));
+}
+
+void MainWindow::clickedTransferFilterMonthLink() {
+	auto senderButton = (QPushButton*)sender();
+	auto text = senderButton->text();
+
+	QDateTime start, end;
+	if (text.length() == 4) {
+		// year range
+		int year = text.toInt();
+		start = QDateTime(QDate(year, 1, 1));
+		end = QDateTime(QDate(year, 12, 31), QTime(23, 59));
+	} else {
+		// month range
+		start = QDateTime::fromString(senderButton->text(), "MMM yy");
+		if (start.date().year() < 1970) {
+			start = start.addYears(100);
+		}
+		end = start.addMonths(1).addSecs(-1);
+	}
+	ui->trFilterStartDate->setDateTime(start);	
+	ui->trFilterEndDate->setDateTime(end);
+}
+
+void MainWindow::createTransferFilterMonthLinks() {
+	if (transferModel->rowCount() == 0) {
+		return;
+	}
+
+	db::Transfer tr;
+	auto startEnd = db->run(select(min(tr.date), max(tr.date)).from(tr).where(true));
+	auto start = QDateTime::fromMSecsSinceEpoch(startEnd.front().min).date();
+	auto end = QDateTime::fromMSecsSinceEpoch(startEnd.front().max).date();
+
+	auto addButton = [&](const QString& text) {
+		auto button = new QPushButton(text);
+		connect(button, SIGNAL(pressed()), this, SLOT(clickedTransferFilterMonthLink()));
+		ui->trFilterMonthLinks->addWidget(button);
+	};
+
+	// years
+	for (int y = start.year(); y <= end.year(); y++) {
+		addButton(QString::number(y));
+	}
+
+	// months
+	while (start <= end) {
+		addButton(start.toString("MMM yy"));
+		start = start.addMonths(1);
+	}
+
+	// last month if needed
+	if (start.month() == end.month() && start.day() > end.day()) {
+		addButton(start.toString("MMM yy"));
+	}
 }
 
 void MainWindow::openDb() {

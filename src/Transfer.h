@@ -33,10 +33,11 @@ struct Transfer {
 	int amount;
 	QString note;
 	bool checked;
+	bool internal;
 
 	Transfer();
 	Transfer(string dateStr, const Acc& from, const Acc& to, string reference, string amountStr);
-	Transfer(int id, const QDateTime& date, const Acc& from, const Acc& to, string reference, int amount, string note, bool checked);
+	Transfer(int id, const QDateTime& date, const Acc& from, const Acc& to, string reference, int amount, string note, bool checked, bool internal);
 
 	qint64 dateMs() const { return date.toMSecsSinceEpoch(); }
 	QString dateStr() const { return date.toString("dd.MM.yyyy"); }

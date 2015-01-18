@@ -31,33 +31,36 @@ void TransferProxyModel::setTags(const std::vector<int>& tags) {
 	resetStatsAndInvalidateFilter();
 }
 
-const Transfer& TransferProxyModel::get(int sourceRow) const {
-	auto trModel = static_cast<TransferModel*>(sourceModel());
-	return trModel->get(sourceRow);
-}
-
 void TransferProxyModel::resetStatsAndInvalidateFilter() {
 	emit resetStats();
 	invalidateFilter();
+}
+
+const Transfer& TransferProxyModel::get(int sourceRow) const {
+	auto trModel = static_cast<TransferModel*>(sourceModel());
+	return trModel->get(sourceRow);
 }
 
 bool TransferProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const {
 	Q_UNUSED(sourceParent);
 	const auto& transfer = get(sourceRow);
 
+	bool accepted = true;
 	if (startDate.isValid() && transfer.date < startDate) {
-		return false;
-	}
-	if (endDate.isValid() && transfer.date > endDate) {
-		return false;
-	}
-	if (fromAccountId >= 0 && transfer.from.id != fromAccountId) {
-		return false;
+		accepted = false;
+	} else if (endDate.isValid() && transfer.date > endDate) {
+		accepted = false;
+	} else if  (fromAccountId >= 0 && transfer.from.id != fromAccountId) {
+		accepted = false;
 	}
 
-	emit addToStats(transfer.id);
-
-	return true;
+	if (accepted) {
+		emit addToStats(transfer.id);
+	} else {
+		emit removeFromStats(transfer.id);
+	}
+	
+	return accepted;
 }
 
 bool TransferProxyModel::lessThan(const QModelIndex& left, const QModelIndex& right) const {

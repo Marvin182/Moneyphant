@@ -1,28 +1,47 @@
 #ifndef TRANSFER_STATS_H
 #define TRANSFER_STATS_H
 
+#include "Transfer.h"
+#include <unordered_map>
 #include <QObject>
 
 class TransferStats : public QObject {
 	Q_OBJECT
 public:
-	int revenues;
-	int expenses;
-	int internal;
-
-	int revenuesCount;
-	int expensesCount;
-	int internalCount;
 	
 	TransferStats();
 
-	int profit() const { return revenues + expenses; }
-
-	int transferCount() const { return revenuesCount + expensesCount + internalCount; }
+	int revenues() const { return revenuesSum; }
+	int expenses() const { return expensesSum; }
+	int internal() const { return internalSum; }
+	int profit() const { return revenues() + expenses(); }
 
 public slots:
-	void reset();
-	void add(int val, bool isInternal);
+	void clear();
+	void add(const Transfer& transfer, bool isInternal);
+	void remove(const Transfer& transfer, bool isInternal);
+
+signals:
+	void changed();
+
+protected:
+	struct StatValue {
+		int internal;
+		int amount;
+		StatValue() :
+			internal(false),
+			amount(0)
+		{}
+	};
+
+	int revenuesSum;
+	int expensesSum;
+	int internalSum;
+
+	std::unordered_map<int, StatValue> statValues;
+
+	void add(const StatValue& stat);
+	void remove(const StatValue& stat);
 };
 
 #endif // TRANSFER_STATS_H

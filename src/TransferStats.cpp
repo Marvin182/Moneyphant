@@ -1,32 +1,57 @@
 #include "TransferStats.h"
+#include <cmath>
 
 TransferStats::TransferStats() :
-	revenues(0),
-	expenses(0),
-	internal(0),
-	revenuesCount(0),
-	expensesCount(0),
-	internalCount(0)
+	revenuesSum(0),
+	expensesSum(0),
+	internalSum(0),
+	statValues()
 {}
 
-void TransferStats::reset() {
-	revenues = 0;
-	expenses = 0;
-	internal = 0;
-	revenuesCount = 0;
-	expensesCount = 0;
-	internalCount = 0;
+void TransferStats::clear() {
+	revenuesSum = 0;
+	expensesSum = 0;
+	internalSum = 0;
+	statValues.clear();
 }
 
-void TransferStats::add(int val, bool isInternal) {
-	if (isInternal) {
-		internalCount++;
-		internal += val;
-	} else if (val >= 0) {
-		revenuesCount++;
-		revenues += val;
+void TransferStats::add(const Transfer& transfer, bool isInternal) {
+	auto it = statValues.find(transfer.id);
+	if (it != statValues.end()) {
+		// remove old stat value
+		remove((*it).second);
+	}
+
+	auto& stat = statValues[transfer.id];
+	stat.internal = isInternal;
+	stat.amount = transfer.amount;
+	add(stat);
+}
+
+void TransferStats::remove(const Transfer& transfer, bool isInternal) {
+	auto it = statValues.find(transfer.id);
+	if (it != statValues.end()) {
+		remove((*it).second);
+		statValues.erase(it);
+	}
+}
+
+void TransferStats::add(const StatValue& stat) {
+	if (stat.internal) {
+		internalSum += std::abs(stat.amount);
+	} else if (stat.amount < 0) {
+		expensesSum += stat.amount;
 	} else {
-		expensesCount++;
-		expenses += val;
+		revenuesSum += stat.amount;
+	}
+}
+
+void TransferStats::remove(const StatValue& stat) {
+	if (stat.internal) {
+		internalSum -= std::abs(stat.amount);
+	} else if (stat.amount < 0) {
+		expensesSum -= stat.amount;
+	} else {
+		revenuesSum -= stat.amount;
 	}
 }

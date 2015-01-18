@@ -26,8 +26,8 @@ create table transfer (
 	reference text not null,
 	amount integer not null,
 	note text not null default '',
-	internal bool not null default 0,
-	checked bool not null default 0
+	checked bool not null default 0,
+	internal bool not null default 0
 );
 
 create table tag (

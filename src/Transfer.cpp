@@ -15,7 +15,8 @@ Transfer::Transfer(string dateStr, const Acc& from, const Acc& to, string refere
 	reference(reference),
 	amount(0),
 	note(""),
-	checked(false)
+	checked(false),
+	internal(false)
 {
 	if (date.date().year() < 1970) {
 		date = date.addYears(100);
@@ -26,7 +27,7 @@ Transfer::Transfer(string dateStr, const Acc& from, const Acc& to, string refere
 	assert(amount != 0);
 }
 
-Transfer::Transfer(int id, const QDateTime& date, const Acc& from, const Acc& to, string reference, int amount, string note, bool checked) :
+Transfer::Transfer(int id, const QDateTime& date, const Acc& from, const Acc& to, string reference, int amount, string note, bool checked, bool internal) :
 	id(id),
 	date(date),
 	from(from),
@@ -34,7 +35,8 @@ Transfer::Transfer(int id, const QDateTime& date, const Acc& from, const Acc& to
 	reference(reference),
 	amount(amount),
 	note(note),
-	checked(checked)
+	checked(checked),
+	internal(internal)
 {}
 
 bool Transfer::operator==(const Transfer& tr) const {

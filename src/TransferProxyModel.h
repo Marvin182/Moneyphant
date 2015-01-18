@@ -18,10 +18,12 @@ public slots:
 	void setStartDate(const QDateTime& startDate);
 	void setEndDate(const QDateTime& endDate);
 	void setTags(const std::vector<int>& tags);
+	void resetStatsAndInvalidateFilter();
 
 signals:
 	void resetStats();
 	void addToStats(int transferId) const;
+	void removeFromStats(int transferId) const;
 
 protected:
 	Db db;
@@ -33,7 +35,6 @@ protected:
 
 	const Transfer& get(int sourceRow) const;
 
-	void resetStatsAndInvalidateFilter();
 
 	bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const;
 	bool lessThan(const QModelIndex& left, const QModelIndex& right) const;

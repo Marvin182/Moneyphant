@@ -28,22 +28,14 @@
         <item>
          <widget class="QWidget" name="widget_3" native="true">
           <layout class="QGridLayout" name="gridLayout">
-           <item row="0" column="3">
-            <widget class="QLabel" name="label_15">
-             <property name="text">
-              <string>Reference &amp; Tags:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_13">
-             <property name="text">
-              <string>From Account:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
+           <item row="2" column="1">
             <widget class="QDateEdit" name="trFilterStartDate">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="dateTime">
               <datetime>
                <hour>0</hour>
@@ -54,20 +46,33 @@
                <day>1</day>
               </datetime>
              </property>
+             <property name="displayFormat">
+              <string>d. MMMM yyyy</string>
+             </property>
             </widget>
            </item>
-           <item row="1" column="3">
-            <widget class="QLineEdit" name="trFilterReferenceTags">
+           <item row="2" column="0">
+            <widget class="QComboBox" name="trFilterFromAccount">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
             </widget>
            </item>
-           <item row="1" column="2">
+           <item row="1" column="1">
+            <widget class="QLabel" name="label_18">
+             <property name="text">
+              <string>Start Date:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="4">
             <widget class="QDateEdit" name="trFilterEndDate">
+             <property name="displayFormat">
+              <string>d. MMMM yyyy</string>
+             </property>
              <property name="date">
               <date>
                <year>2014</year>
@@ -77,7 +82,17 @@
              </property>
             </widget>
            </item>
-           <item row="0" column="2">
+           <item row="2" column="5">
+            <widget class="QLineEdit" name="trFilterReferenceTags">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="4">
             <widget class="QLabel" name="label_17">
              <property name="text">
               <string>End Date:</string>
@@ -85,17 +100,24 @@
             </widget>
            </item>
            <item row="1" column="0">
-            <widget class="QComboBox" name="trFilterFromAccount"/>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLabel" name="label_18">
+            <widget class="QLabel" name="label_13">
              <property name="text">
-              <string>Start Date:</string>
+              <string>From Account:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="5">
+            <widget class="QLabel" name="label_15">
+             <property name="text">
+              <string>Reference &amp; Tags:</string>
              </property>
             </widget>
            </item>
           </layout>
          </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="trFilterMonthLinks"/>
         </item>
         <item>
          <widget class="QWidget" name="widget_4" native="true">
