@@ -17,7 +17,7 @@ public slots:
 	void setFromAccountId(int fromAccountId);
 	void setStartDate(const QDateTime& startDate);
 	void setEndDate(const QDateTime& endDate);
-	void setTags(const std::vector<int>& tags);
+	void setFilterText(const QString& filterText);
 	void resetStatsAndInvalidateFilter();
 
 signals:
@@ -31,7 +31,7 @@ protected:
 	int fromAccountId;
 	QDateTime startDate;
 	QDateTime endDate;
-	std::vector<int> tags;
+	QString filterText;
 
 	const Transfer& get(int sourceRow) const;
 

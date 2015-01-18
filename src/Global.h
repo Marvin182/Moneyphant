@@ -19,6 +19,8 @@ QString qstr(std::string s);
 
 QString euro(int amount);
 
+bool fuzzyContains(const QString& text, const QString& needle);
+
 std::ostream& operator<<(std::ostream& os, const QString& s);
 
 qint64 nowTs();

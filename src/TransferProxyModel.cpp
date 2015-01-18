@@ -8,7 +8,7 @@ TransferProxyModel::TransferProxyModel(Db db, QObject* parent) :
 	fromAccountId(-1),
 	startDate(QDate(2014, 1, 1)),
 	endDate(QDate(2014, 12, 31)),
-	tags(0)
+	filterText()
 {}
 
 void TransferProxyModel::setFromAccountId(int fromAccountId) {
@@ -26,8 +26,8 @@ void TransferProxyModel::setEndDate(const QDateTime& endDate) {
 	resetStatsAndInvalidateFilter();
 }
 
-void TransferProxyModel::setTags(const std::vector<int>& tags) {
-	this->tags = tags;
+void TransferProxyModel::setFilterText(const QString& filterText) {
+	this->filterText = filterText;
 	resetStatsAndInvalidateFilter();
 }
 
@@ -51,6 +51,8 @@ bool TransferProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sour
 	} else if (endDate.isValid() && transfer.date > endDate) {
 		accepted = false;
 	} else if  (fromAccountId >= 0 && transfer.from.id != fromAccountId) {
+		accepted = false;
+	} else if (!filterText.isEmpty() && !fuzzyContains(transfer.from.name + transfer.to.name + transfer.reference, filterText)) {
 		accepted = false;
 	}
 

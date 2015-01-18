@@ -31,7 +31,9 @@ private slots:
 	
 	void setCurrentTransfer(const QModelIndex& index);
 	void showSelectedTransfers(const QItemSelection& selected, const QItemSelection& deseceted);
-	void updateTransferInfo();
+	void updateTransferTags();
+	void updateTransferDetails();
+
 
 	void resetTransferStats();
 	void addToTransferStats(int transferId);

@@ -83,7 +83,7 @@
             </widget>
            </item>
            <item row="2" column="5">
-            <widget class="QLineEdit" name="trFilterReferenceTags">
+            <widget class="QLineEdit" name="trFilterText">
              <property name="sizePolicy">
               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -209,7 +209,49 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="transferFrom">
+              <widget class="QLabel" name="transferFrom">
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_23">
+               <property name="text">
+                <string>Reference:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="transferReference">
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="tagsFromAccountsLabel">
+               <property name="text">
+                <string>Account Tags:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="tagsFromAccounts">
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_22">
+               <property name="text">
+                <string>Note:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="transferNote">
                <property name="enabled">
                 <bool>false</bool>
                </property>
@@ -224,20 +266,6 @@
              </item>
              <item>
               <widget class="TagEdit" name="transferTags"/>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_7">
-               <property name="text">
-                <string>Account Tags:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="transferTagsFromAccounts">
-               <property name="text">
-                <string/>
-               </property>
-              </widget>
              </item>
              <item>
               <spacer name="verticalSpacer_2">

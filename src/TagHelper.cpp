@@ -20,7 +20,7 @@ int TagHelper::tagId(string name) {
 	return id;
 }
 
-QStringList TagHelper::accountTagsOfTransfer(int fromId, int toId) {
+QStringList TagHelper::tagsFromAccounts(int fromId, int toId) {
 	db::Tag tag;
 	db::AccountTag accTag;
 
@@ -45,6 +45,22 @@ void TagHelper::removeAccountId(int accountId) {
 	auto it = std::find(_accountIds.begin(), _accountIds.end(), accountId);
 	assert(it != _accountIds.end());
 	_accountIds.erase(it, it + 1);
+}
+
+void TagHelper::addTransferId(int transferId) {
+	assert(transferId >= 0);
+	if (_transferIds.size() == 1 && _transferIds.front() == transferId) {
+		return;			
+	}
+	assert(std::find(_transferIds.begin(), _transferIds.end(), transferId) == _transferIds.end());
+	_transferIds.push_back(transferId);
+}
+
+void TagHelper::removeTransferId(int transferId) {
+	assert(transferId >= 0);
+	auto it = std::find(_transferIds.begin(), _transferIds.end(), transferId);
+	assert(it != _transferIds.end());	
+	_transferIds.erase(it, it + 1);
 }
 
 QStringList TagHelper::getAccountTags(TagHelper::IdList& customAccIds) {
@@ -74,6 +90,10 @@ QStringList TagHelper::getAccountTags(TagHelper::IdList& customAccIds) {
 				currentTagId = t.id;
 				currentTagName = qstr(t.name);
 			}
+		}
+
+		if (seenCount == accIds.size()) {
+			tags << currentTagName;
 		}
 	}
 
@@ -105,6 +125,71 @@ void TagHelper::removeAccountTags(QStringList tags, const std::vector<int>& cust
 			assert(tid >= 0);
 			assert(1 == db->run(select(count(accTag.tagId)).from(accTag).where(accTag.tagId == tid and accTag.accountId == accId)).front().count);
 			db->run(remove_from(accTag).where(accTag.tagId == tid and accTag.accountId == accId));
+		}
+	}
+}
+
+QStringList TagHelper::getTransferTags(TagHelper::IdList& customTrId) {
+	std::vector<int> trIds = customTrId.empty() ? accountIds() : customTrId;
+	for (int id : trIds) { assert(id >= 0); }
+
+	QStringList tags;
+
+	if (trIds.size() == 1) {
+		for (const auto& t : db->run(select(tag.name).from(tag, trTag).where(tag.id == trTag.tagId and trTag.transferId == trIds.front()))) {
+			tags << qstr(t.name);
+		}
+	} else {
+		int seenCount = 0;
+		int currentTagId = -1;
+		QString currentTagName("");
+
+		auto ids = value_list_t<std::vector<int>>(trIds);
+		for (const auto& t : db->run(select(tag.id, tag.name).from(tag, trTag).where(tag.id == trTag.tagId and trTag.transferId.in(ids)).order_by(tag.id))) {
+			if (t.id == currentTagId) {
+				seenCount++;
+			} else {
+				if (seenCount == trIds.size()) {
+					tags << currentTagName;
+				}
+				seenCount = 1;
+				currentTagId = t.id;
+				currentTagName = qstr(t.name);
+			}
+		}
+		if (seenCount == trIds.size()) {
+			tags << currentTagName;
+		}
+	}
+
+	return tags;
+}
+
+void TagHelper::addTransferTags(QStringList tags, const std::vector<int>& customTrId) {
+	auto trIds = customTrId.empty() ? transferIds() : customTrId;
+
+	for (int accId : trIds) {
+		assert(accId >= 0);
+		for (const auto& t : tags) {
+			int tid = tagId(t);
+			assert(tid >= 0);
+			assert(0 == db->run(select(count(trTag.tagId)).from(trTag).where(trTag.tagId == tid and trTag.transferId == accId)).front().count);
+			db->run(insert_into(trTag).set(trTag.tagId = tid, trTag.transferId = accId));
+		}
+	}
+}
+
+void TagHelper::removeTransferTags(QStringList tags, const std::vector<int>& customTrId) {
+	auto trIds = customTrId.empty() ? transferIds() : customTrId;
+
+	for (int accId : trIds) {
+		assert(accId >= 0);
+		for (const auto& t : tags) {
+			assert(!t.isEmpty());
+			int tid = tagId(t);
+			assert(tid >= 0);
+			assert(1 == db->run(select(count(trTag.tagId)).from(trTag).where(trTag.tagId == tid and trTag.transferId == accId)).front().count);
+			db->run(remove_from(trTag).where(trTag.tagId == tid and trTag.transferId == accId));
 		}
 	}
 }
