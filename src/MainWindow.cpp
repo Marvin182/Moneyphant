@@ -37,6 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	setupAccountTab();
 	setupTransferTab();
+	connect(ui->tabs, SIGNAL(currentChanged(int)), this, SLOT(tabChanged(int)));
 }
 
 MainWindow::~MainWindow() {
@@ -49,6 +50,14 @@ MainWindow::~MainWindow() {
 	transferModel->createBackup(QString("%1/%2.transfers.csv").arg(BackupFolder).arg(now));
 
 	delete ui;
+}
+
+void MainWindow::tabChanged(int index) {
+	switch (index) {
+		case 0:
+			transferModel->reloadCache();
+			break;
+	}
 }
 
 void MainWindow::setCurrentAccount(const QModelIndex& idx) {
@@ -107,12 +116,8 @@ void MainWindow::updateAccountInfo() {
 	if (ids.empty()) {
 		return;
 	} else if (ids.size() == 1) {
-		updateAccountDetails((*accountModel)[ids.front()]);
 		ui->accountTags->setTags(tagHelper->getAccountTags(), tagHelper->accountIds());
 	} else {
-		const auto& currentAccount = (*accountModel)[currentAccountId];
-		updateAccountDetails(currentAccount);
-
 		const auto& commonTags = tagHelper->getAccountTags();
 		ui->accountTags->setTags(commonTags, tagHelper->accountIds());
 
@@ -125,9 +130,18 @@ void MainWindow::updateAccountInfo() {
 		}
 		ui->moreAccountTags->setText(moreTags.join("; "));
 	}
+
+	updateAccountDetails();
 }
 
-void MainWindow::updateAccountDetails(const Account& account) {
+void MainWindow::updateAccountDetails() {
+	const auto& selectedIds = tagHelper->accountIds();
+	bool editEnabled = selectedIds.size() == 1;
+
+	ui->accountName->setEnabled(editEnabled);
+
+	const auto& account = (*accountModel)[editEnabled ? selectedIds[0] : currentAccountId];
+
 	ui->accountName->setText(account.name);
 	ui->accountOwner->setText(account.owner);
 	ui->accountIban->setText(account.iban);
@@ -194,50 +208,7 @@ void MainWindow::updateTransferTags() {
 
 	ui->transferTags->setTags(tagHelper->getTransferTags(ids), ids);
 
-
-
-
-	// const auto& detailTransfer = (*transferModel)[selectedIds.size() == 1 ? selectedIds.front() : currentTransferId];
-
-
-
-
-	// auto selectionModel = ui->accountView->selectionModel();
-
-	// ui->transferTagsFromAccounts->setText("");
-	// assert(currentAccountId != -1 || !ids.empty());
-	
-	// int id = ids.size() == 1 ? ids.front() : currentTransferId;
-	// const auto& t = (*transferModel)[id];
-	// auto accountTags = tagHelper->accountTagsOfTransfer(t.from.id, t.to.id);
-	// ui->transferTagsFromAccounts->setText(accountTags.join("; "));
-
-	// ui->accountName->setEnabled(ids.size() == 1);
-	// ui->accountTags->setEnabled(selectionModel->hasSelection());
-	// ui->moreAccountTags->setText("");
-
-	// if (ids.empty()) {
-	// 	return;
-	// } else if (ids.size() == 1) {
-	// 	updateAccountDetails((*transferModel)[ids.front()]);
-	// 	ui->accountTags->setTags(tagHelper->getTransferTags(), tagHelper->accountIds());
-	// } else {
-	// 	const auto& currentAccount = (*transferModel)[currentTransferId];
-	// 	updateAccountDetails(currentAccount);
-
-	// 	const auto& commonTags = tagHelper->getTransferTags();
-	// 	ui->accountTags->setTags(commonTags, tagHelper->accountIds());
-
-	// 	const auto& currentAccountTags = tagHelper->getTransferTags({currentTransferId});
-	// 	QStringList moreTags;
-	// 	for (const auto& t : currentAccountTags) {
-	// 		if (!commonTags.contains(t)) {
-	// 			moreTags << t;
-	// 		}
-	// 	}
-	// 	ui->moreAccountTags->setText(moreTags.join("; "));
-	// }
-
+	ui->checkSelectedTransfers->setVisible(!selectedIds.empty());
 
 	updateTransferDetails();
 }
@@ -246,14 +217,11 @@ void MainWindow::updateTransferDetails() {
 	const auto& selectedIds = tagHelper->transferIds();
 	bool editEnabled = selectedIds.size() == 1;
 
-	ui->transferFrom->setEnabled(editEnabled);
-	ui->transferNote->setEnabled(editEnabled);
-
 	const auto& transfer = (*transferModel)[editEnabled ? selectedIds[0] : currentTransferId];
 
 	ui->transferFrom->setText(transfer.from.name);
 	ui->transferReference->setText(transfer.reference);
-	ui->transferNote->setText(transfer.note);
+	ui->transferNote->setPlainText(transfer.note);
 	ui->tagsFromAccounts->setText(tagHelper->tagsFromAccounts(transfer.from.id, transfer.to.id).join("; "));
 }
 
@@ -287,6 +255,18 @@ void MainWindow::removeFromTransferStats(int transferId) {
 	ui->trStatsExpenses->setText(euro(transferStats.expenses()));
 	ui->trStatsInternal->setText(euro(transferStats.internal()));
 	ui->trStatsProfit->setText(euro(transferStats.profit()));
+}
+
+void MainWindow::saveTransferNote() {
+	const auto& selectedIds = tagHelper->transferIds();
+	const auto& id = selectedIds.size() == 1 ? selectedIds[0] : currentTransferId;
+	auto note = ui->transferNote->toPlainText();
+	transferModel->setNote(id, note);
+}
+
+void MainWindow::checkSelectedTransfers() {
+	assert(!tagHelper->transferIds().empty());
+	transferModel->setChecked(tagHelper->transferIds(), true);
 }
 
 void MainWindow::setupAccountTab() {
@@ -338,7 +318,6 @@ void MainWindow::setupTransferTab() {
 	connect(ui->trFilterEndDate, SIGNAL(dateTimeChanged(const QDateTime&)), transferProxyModel, SLOT(setEndDate(const QDateTime&)));
 	connect(ui->trFilterText, SIGNAL(textChanged(const QString&)), transferProxyModel, SLOT(setFilterText(const QString&)));
 	createTransferFilterMonthLinks();
-	ui->trFilterText->setText("ruslangrinmiete");
 
 	// stats
 	connect(transferProxyModel, SIGNAL(resetStats()), this, SLOT(resetTransferStats()));
@@ -369,6 +348,12 @@ void MainWindow::setupTransferTab() {
 	connect(ui->transferView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SLOT(showSelectedTransfers(const QItemSelection&, const QItemSelection&)));
 	connect(ui->transferTags, SIGNAL(tagsAdded(QStringList, const std::vector<int>&)), tagHelper, SLOT(addTransferTags(QStringList, const std::vector<int>&)));
 	connect(ui->transferTags, SIGNAL(tagsRemoved(QStringList, const std::vector<int>&)), tagHelper, SLOT(removeTransferTags(QStringList, const std::vector<int>&)));
+
+	// details edit
+	connect(ui->transferNote, SIGNAL(textChanged()), this, SLOT(saveTransferNote()));
+
+	// actions
+	connect(ui->checkSelectedTransfers, SIGNAL(clicked()), this, SLOT(checkSelectedTransfers())); 
 }
 
 void MainWindow::clickedTransferFilterMonthLink() {
@@ -376,7 +361,10 @@ void MainWindow::clickedTransferFilterMonthLink() {
 	auto text = senderButton->text();
 
 	QDateTime start, end;
-	if (text.length() == 4) {
+	if (text == "201x") {
+		start = QDateTime(QDate(2010, 1, 1));
+		end = QDateTime(QDate(2019, 12, 31), QTime(23, 59));
+	} else if (text.length() == 4) {
 		// year range
 		int year = text.toInt();
 		start = QDateTime(QDate(year, 1, 1));
@@ -408,6 +396,8 @@ void MainWindow::createTransferFilterMonthLinks() {
 		connect(button, SIGNAL(pressed()), this, SLOT(clickedTransferFilterMonthLink()));
 		ui->trFilterMonthLinks->addWidget(button);
 	};
+
+	addButton("201x");
 
 	// years
 	for (int y = start.year(); y <= end.year(); y++) {

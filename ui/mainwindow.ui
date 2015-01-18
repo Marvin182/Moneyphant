@@ -28,7 +28,45 @@
         <item>
          <widget class="QWidget" name="widget_3" native="true">
           <layout class="QGridLayout" name="gridLayout">
-           <item row="2" column="1">
+           <item row="1" column="4">
+            <widget class="QLabel" name="label_15">
+             <property name="text">
+              <string>Reference &amp; Tags:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
+            <widget class="QLabel" name="label_17">
+             <property name="text">
+              <string>End Date:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="3">
+            <widget class="QDateEdit" name="trFilterEndDate">
+             <property name="displayFormat">
+              <string>d. MMMM yyyy</string>
+             </property>
+             <property name="date">
+              <date>
+               <year>2014</year>
+               <month>12</month>
+               <day>31</day>
+              </date>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="4">
+            <widget class="QLineEdit" name="trFilterText">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
             <widget class="QDateEdit" name="trFilterStartDate">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -51,65 +89,10 @@
              </property>
             </widget>
            </item>
-           <item row="2" column="0">
-            <widget class="QComboBox" name="trFilterFromAccount">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
+           <item row="1" column="0">
             <widget class="QLabel" name="label_18">
              <property name="text">
               <string>Start Date:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="4">
-            <widget class="QDateEdit" name="trFilterEndDate">
-             <property name="displayFormat">
-              <string>d. MMMM yyyy</string>
-             </property>
-             <property name="date">
-              <date>
-               <year>2014</year>
-               <month>12</month>
-               <day>31</day>
-              </date>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="5">
-            <widget class="QLineEdit" name="trFilterText">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="4">
-            <widget class="QLabel" name="label_17">
-             <property name="text">
-              <string>End Date:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_13">
-             <property name="text">
-              <string>From Account:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="5">
-            <widget class="QLabel" name="label_15">
-             <property name="text">
-              <string>Reference &amp; Tags:</string>
              </property>
             </widget>
            </item>
@@ -213,6 +196,9 @@
                <property name="text">
                 <string/>
                </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
               </widget>
              </item>
              <item>
@@ -226,6 +212,9 @@
               <widget class="QLabel" name="transferReference">
                <property name="text">
                 <string/>
+               </property>
+               <property name="wordWrap">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
@@ -241,6 +230,9 @@
                <property name="text">
                 <string/>
                </property>
+               <property name="wordWrap">
+                <bool>true</bool>
+               </property>
               </widget>
              </item>
              <item>
@@ -251,11 +243,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="transferNote">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-              </widget>
+              <widget class="QPlainTextEdit" name="transferNote"/>
              </item>
              <item>
               <widget class="QLabel" name="label_6">
@@ -279,6 +267,13 @@
                 </size>
                </property>
               </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="checkSelectedTransfers">
+               <property name="text">
+                <string>Check Selected</string>
+               </property>
+              </widget>
              </item>
             </layout>
            </widget>

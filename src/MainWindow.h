@@ -23,22 +23,24 @@ public:
 	~MainWindow();
 
 private slots:
+	void tabChanged(int index);
+
 	void setCurrentAccount(const QModelIndex& index);
 	void showSelectedAccounts(const QItemSelection& selected, const QItemSelection& deseceted);
 	void updateAccountInfo();
-	void updateAccountDetails(const Account& account);
+	void updateAccountDetails();
 	void mergeAccounts();
 	
 	void setCurrentTransfer(const QModelIndex& index);
 	void showSelectedTransfers(const QItemSelection& selected, const QItemSelection& deseceted);
 	void updateTransferTags();
 	void updateTransferDetails();
-
+	void saveTransferNote();
+	void checkSelectedTransfers();
 
 	void resetTransferStats();
 	void addToTransferStats(int transferId);
 	void removeFromTransferStats(int transferId);
-
 	void clickedTransferFilterMonthLink();
 
 private:

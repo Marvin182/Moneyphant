@@ -24,7 +24,11 @@ public:
 
 	const Transfer& operator[](int id) const;
 	const Transfer& get(int row) const;
-	
+	const Transfer& getById(int id) const;
+
+	void setNote(int transferId, string note);
+	void setChecked(const std::vector<int>& transferIds, bool checked);
+
 public slots:
 	void reloadCache();
 	void createBackup(const QString& path);
@@ -36,6 +40,9 @@ private:
 	std::vector<Transfer> cachedTransfers;
 
 	Transfer& transferById(int id);
+
+	template <typename F>
+	void updateTransfer(int transferId, F f);
 };
 
 #endif // TRANSFER_MODEL_H

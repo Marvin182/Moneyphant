@@ -25,7 +25,7 @@ QStringList TagHelper::tagsFromAccounts(int fromId, int toId) {
 	db::AccountTag accTag;
 
 	QStringList tags;
-	for (const auto& t : db->run(select(tag.name).from(tag, accTag).where(tag.id == accTag.tagId and accTag.accountId == fromId or accTag.accountId == toId))) {
+	for (const auto& t : db->run(select(tag.name).from(tag, accTag).where(tag.id == accTag.tagId and (accTag.accountId == fromId or accTag.accountId == toId)))) {
 		tags << qstr(t.name);
 	}
 	return tags;

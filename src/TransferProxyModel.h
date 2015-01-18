@@ -14,7 +14,6 @@ public:
 	TransferProxyModel(Db db, QObject* parent = 0);
 
 public slots:
-	void setFromAccountId(int fromAccountId);
 	void setStartDate(const QDateTime& startDate);
 	void setEndDate(const QDateTime& endDate);
 	void setFilterText(const QString& filterText);
@@ -28,13 +27,17 @@ signals:
 protected:
 	Db db;
 
-	int fromAccountId;
 	QDateTime startDate;
 	QDateTime endDate;
-	QString filterText;
+
+	QString txtFrom;
+	QString txtTo;
+	QString txtRef;
+	QString txtAmount;
+	std::vector<int> txtTags;
+	QString txtRest;
 
 	const Transfer& get(int sourceRow) const;
-
 
 	bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const;
 	bool lessThan(const QModelIndex& left, const QModelIndex& right) const;

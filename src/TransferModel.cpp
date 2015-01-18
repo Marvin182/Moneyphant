@@ -134,6 +134,39 @@ const Transfer& TransferModel::get(int row) const {
 	return cachedTransfers[row];
 }
 
+const Transfer& TransferModel::getById(int id) const {
+	assert(id >= 0 && id2Row.find(id) != id2Row.end());
+	int row = id2Row.at(id);
+	return get(row);
+}
+
+void TransferModel::setNote(int transferId, string note) {
+	auto& t = transferById(transferId);
+	if (t.note == note) {
+		return;
+	} else {
+		t.note = note;
+		db::Transfer tr;
+		db->run(update(tr).set(tr.note = str(note)).where(tr.id == transferId));
+	}
+}
+
+void TransferModel::setChecked(const std::vector<int>& transferIds, bool checked) {
+	// update database
+	db::Transfer tr;
+	auto ids = value_list_t<std::vector<int>>(transferIds);
+	db->run(update(tr).set(tr.checked = checked).where(tr.id.in(ids)));
+
+	// update cache and inform UI
+	QVector<int> roles(1, Qt::CheckStateRole);
+	for (int id : transferIds) {
+		transferById(id).checked = checked;
+		int row = id2Row.at(id);
+		auto idx = index(row, 5);
+		emit dataChanged(idx, idx, roles);
+	}
+}
+
 void TransferModel::reloadCache() {
 	emit beginResetModel();
 
@@ -173,3 +206,18 @@ Transfer& TransferModel::transferById(int id) {
 	return cachedTransfers[row];
 }
 
+template <typename F>
+void TransferModel::updateTransfer(int transferId, F f) {
+	auto& t = transferById(transferId);
+	f(t);
+	db::Transfer tr;
+	db->run(update(tr).set(tr.date = t.dateMs(),
+							tr.fromId = t.from.id,
+							tr.toId = t.to.id,
+							tr.reference = str(t.reference),
+							tr.amount = t.amount,
+							tr.note = str(t.note),
+							tr.checked = t.checked,
+							tr.internal = t.internal
+						).where(tr.id == transferId));
+}
