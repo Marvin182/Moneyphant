@@ -19,11 +19,12 @@ SOURCES += src/main.cpp\
         src/Evolutions.cpp \
     src/StatementReader.cpp \
     src/Transfer.cpp \
-    src/TableManager.cpp \
     src/AccountModel.cpp \
     src/TagEdit.cpp \
     src/TagHelper.cpp \
-    src/TransferModel.cpp
+    src/TransferModel.cpp \
+    src/TransferProxyModel.cpp \
+    src/TransferStats.cpp
 
 HEADERS  += src/Global.h \
         src/MainWindow.h \
@@ -32,11 +33,12 @@ HEADERS  += src/Global.h \
         src/db.h \
     src/StatementReader.h \
     src/Transfer.h \
-    src/TableManager.h \
     src/AccountModel.h \
     src/TagEdit.h \
     src/TagHelper.h \
-    src/TransferModel.h
+    src/TransferModel.h \
+    src/TransferProxyModel.h \
+    src/TransferStats.h
 
 FORMS    += ui/mainwindow.ui
 

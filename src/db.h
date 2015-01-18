@@ -282,21 +282,6 @@ namespace db
       };
       using _traits = sqlpp::make_traits<sqlpp::integer, sqlpp::tag::require_insert>;
     };
-    struct ToId
-    {
-      struct _name_t
-      {
-        static constexpr const char* _get_name() { return "toId"; }
-        template<typename T>
-        struct _member_t
-          {
-            T toId;
-            T& operator()() { return toId; }
-            const T& operator()() const { return toId; }
-          };
-      };
-      using _traits = sqlpp::make_traits<sqlpp::integer, sqlpp::tag::require_insert>;
-    };
     struct FromId
     {
       struct _name_t
@@ -308,6 +293,21 @@ namespace db
             T fromId;
             T& operator()() { return fromId; }
             const T& operator()() const { return fromId; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::integer, sqlpp::tag::require_insert>;
+    };
+    struct ToId
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "toId"; }
+        template<typename T>
+        struct _member_t
+          {
+            T toId;
+            T& operator()() { return toId; }
+            const T& operator()() const { return toId; }
           };
       };
       using _traits = sqlpp::make_traits<sqlpp::integer, sqlpp::tag::require_insert>;
@@ -357,6 +357,21 @@ namespace db
       };
       using _traits = sqlpp::make_traits<sqlpp::text>;
     };
+    struct Internal
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "internal"; }
+        template<typename T>
+        struct _member_t
+          {
+            T internal;
+            T& operator()() { return internal; }
+            const T& operator()() const { return internal; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::boolean>;
+    };
     struct Checked
     {
       struct _name_t
@@ -377,11 +392,12 @@ namespace db
   struct Transfer: sqlpp::table_t<Transfer,
                Transfer_::Id,
                Transfer_::Date,
-               Transfer_::ToId,
                Transfer_::FromId,
+               Transfer_::ToId,
                Transfer_::Reference,
                Transfer_::Amount,
                Transfer_::Note,
+               Transfer_::Internal,
                Transfer_::Checked>
   {
     struct _name_t
@@ -543,88 +559,6 @@ namespace db
         T transferTag;
         T& operator()() { return transferTag; }
         const T& operator()() const { return transferTag; }
-      };
-    };
-  };
-  namespace Budget_
-  {
-    struct Id
-    {
-      struct _name_t
-      {
-        static constexpr const char* _get_name() { return "id"; }
-        template<typename T>
-        struct _member_t
-          {
-            T id;
-            T& operator()() { return id; }
-            const T& operator()() const { return id; }
-          };
-      };
-      using _traits = sqlpp::make_traits<sqlpp::integer, sqlpp::tag::can_be_null>;
-    };
-    struct Name
-    {
-      struct _name_t
-      {
-        static constexpr const char* _get_name() { return "name"; }
-        template<typename T>
-        struct _member_t
-          {
-            T name;
-            T& operator()() { return name; }
-            const T& operator()() const { return name; }
-          };
-      };
-      using _traits = sqlpp::make_traits<sqlpp::varchar, sqlpp::tag::require_insert>;
-    };
-    struct Amount
-    {
-      struct _name_t
-      {
-        static constexpr const char* _get_name() { return "amount"; }
-        template<typename T>
-        struct _member_t
-          {
-            T amount;
-            T& operator()() { return amount; }
-            const T& operator()() const { return amount; }
-          };
-      };
-      using _traits = sqlpp::make_traits<sqlpp::integer, sqlpp::tag::require_insert>;
-    };
-    struct KeepSavings
-    {
-      struct _name_t
-      {
-        static constexpr const char* _get_name() { return "keepSavings"; }
-        template<typename T>
-        struct _member_t
-          {
-            T keepSavings;
-            T& operator()() { return keepSavings; }
-            const T& operator()() const { return keepSavings; }
-          };
-      };
-      using _traits = sqlpp::make_traits<sqlpp::boolean>;
-    };
-  }
-
-  struct Budget: sqlpp::table_t<Budget,
-               Budget_::Id,
-               Budget_::Name,
-               Budget_::Amount,
-               Budget_::KeepSavings>
-  {
-    struct _name_t
-    {
-      static constexpr const char* _get_name() { return "budget"; }
-      template<typename T>
-      struct _member_t
-      {
-        T budget;
-        T& operator()() { return budget; }
-        const T& operator()() const { return budget; }
       };
     };
   };

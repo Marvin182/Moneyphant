@@ -142,6 +142,107 @@ void MainWindow::mergeAccounts() {
 	tagHelper->setAccountIds({});
 }
 
+void MainWindow::setCurrentTransfer(const QModelIndex& idx) {
+	assert(transferModel != nullptr);
+	assert(transferProxyModel != nullptr);
+
+	const auto& index = transferProxyModel->mapToSource(idx);
+	int id = transferModel->get(index.row()).id;
+	if (currentTransferId == id) {
+		return;
+	}
+	currentTransferId = id;
+
+	auto selectionModel = ui->accountView->selectionModel();
+	if (!selectionModel->hasSelection()) {
+		tagHelper->setTransferIds({currentTransferId});
+	}
+
+	updateTransferInfo();
+}
+
+void MainWindow::showSelectedTransfers(const QItemSelection& selected, const QItemSelection& deseceted) {
+	// for (const auto& idx : deseceted.indexes()) {
+	// 	const auto& index = transferProxyModel->mapToSource(idx);
+	// 	if (index.column() != 0) {
+	// 		continue;
+	// 	}
+	// 	int id = transferModel->get(index.row()).id;
+	// 	tagHelper->removeTransferId(id);
+	// }
+
+	// for (const auto& idx : selected.indexes()) {
+	// 	const auto& index = transferProxyModel->mapToSource(idx);
+	// 	if (index.column() != 0) {
+	// 		continue;
+	// 	}
+	// 	int id = transferModel->get(index.row()).id;
+	// 	tagHelper->addTransferId(id);
+	// }
+
+	// updateTransferInfo();
+}
+	
+void MainWindow::updateTransferInfo() {
+	assert(currentTransferId >= 0);
+
+	const auto& ids = tagHelper->transferIds();
+	auto selectionModel = ui->accountView->selectionModel();
+
+	// ui->transferTagsFromAccounts->setText("");
+	assert(currentAccountId != -1 || !ids.empty());
+	
+	int id = ids.size() == 1 ? ids.front() : currentTransferId;
+	const auto& t = (*transferModel)[id];
+	auto accountTags = tagHelper->accountTagsOfTransfer(t.from.id, t.to.id);
+	ui->transferTagsFromAccounts->setText(accountTags.join("; "));
+
+	// ui->accountName->setEnabled(ids.size() == 1);
+	// ui->accountTags->setEnabled(selectionModel->hasSelection());
+	// ui->moreAccountTags->setText("");
+
+	// if (ids.empty()) {
+	// 	return;
+	// } else if (ids.size() == 1) {
+	// 	updateAccountDetails((*transferModel)[ids.front()]);
+	// 	ui->accountTags->setTags(tagHelper->getAccountTags(), tagHelper->accountIds());
+	// } else {
+	// 	const auto& currentAccount = (*transferModel)[currentTransferId];
+	// 	updateAccountDetails(currentAccount);
+
+	// 	const auto& commonTags = tagHelper->getAccountTags();
+	// 	ui->accountTags->setTags(commonTags, tagHelper->accountIds());
+
+	// 	const auto& currentAccountTags = tagHelper->getAccountTags({currentTransferId});
+	// 	QStringList moreTags;
+	// 	for (const auto& t : currentAccountTags) {
+	// 		if (!commonTags.contains(t)) {
+	// 			moreTags << t;
+	// 		}
+	// 	}
+	// 	ui->moreAccountTags->setText(moreTags.join("; "));
+	// }
+}
+
+void MainWindow::resetTransferStats() {
+	transferStats.reset();
+	addToTransferStats(-1);
+}
+
+void MainWindow::addToTransferStats(int transferId) {
+	if (transferId >= 0) {
+		const auto& transfer = (*transferModel)[transferId];
+		const auto& from = (*accountModel)[transfer.from.id];
+		const auto& to = (*accountModel)[transfer.to.id];
+		transferStats.add(transfer.amount, from.isOwn && to.isOwn);
+	}
+
+	ui->trStatsRevenues->setText(euro(transferStats.revenues));
+	ui->trStatsExpenses->setText(euro(transferStats.expenses));
+	ui->trStatsInternal->setText(euro(transferStats.internal));
+	ui->trStatsProfit->setText(euro(transferStats.profit()));
+}
+
 void MainWindow::setupAccountTab() {
 	accountModel = new AccountModel(db, this);
 
@@ -179,38 +280,44 @@ void MainWindow::setupAccountTab() {
 }
 
 void MainWindow::setupTransferTab() {
+
+	// model and proxy model for filtering and sorting
 	transferModel = new TransferModel(db, this);
-
-	// setup proxy model for sorting and filtering
-	transferProxyModel = new QSortFilterProxyModel(this);
+	transferProxyModel = new TransferProxyModel(db, this);
 	transferProxyModel->setSourceModel(transferModel);
-	transferProxyModel->setFilterKeyColumn(1);
-	transferProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
-	transferProxyModel->setFilterRole(Qt::UserRole + 1);
 
+	// filter edits
+	// connect(ui->trFilterFromAccount, SIGNAL(currentIndexChanged(int)), this, SLOT(changeTransferFilter(int)));
+	connect(ui->trFilterStartDate, SIGNAL(dateTimeChanged(const QDateTime&)), transferProxyModel, SLOT(setStartDate(const QDateTime&)));
+	connect(ui->trFilterEndDate, SIGNAL(dateTimeChanged(const QDateTime&)), transferProxyModel, SLOT(setEndDate(const QDateTime&)));
+	// connect reference and tags
+
+	// stats
+	connect(transferProxyModel, SIGNAL(resetStats()), this, SLOT(resetTransferStats()));
+	connect(transferProxyModel, SIGNAL(addToStats(int)), this, SLOT(addToTransferStats(int)));
+
+	// main view
 	ui->transferView->setModel(transferProxyModel);
+	ui->transferView->verticalHeader()->hide();
+	ui->transferView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+	ui->transferView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed); // Date
+	ui->transferView->horizontalHeader()->setSectionResizeMode(4, QHeaderView::Fixed); // Amount
+	ui->transferView->horizontalHeader()->setSectionResizeMode(5, QHeaderView::Fixed); // Checked
+	ui->transferView->horizontalHeader()->setDefaultSectionSize(80);
+	ui->transferView->horizontalHeader()->hideSection(1); // From Account
+
+	// enable sorting
 	ui->transferView->setSortingEnabled(true);
 
-	// mouse tracking for hover
+	// enable row selection
 	ui->transferView->setSelectionBehavior(QAbstractItemView::SelectRows);
-	ui->transferView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+	ui->transferView->setSelectionMode(QAbstractItemView::ExtendedSelection); // support for multi rows and Strg/Shift functionality
 
 	ui->transferView->setMouseTracking(true);
 	// connect(ui->transferView, SIGNAL(entered(const QModelIndex&)), this, SLOT(setCurrentTransfer(const QModelIndex&)));
 	// connect(ui->transferView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SLOT(showSelectedTransfers(const QItemSelection&, const QItemSelection&)));
 	// connect(ui->transferTags, SIGNAL(tagsAdded(QStringList, const std::vector<int>&)), tagHelper, SLOT(addTransferTags(QStringList, const std::vector<int>&)));
 	// connect(ui->transferTags, SIGNAL(tagsRemoved(QStringList, const std::vector<int>&)), tagHelper, SLOT(removeTransferTags(QStringList, const std::vector<int>&)));
-
-	// configure headers
-	ui->transferView->verticalHeader()->hide();
-	ui->transferView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-	ui->transferView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
-	ui->transferView->horizontalHeader()->setSectionResizeMode(4, QHeaderView::Fixed);
-	ui->transferView->horizontalHeader()->setSectionResizeMode(5, QHeaderView::Fixed);
-	ui->transferView->horizontalHeader()->setDefaultSectionSize(80);
-	ui->transferView->horizontalHeader()->hideSection(1);
-	
-	connect(ui->transferSearch, SIGNAL(textChanged(const QString&)), transferProxyModel, SLOT(setFilterWildcard(const QString&)));
 }
 
 void MainWindow::openDb() {

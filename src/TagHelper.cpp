@@ -20,6 +20,17 @@ int TagHelper::tagId(string name) {
 	return id;
 }
 
+QStringList TagHelper::accountTagsOfTransfer(int fromId, int toId) {
+	db::Tag tag;
+	db::AccountTag accTag;
+
+	QStringList tags;
+	for (const auto& t : db->run(select(tag.name).from(tag, accTag).where(tag.id == accTag.tagId and accTag.accountId == fromId or accTag.accountId == toId))) {
+		tags << qstr(t.name);
+	}
+	return tags;
+}
+
 void TagHelper::addAccountId(int accountId) {
 	assert(accountId >= 0);
 	if (_accountIds.size() == 1 && _accountIds.front() == accountId) {
@@ -97,31 +108,3 @@ void TagHelper::removeAccountTags(QStringList tags, const std::vector<int>& cust
 		}
 	}
 }
-
-// void TagHelper::syncAccountTags(const QStringList& tags, int accId) {
-// 	accId = accId == -1 ? accountId() : accId;
-// 	assert(accId >= 0);
-
-// 	std::vector<bool> tagIsNew(tags.size(), true);
-
-// 	for (const auto& t : db->run(select(tag.name, tag.id).from(tag, accTag).where(tag.id == accTag.tagId and accTag.accountId == accId))) {
-// 		int index = tags.indexOf(qstr(t.name));
-// 		if (index == -1) {
-// 			// user removed tag
-// 			db->run(remove_from(accTag).where(accTag.tagId == t.id and accTag.accountId == accId));
-// 		} else {
-// 			// tag is still present
-// 			tagIsNew[index] = false;
-// 		}
-// 	}
-
-// 	// add new tags
-// 	for (int i = 0; i < (int) tagIsNew.size(); i++) {
-// 		if (!tagIsNew[i]) {
-// 			continue;
-// 		}
-// 		auto& tagName = tags[i];
-// 		int tid = tagId(tagName);
-// 		db->run(insert_into(accTag).set(accTag.tagId = tid, accTag.accountId = accId));
-// 	}
-// }

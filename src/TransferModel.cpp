@@ -40,7 +40,7 @@ QVariant TransferModel::data(const QModelIndex& index, int role) const {
 				case 1: return t.from.name;
 				case 2: return t.to.name;
 				case 3: return t.reference;
-				case 4: return t.amountStr();
+				case 4: return euro(t.amount);
 			}
 			break;
 		case Qt::CheckStateRole:

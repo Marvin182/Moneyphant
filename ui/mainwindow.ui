@@ -16,9 +16,9 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QHBoxLayout" name="horizontalLayout_2">
     <item>
-     <widget class="QTabWidget" name="tabWidget">
+     <widget class="QTabWidget" name="tabs">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="transferTab">
        <attribute name="title">
@@ -26,31 +26,138 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_5">
-          <item>
-           <spacer name="horizontalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QLabel" name="transferSearchLabel">
-            <property name="text">
-             <string>Search:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="transferSearch"/>
-          </item>
-         </layout>
+         <widget class="QWidget" name="widget_3" native="true">
+          <layout class="QGridLayout" name="gridLayout">
+           <item row="0" column="3">
+            <widget class="QLabel" name="label_15">
+             <property name="text">
+              <string>Reference &amp; Tags:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_13">
+             <property name="text">
+              <string>From Account:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QDateEdit" name="trFilterStartDate">
+             <property name="dateTime">
+              <datetime>
+               <hour>0</hour>
+               <minute>0</minute>
+               <second>0</second>
+               <year>2014</year>
+               <month>1</month>
+               <day>1</day>
+              </datetime>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
+            <widget class="QLineEdit" name="trFilterReferenceTags">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QDateEdit" name="trFilterEndDate">
+             <property name="date">
+              <date>
+               <year>2014</year>
+               <month>12</month>
+               <day>31</day>
+              </date>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QLabel" name="label_17">
+             <property name="text">
+              <string>End Date:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QComboBox" name="trFilterFromAccount"/>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLabel" name="label_18">
+             <property name="text">
+              <string>Start Date:</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QWidget" name="widget_4" native="true">
+          <layout class="QGridLayout" name="gridLayout_2">
+           <item row="1" column="0">
+            <widget class="QLabel" name="trStatsRevenues">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_19">
+             <property name="text">
+              <string>Income:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLabel" name="label_20">
+             <property name="text">
+              <string>Expenses:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
+            <widget class="QLabel" name="trStatsProfit">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="3">
+            <widget class="QLabel" name="label_16">
+             <property name="text">
+              <string>Profit:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLabel" name="trStatsExpenses">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QLabel" name="label_21">
+             <property name="text">
+              <string>Internal:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QLabel" name="trStatsInternal">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -323,6 +430,122 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="budgetTab">
+       <attribute name="title">
+        <string>Budgets</string>
+       </attribute>
+       <widget class="QWidget" name="widget_2" native="true">
+        <property name="geometry">
+         <rect>
+          <x>320</x>
+          <y>170</y>
+          <width>171</width>
+          <height>211</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QTableWidget" name="tableWidget">
+        <property name="geometry">
+         <rect>
+          <x>270</x>
+          <y>410</y>
+          <width>256</width>
+          <height>192</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="pushButton">
+        <property name="geometry">
+         <rect>
+          <x>190</x>
+          <y>30</y>
+          <width>115</width>
+          <height>32</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>PushButton</string>
+        </property>
+       </widget>
+       <widget class="QGroupBox" name="groupBox">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>100</y>
+          <width>221</width>
+          <height>411</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>New Budget</string>
+        </property>
+        <layout class="QFormLayout" name="formLayout">
+         <property name="fieldGrowthPolicy">
+          <enum>QFormLayout::FieldsStayAtSizeHint</enum>
+         </property>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="lineEdit"/>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_10">
+           <property name="text">
+            <string>Name:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_9">
+           <property name="text">
+            <string>Tag:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="comboBox"/>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_11">
+           <property name="text">
+            <string>Start Date:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QDateEdit" name="dateEdit"/>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_12">
+           <property name="text">
+            <string>End Date:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QDateEdit" name="dateEdit_2"/>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="label_14">
+           <property name="text">
+            <string>Total Budget:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QDoubleSpinBox" name="doubleSpinBox_2"/>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QComboBox" name="comboBox_2">
+        <property name="geometry">
+         <rect>
+          <x>50</x>
+          <y>40</y>
+          <width>104</width>
+          <height>26</height>
+         </rect>
+        </property>
+       </widget>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -382,7 +605,6 @@
  <tabstops>
   <tabstop>accountSearch</tabstop>
   <tabstop>accountName</tabstop>
-  <tabstop>tabWidget</tabstop>
  </tabstops>
  <resources/>
  <connections/>

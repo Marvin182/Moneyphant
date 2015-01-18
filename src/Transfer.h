@@ -41,8 +41,6 @@ struct Transfer {
 	qint64 dateMs() const { return date.toMSecsSinceEpoch(); }
 	QString dateStr() const { return date.toString("dd.MM.yyyy"); }
 
-	QString amountStr() const { return QString("%1 €").arg(amount / 100.0, 0, 'f', 2); }
-
 	bool operator==(const Transfer& tr) const;
 	bool operator<(const Transfer& tr) const;
 };

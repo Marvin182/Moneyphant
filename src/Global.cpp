@@ -1,4 +1,5 @@
 #include "Global.h"
+#include <QLocale>
 
 const char* cstr(string s) {
 	return s.toUtf8().constData();
@@ -10,6 +11,10 @@ std::string str(string s) {
 
 QString qstr(std::string s) {
 	return QString::fromStdString(s);
+}
+
+QString euro(int amount) {
+	return QLocale(QLocale::German, QLocale::Germany).toCurrencyString(amount / 100.0);
 }
 
 std::ostream& operator<<(std::ostream& os, const QString& s) {

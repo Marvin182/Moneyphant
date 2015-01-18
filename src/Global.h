@@ -17,6 +17,8 @@ const char* cstr(string s);
 std::string str(string s);
 QString qstr(std::string s);
 
+QString euro(int amount);
+
 std::ostream& operator<<(std::ostream& os, const QString& s);
 
 qint64 nowTs();

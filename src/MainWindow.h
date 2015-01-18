@@ -4,6 +4,8 @@
 #include "Global.h"
 #include "AccountModel.h"
 #include "TransferModel.h"
+#include "TransferProxyModel.h"
+#include "TransferStats.h"
 #include "TagHelper.h"
 #include <QMainWindow>
 #include <QSortFilterProxyModel>
@@ -26,6 +28,13 @@ private slots:
 	void updateAccountInfo();
 	void updateAccountDetails(const Account& account);
 	void mergeAccounts();
+	
+	void setCurrentTransfer(const QModelIndex& index);
+	void showSelectedTransfers(const QItemSelection& selected, const QItemSelection& deseceted);
+	void updateTransferInfo();
+
+	void resetTransferStats();
+	void addToTransferStats(int transferId);
 
 private:
 	Ui::MainWindow *ui;
@@ -41,7 +50,8 @@ private:
 	
 	int currentTransferId;
 	TransferModel* transferModel;
-	QSortFilterProxyModel* transferProxyModel;
+	TransferProxyModel* transferProxyModel;
+	TransferStats transferStats;
 
 	void openDb();
 	void setupAccountTab();

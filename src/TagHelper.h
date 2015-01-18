@@ -19,6 +19,8 @@ public:
 
 	int tagId(string name);
 
+	QStringList accountTagsOfTransfer(int fromId, int toId);
+
 public slots:
 	void setAccountIds(IdList& accIds) { _accountIds = accIds; }
 	void setTransferIds(IdList& trIds) { _transferIds = trIds; }
@@ -29,9 +31,6 @@ public slots:
 	QStringList getAccountTags(IdList& customAccIds = std::vector<int>(0));
 	void addAccountTags(QStringList tags, const std::vector<int>& customAccIds = std::vector<int>(0));
 	void removeAccountTags(QStringList tags, const std::vector<int>& customAccIds = std::vector<int>(0));
-
-	// [[deprecated("Not used any more, will be removed soon")]]
-	// void syncAccountTags(const QStringList& tags, int accId = std::vector<int>(0));
 
 protected:
 	Db db;
