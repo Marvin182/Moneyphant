@@ -6,7 +6,8 @@ TransferProxyModel::TransferProxyModel(Db db, QObject* parent) :
 	QSortFilterProxyModel(parent),
 	db(db),
 	startDate(QDate(2014, 1, 1)),
-	endDate(QDate(2014, 12, 31))
+	endDate(QDate(2014, 12, 31)),
+	trChecked(0)
 {}
 
 void TransferProxyModel::setStartDate(const QDateTime& startDate) {
@@ -26,6 +27,7 @@ void TransferProxyModel::setFilterText(const QString& filterText) {
 	txtTo = "";
 	txtRef = "";
 	txtAmount = "";
+	trChecked = 0;
 	txtTags.clear();
 	txtRest = "";
 
@@ -36,6 +38,10 @@ void TransferProxyModel::setFilterText(const QString& filterText) {
 			txtTo = p.right(p.length() - 3);
 		} else if (p.startsWith("amount:")) {
 			txtAmount = p.right(p.length() - 7);
+		} else if (p == "checked") {
+			trChecked = 1;
+		} else if (p == "unchecked") {
+			trChecked = -1;
 		} else if (p.startsWith("ref:")) {
 			txtRef = p.right(p.length() - 4);
 		} else {
@@ -79,6 +85,8 @@ bool TransferProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sour
 	} else if (!txtRef.isEmpty() && !fuzzyContains(transfer.reference, txtRef)) {
 		accepted = false;
 	} else if (!txtAmount.isEmpty() && !fuzzyContains(euro(transfer.amount), txtAmount)) {
+		accepted = false;
+	} else if ((trChecked == 1 && !transfer.checked) || (trChecked == -1 && transfer.checked)) {
 		accepted = false;
 	} else if (!txtTags.empty()) {
 		db::TransferTag trTag;

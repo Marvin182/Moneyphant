@@ -9,6 +9,7 @@
 #include <QStringList>
 #include <QDateTime>
 #include <QLabel>
+#include <QFileDialog>
 
 const char* DbPath = "db.sqlite";
 const char* StatementFolder = "/Users/marvin/Workspace/Moneyphant/statements/";
@@ -264,6 +265,13 @@ void MainWindow::saveTransferNote() {
 	transferModel->setNote(id, note);
 }
 
+void MainWindow::exportTransfers() {
+	auto filename = QFileDialog::getSaveFileName(this, tr("Export Transfers"), QString(), tr("CSV (*.csv)"));
+	bool hasSelection = ui->transferView->selectionModel()->hasSelection();
+	auto ids = hasSelection ? tagHelper->transferIds() : transferStats.includedTransferIds();
+	transferModel->exportTransfers(filename, ids);
+}
+
 void MainWindow::checkSelectedTransfers() {
 	assert(!tagHelper->transferIds().empty());
 	transferModel->setChecked(tagHelper->transferIds(), true);
@@ -353,7 +361,8 @@ void MainWindow::setupTransferTab() {
 	connect(ui->transferNote, SIGNAL(textChanged()), this, SLOT(saveTransferNote()));
 
 	// actions
-	connect(ui->checkSelectedTransfers, SIGNAL(clicked()), this, SLOT(checkSelectedTransfers())); 
+	connect(ui->actionExport_Transfers, SIGNAL(triggered()), this, SLOT(exportTransfers()));
+	connect(ui->checkSelectedTransfers, SIGNAL(clicked()), this, SLOT(checkSelectedTransfers()));
 }
 
 void MainWindow::clickedTransferFilterMonthLink() {

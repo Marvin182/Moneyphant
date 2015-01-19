@@ -167,6 +167,17 @@ void TransferModel::setChecked(const std::vector<int>& transferIds, bool checked
 	}
 }
 
+void TransferModel::exportTransfers(string path, const std::vector<int>& transferIds) const {
+	QFile file(path);
+	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+		assert(false && "Could not open export file");
+	}
+	for (int id : transferIds) {
+		const auto& t = getById(id);
+		file.write(QString("%1;%2;%3;%4;%5\n").arg(t.dateStr()).arg(t.from.name).arg(t.to.name).arg(t.reference).arg(t.amount / 100.0, 2, 'f', 2).toUtf8());
+	}	
+}
+
 void TransferModel::reloadCache() {
 	emit beginResetModel();
 

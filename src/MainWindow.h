@@ -36,6 +36,7 @@ private slots:
 	void updateTransferTags();
 	void updateTransferDetails();
 	void saveTransferNote();
+	void exportTransfers();
 	void checkSelectedTransfers();
 
 	void resetTransferStats();

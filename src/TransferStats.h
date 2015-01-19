@@ -16,6 +16,8 @@ public:
 	int internal() const { return internalSum; }
 	int profit() const { return revenues() + expenses(); }
 
+	std::vector<int> includedTransferIds() const;
+
 public slots:
 	void clear();
 	void add(const Transfer& transfer, bool isInternal);

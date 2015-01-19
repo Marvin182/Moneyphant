@@ -28,6 +28,7 @@ public:
 
 	void setNote(int transferId, string note);
 	void setChecked(const std::vector<int>& transferIds, bool checked);
+	void exportTransfers(string path, const std::vector<int>& transferIds) const;
 
 public slots:
 	void reloadCache();

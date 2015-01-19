@@ -8,6 +8,15 @@ TransferStats::TransferStats() :
 	statValues()
 {}
 
+std::vector<int> TransferStats::includedTransferIds() const {
+	std::vector<int> ids;
+	for (const auto& kv : statValues) {
+		ids.push_back(kv.first);
+	}
+	return ids;
+}
+
+
 void TransferStats::clear() {
 	revenuesSum = 0;
 	expensesSum = 0;

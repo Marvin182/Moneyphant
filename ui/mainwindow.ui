@@ -608,6 +608,7 @@
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="actionExport_Transfers"/>
    </widget>
    <widget class="QMenu" name="menuAccounts">
     <property name="title">
@@ -638,6 +639,14 @@
     <string>Ctrl+G</string>
    </property>
   </action>
+  <action name="actionExport_Transfers">
+   <property name="text">
+    <string>Export Transfers</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -648,8 +657,32 @@
   </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>accountSearch</tabstop>
+  <tabstop>trFilterText</tabstop>
+  <tabstop>trFilterStartDate</tabstop>
+  <tabstop>trFilterEndDate</tabstop>
+  <tabstop>transferNote</tabstop>
+  <tabstop>transferTags</tabstop>
   <tabstop>accountName</tabstop>
+  <tabstop>transferView</tabstop>
+  <tabstop>tabs</tabstop>
+  <tabstop>accountSearch</tabstop>
+  <tabstop>checkSelectedTransfers</tabstop>
+  <tabstop>accountView</tabstop>
+  <tabstop>accountOwner</tabstop>
+  <tabstop>accountIban</tabstop>
+  <tabstop>accountBic</tabstop>
+  <tabstop>accountAccountNumber</tabstop>
+  <tabstop>accountBankCode</tabstop>
+  <tabstop>accountTags</tabstop>
+  <tabstop>mergeAccounts</tabstop>
+  <tabstop>tableWidget</tabstop>
+  <tabstop>pushButton</tabstop>
+  <tabstop>lineEdit</tabstop>
+  <tabstop>comboBox</tabstop>
+  <tabstop>dateEdit</tabstop>
+  <tabstop>dateEdit_2</tabstop>
+  <tabstop>doubleSpinBox_2</tabstop>
+  <tabstop>comboBox_2</tabstop>
  </tabstops>
  <resources/>
  <connections/>
