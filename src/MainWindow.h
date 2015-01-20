@@ -8,6 +8,7 @@
 #include "TransferStats.h"
 #include "TagHelper.h"
 #include <QMainWindow>
+#include <QSettings>
 #include <QSortFilterProxyModel>
 
 namespace Ui {
@@ -23,6 +24,9 @@ public:
 	~MainWindow();
 
 private slots:
+	void loadSettings();
+	void saveSettings();
+
 	void tabChanged(int index);
 
 	void setCurrentAccount(const QModelIndex& index);
@@ -46,6 +50,7 @@ private slots:
 
 private:
 	Ui::MainWindow *ui;
+	QSettings settings;
 
 	std::shared_ptr<sqlpp::sqlite3::connection_config> dbConfig;
 	Db db;

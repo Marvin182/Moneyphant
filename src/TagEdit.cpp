@@ -1,5 +1,5 @@
 #include "TagEdit.h"
-#include "Global.h"
+
 #include <QRegExp>
 
 TagEdit::TagEdit(QWidget* parent) : 

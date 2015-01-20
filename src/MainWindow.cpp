@@ -28,12 +28,13 @@ MainWindow::MainWindow(QWidget *parent) :
 	transferProxyModel(nullptr)
 {
 	ui->setupUi(this);
+	settings.setFallbacksEnabled(false);
+
+	loadSettings();
 
 	openDb();
 	Evolutions(db).run();
 	tagHelper = new TagHelper(db, this);
-
-	QLocale::setDefault(QLocale(QLocale::German, QLocale::Germany));
 
 	StatementReader reader(db);
 	reader.importMissingStatementFiles(StatementFolder);
@@ -44,6 +45,8 @@ MainWindow::MainWindow(QWidget *parent) :
 }
 
 MainWindow::~MainWindow() {
+	saveSettings();
+
 	auto now = QDateTime::currentDateTime().toString("yyyy-MM-dd_hh-mm-ss");
 
 	assert_error(accountModel != nullptr);
@@ -55,6 +58,25 @@ MainWindow::~MainWindow() {
 	delete transferModel;
 
 	delete ui;
+}
+
+void MainWindow::loadSettings() {
+	QLocale::setDefault(QLocale(QLocale::German, QLocale::Germany));
+
+	if (settings.value("mainwindow/fullscreen").toBool()) {
+		showFullScreen();
+	} else {
+		setGeometry(settings.value("mainwindow/geometry").toRect());
+	}
+	int tabIndex = settings.value("mainwindow/tab").toInt();
+	assert_error(tabIndex >= 0 && tabIndex < ui->tabs->count(), "invalid tab index %d in settings", tabIndex);
+	ui->tabs->setCurrentIndex(tabIndex);
+}
+
+void MainWindow::saveSettings() {
+	settings.setValue("mainwindow/geometry", geometry());
+	settings.setValue("mainwindow/fullScreen", isFullScreen());
+	settings.setValue("mainwindow/tab", ui->tabs->currentIndex());
 }
 
 void MainWindow::tabChanged(int index) {
