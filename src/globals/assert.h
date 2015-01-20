@@ -2,6 +2,7 @@
 #define GLOBALS_ASSERT_H
 
 // Using Assert Library by Gregory Pakosz
+// https://github.com/gpakosz/Assert
 
 #define PPK_ASSERT_ENABLED 1
 
@@ -24,6 +25,8 @@
 // #define ASSERT_USED_ERROR 		PPK_ASSERT_USED_ERROR
 // #define ASSERT_USED_FATAL 		PPK_ASSERT_USED_FATAL
 // #define ASSERT_USED_CUSTOM 		PPK_ASSERT_USED_CUSTOM
+
+void initAssertHandler();
 
 #endif // GLOBALS_ASSERT_H
 

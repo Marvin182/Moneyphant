@@ -25,7 +25,8 @@ SOURCES += src/main.cpp\
     src/TransferProxyModel.cpp \
     src/TransferStats.cpp \
     src/globals/pempek_assert.cpp \
-    src/globals/string-util.cpp
+    src/globals/string-util.cpp \
+    src/globals/assert.cpp
 
 HEADERS  += src/MainWindow.h \
         src/Account.h \

@@ -3,9 +3,9 @@
 
 int main(int argc, char *argv[])
 {
-	QCoreApplication::setOrganizationName("Ritter Apps");
-	QCoreApplication::setOrganizationDomain("ritter.moneyphant");
-	QCoreApplication::setApplicationName("Moneyphant");
+	QApplication::setOrganizationName("Ritter Apps");
+	QApplication::setOrganizationDomain("ritter.moneyphant");
+	QApplication::setApplicationName("Moneyphant");
 
 	QApplication a(argc, argv);
 	MainWindow w;

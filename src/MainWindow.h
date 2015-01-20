@@ -24,8 +24,7 @@ public:
 	~MainWindow();
 
 private slots:
-	void loadSettings();
-	void saveSettings();
+	void init();
 
 	void tabChanged(int index);
 
@@ -67,6 +66,8 @@ private:
 	TransferStats transferStats;
 
 	void openDb();
+	void loadSettings();
+	void saveSettings();
 	void setupAccountTab();
 	void setupTransferTab();
 	void createTransferFilterMonthLinks();

@@ -9,11 +9,15 @@
 #include <QStringList>
 #include <QDateTime>
 #include <QLabel>
+#include <QTimer>
 #include <QFileDialog>
+
+#include <QMessageBox>
 
 const char* DbPath = "db.sqlite";
 const char* StatementFolder = "/Users/marvin/Workspace/Moneyphant/statements/";
 const char* BackupFolder = "/Users/marvin/Workspace/Moneyphant/backups";
+
 
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
@@ -28,20 +32,11 @@ MainWindow::MainWindow(QWidget *parent) :
 	transferProxyModel(nullptr)
 {
 	ui->setupUi(this);
-	settings.setFallbacksEnabled(false);
 
 	loadSettings();
+	initAssertHandler();
 
-	openDb();
-	Evolutions(db).run();
-	tagHelper = new TagHelper(db, this);
-
-	StatementReader reader(db);
-	reader.importMissingStatementFiles(StatementFolder);
-
-	setupAccountTab();
-	setupTransferTab();
-	connect(ui->tabs, SIGNAL(currentChanged(int)), this, SLOT(tabChanged(int)));
+	QTimer::singleShot(0, this, SLOT(init()));
 }
 
 MainWindow::~MainWindow() {
@@ -60,7 +55,22 @@ MainWindow::~MainWindow() {
 	delete ui;
 }
 
+void MainWindow::init() {
+	openDb();
+	Evolutions(db).run();
+	tagHelper = new TagHelper(db, this);
+	StatementReader reader(db);
+	reader.importMissingStatementFiles(StatementFolder);
+
+	setupAccountTab();
+	setupTransferTab();
+	connect(ui->tabs, SIGNAL(currentChanged(int)), this, SLOT(tabChanged(int)));
+
+}
+
 void MainWindow::loadSettings() {
+	settings.setFallbacksEnabled(false);
+	
 	QLocale::setDefault(QLocale(QLocale::German, QLocale::Germany));
 
 	if (settings.value("mainwindow/fullscreen").toBool()) {
