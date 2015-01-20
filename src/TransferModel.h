@@ -1,7 +1,7 @@
 #ifndef TRANSFER_MODEL_H
 #define TRANSFER_MODEL_H
 
-#include "Global.h"
+#include "globals/all.h"
 #include "Transfer.h"
 #include <vector>
 #include <unordered_map>
@@ -26,9 +26,9 @@ public:
 	const Transfer& get(int row) const;
 	const Transfer& getById(int id) const;
 
-	void setNote(int transferId, string note);
+	void setNote(int transferId, cqstring note);
 	void setChecked(const std::vector<int>& transferIds, bool checked);
-	void exportTransfers(string path, const std::vector<int>& transferIds) const;
+	void exportTransfers(cqstring path, const std::vector<int>& transferIds) const;
 
 public slots:
 	void reloadCache();

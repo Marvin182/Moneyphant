@@ -2,6 +2,8 @@
 #include "TransferModel.h"
 #include "db.h"
 
+#include <cassert> // TODO remove
+
 TransferProxyModel::TransferProxyModel(Db db, QObject* parent) :
 	QSortFilterProxyModel(parent),
 	db(db),
@@ -21,29 +23,33 @@ void TransferProxyModel::setEndDate(const QDateTime& endDate) {
 }
 
 void TransferProxyModel::setFilterText(const QString& filterText) {
-	auto parts = filterText.split(' ');
+	auto parts = filterText.split(' ', QString::SkipEmptyParts);
 
 	txtFrom = "";
 	txtTo = "";
 	txtRef = "";
 	txtAmount = "";
+	txtNote = "";
 	trChecked = 0;
 	txtTags.clear();
 	txtRest = "";
 
 	for (const auto& p : parts) {
+		assert(!p.isEmpty());
 		if (p.startsWith("from:")) {
 			txtFrom = p.right(p.length() - 5);
 		} else if (p.startsWith("to:")) {
 			txtTo = p.right(p.length() - 3);
-		} else if (p.startsWith("amount:")) {
-			txtAmount = p.right(p.length() - 7);
+		} else if (p[0] == '-' || p[0].isNumber()) {
+			txtAmount = p;
 		} else if (p == "checked") {
 			trChecked = 1;
 		} else if (p == "unchecked") {
 			trChecked = -1;
 		} else if (p.startsWith("ref:")) {
 			txtRef = p.right(p.length() - 4);
+		} else if (p.startsWith("note:")) {
+			txtNote = p.right(p.length() - 5);
 		} else {
 			// search for tag
 			db::Tag tag;
@@ -78,13 +84,15 @@ bool TransferProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sour
 		accepted = false;
 	} else if (endDate.isValid() && transfer.date > endDate) {
 		accepted = false;
-	} else if (!txtFrom.isEmpty() && !fuzzyContains(transfer.from.name, txtFrom)) {
+	} else if (!txtFrom.isEmpty() && !fuzzyMatch(transfer.from.name, txtFrom)) {
 		accepted = false;
-	} else if (!txtTo.isEmpty() && !fuzzyContains(transfer.to.name, txtTo)) {
+	} else if (!txtTo.isEmpty() && !fuzzyMatch(transfer.to.name, txtTo)) {
 		accepted = false;
-	} else if (!txtRef.isEmpty() && !fuzzyContains(transfer.reference, txtRef)) {
+	} else if (!txtRef.isEmpty() && !fuzzyMatch(transfer.reference, txtRef)) {
 		accepted = false;
-	} else if (!txtAmount.isEmpty() && !fuzzyContains(euro(transfer.amount), txtAmount)) {
+	} else if (!txtAmount.isEmpty() && !fuzzyMatch(currency(transfer.amount), txtAmount)) {
+		accepted = false;
+	} else if (!txtNote.isEmpty() && !fuzzyMatch(transfer.note, txtNote)) {
 		accepted = false;
 	} else if ((trChecked == 1 && !transfer.checked) || (trChecked == -1 && transfer.checked)) {
 		accepted = false;
@@ -102,7 +110,7 @@ bool TransferProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sour
 				break;
 			}
 		}
-	} else if (!txtRest.isEmpty() && !fuzzyContains(transfer.from.name + transfer.to.name + euro(transfer.amount) + transfer.reference, txtRest)) {
+	} else if (!txtRest.isEmpty() && !fuzzyMatch(transfer.from.name + transfer.to.name + currency(transfer.amount) + transfer.reference, txtRest)) {
 		accepted = false;
 	}
 

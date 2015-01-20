@@ -1,7 +1,7 @@
 #ifndef TRANSFER_PROXY_MODEL_H
 #define TRANSFER_PROXY_MODEL_H
 
-#include "Global.h"
+#include "globals/all.h"
 #include "Transfer.h"
 #include <vector>
 #include <QDateTime>
@@ -34,6 +34,7 @@ protected:
 	QString txtTo;
 	QString txtRef;
 	QString txtAmount;
+	QString txtNote;
 	int trChecked;
 	std::vector<int> txtTags;
 	QString txtRest;

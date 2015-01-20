@@ -1,7 +1,7 @@
 #ifndef ACCOUNT_H
 #define ACCOUNT_H
 
-#include "Global.h"
+#include "globals/all.h"
 #include <QStringList>
 
 struct Account {
@@ -16,8 +16,8 @@ public:
 	QString bankCode;
 
 	Account();
-	Account(string owner, string iban, string bic);
-	Account(int id, bool isOwn, string name, string owner, string iban, string bic, string accountNumber, string bankCode);
+	Account(cqstring owner, cqstring iban, cqstring bic);
+	Account(int id, bool isOwn, cqstring name, cqstring owner, cqstring iban, cqstring bic, cqstring accountNumber, cqstring bankCode);
 
 	bool isSpecial() const;
 
@@ -25,8 +25,8 @@ public:
 	bool operator!=(const Account& acc) const { return !(*this == acc); }
 
 private:
-	static bool isValidIban(string iban);
-	static bool isValidBic(string bic);
+	static bool isValidIban(cqstring iban);
+	static bool isValidBic(cqstring bic);
 };
 
 std::ostream& operator<<(std::ostream& os, const Account& a);

@@ -7,7 +7,7 @@ Transfer::Transfer() :
 	id(-1)
 {}
 
-Transfer::Transfer(string dateStr, const Acc& from, const Acc& to, string reference, string amountStr) :
+Transfer::Transfer(cqstring dateStr, const Acc& from, const Acc& to, cqstring reference, cqstring amountStr) :
 	id(-1),
 	date(QDateTime::fromString(dateStr, "dd.MM.yy")),
 	from(from),
@@ -27,7 +27,7 @@ Transfer::Transfer(string dateStr, const Acc& from, const Acc& to, string refere
 	assert(amount != 0);
 }
 
-Transfer::Transfer(int id, const QDateTime& date, const Acc& from, const Acc& to, string reference, int amount, string note, bool checked, bool internal) :
+Transfer::Transfer(int id, const QDateTime& date, const Acc& from, const Acc& to, cqstring reference, int amount, cqstring note, bool checked, bool internal) :
 	id(id),
 	date(date),
 	from(from),

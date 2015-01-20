@@ -2,6 +2,8 @@
 #include "db.h"
 #include <QFile>
 
+#include <cassert> // TODO remove
+
 constexpr int COLUMNS_COUNT = 5;
 
 AccountModel::AccountModel(Db db, QObject* parent) :

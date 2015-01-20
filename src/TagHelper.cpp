@@ -1,6 +1,8 @@
 #include "TagHelper.h"
 #include <algorithm>
 
+#include <cassert> // TODO remove
+
 TagHelper::TagHelper(Db db, QObject* parent) :
 	QObject(parent),
 	db(db),
@@ -8,7 +10,7 @@ TagHelper::TagHelper(Db db, QObject* parent) :
 	_transferIds(0)
 {}
 
-int TagHelper::tagId(string name) {
+int TagHelper::tagId(cqstring name) {
 	auto tags = db->run(select(tag.id).from(tag).where(tag.name == str(name)));
 	if (!tags.empty()) {
 		assert(tags.front().id >= 0);

@@ -1,10 +1,10 @@
 #ifndef OPERATION
 #define OPERATION
 
+#include "globals/all.h"
+#include "Account.h"
 #include <QDateTime>
 #include <QStringList>
-#include "Global.h"
-#include "Account.h"
 
 struct Transfer {
 	struct Acc {
@@ -13,7 +13,7 @@ struct Transfer {
 		Acc() :
 			id(-1)
 		 {}
-		Acc(int id, string name) :
+		Acc(int id, cqstring name) :
 			id(id),
 			name(name)
 		{}
@@ -36,8 +36,8 @@ struct Transfer {
 	bool internal;
 
 	Transfer();
-	Transfer(string dateStr, const Acc& from, const Acc& to, string reference, string amountStr);
-	Transfer(int id, const QDateTime& date, const Acc& from, const Acc& to, string reference, int amount, string note, bool checked, bool internal);
+	Transfer(cqstring dateStr, const Acc& from, const Acc& to, cqstring reference, cqstring amountStr);
+	Transfer(int id, const QDateTime& date, const Acc& from, const Acc& to, cqstring reference, int amount, cqstring note, bool checked, bool internal);
 
 	qint64 dateMs() const { return date.toMSecsSinceEpoch(); }
 	QString dateStr() const { return date.toString("dd.MM.yyyy"); }

@@ -15,7 +15,6 @@ OTHER_FILES += Info.plist
 SOURCES += src/main.cpp\
         src/MainWindow.cpp \
         src/Account.cpp \
-        src/Global.cpp \
         src/Evolutions.cpp \
     src/StatementReader.cpp \
     src/Transfer.cpp \
@@ -24,10 +23,11 @@ SOURCES += src/main.cpp\
     src/TagHelper.cpp \
     src/TransferModel.cpp \
     src/TransferProxyModel.cpp \
-    src/TransferStats.cpp
+    src/TransferStats.cpp \
+    src/globals/pempek_assert.cpp \
+    src/globals/string-util.cpp
 
-HEADERS  += src/Global.h \
-        src/MainWindow.h \
+HEADERS  += src/MainWindow.h \
         src/Account.h \
         src/Evolutions.h \
         src/db.h \
@@ -38,7 +38,12 @@ HEADERS  += src/Global.h \
     src/TagHelper.h \
     src/TransferModel.h \
     src/TransferProxyModel.h \
-    src/TransferStats.h
+    src/TransferStats.h \
+    src/globals/all.h \
+    src/globals/assert.h \
+    src/globals/pempek_assert.h \
+    src/globals/sqlpp.h \
+    src/globals/string-util.h
 
 FORMS    += ui/mainwindow.ui
 

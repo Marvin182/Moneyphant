@@ -1,9 +1,9 @@
 #ifndef EVOLUTIONS_H
 #define EVOLUTIONS_H
 
+#include "globals/all.h"
 #include <vector>
 #include <QStringList>
-#include "Global.h"
 
 struct Evolution {
 	int id;

@@ -33,6 +33,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	Evolutions(db).run();
 	tagHelper = new TagHelper(db, this);
 
+	QLocale::setDefault(QLocale(QLocale::German, QLocale::Germany));
+
 	StatementReader reader(db);
 	reader.importMissingStatementFiles(StatementFolder);
 
@@ -44,11 +46,13 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow() {
 	auto now = QDateTime::currentDateTime().toString("yyyy-MM-dd_hh-mm-ss");
 
-	assert(accountModel != nullptr);
+	assert_error(accountModel != nullptr);
 	accountModel->createBackup(QString("%1/%2.accounts.csv").arg(BackupFolder).arg(now));
-	
-	assert(transferModel != nullptr);
+	delete accountModel;
+
+	assert_error(transferModel != nullptr);
 	transferModel->createBackup(QString("%1/%2.transfers.csv").arg(BackupFolder).arg(now));
+	delete transferModel;
 
 	delete ui;
 }
@@ -62,8 +66,8 @@ void MainWindow::tabChanged(int index) {
 }
 
 void MainWindow::setCurrentAccount(const QModelIndex& idx) {
-	assert(accountModel != nullptr);
-	assert(accountProxyModel != nullptr);
+	assert_error(accountModel != nullptr);
+	assert_error(accountProxyModel != nullptr);
 
 	const auto& index = accountProxyModel->mapToSource(idx);
 	int id = accountModel->get(index.row()).id;
@@ -81,6 +85,10 @@ void MainWindow::setCurrentAccount(const QModelIndex& idx) {
 }
 
 void MainWindow::showSelectedAccounts(const QItemSelection& selected, const QItemSelection& deseceted) {
+	assert_error(accountModel != nullptr);
+	assert_error(accountProxyModel != nullptr);
+	assert_error(!selected.isEmpty() || !deseceted.isEmpty());
+
 	for (const auto& idx : deseceted.indexes()) {
 		const auto& index = accountProxyModel->mapToSource(idx);
 		if (index.column() != 0) {
@@ -103,12 +111,11 @@ void MainWindow::showSelectedAccounts(const QItemSelection& selected, const QIte
 }
 	
 void MainWindow::updateAccountInfo() {
-	assert(currentAccountId >= 0);
+	assert_error(currentAccountId >= 0);
 
 	const auto& ids = tagHelper->accountIds();
 	auto selectionModel = ui->accountView->selectionModel();
 
-	// ui->accountName->setEnabled(ids.size() == 1);
 	ui->accountTags->setEnabled(selectionModel->hasSelection());
 	ui->moreAccountTags->setText("");
 	ui->mergeAccounts->setVisible(ids.size() == 2);
@@ -152,15 +159,15 @@ void MainWindow::updateAccountDetails() {
 }
 
 void MainWindow::mergeAccounts() {
-	assert(tagHelper->accountIds().size() == 2);
+	assert_error(tagHelper->accountIds().size() == 2);
 	accountModel->mergeAccounts(tagHelper->accountIds().front(), tagHelper->accountIds().back());
 	ui->accountView->selectionModel()->clearSelection();
 	tagHelper->setAccountIds({});
 }
 
 void MainWindow::setCurrentTransfer(const QModelIndex& idx) {
-	assert(transferModel != nullptr);
-	assert(transferProxyModel != nullptr);
+	assert_error(transferModel != nullptr);
+	assert_error(transferProxyModel != nullptr);
 
 	const auto& index = transferProxyModel->mapToSource(idx);
 	int id = transferModel->get(index.row()).id;
@@ -180,6 +187,10 @@ void MainWindow::setCurrentTransfer(const QModelIndex& idx) {
 }
 
 void MainWindow::showSelectedTransfers(const QItemSelection& selected, const QItemSelection& deseceted) {
+	assert_error(transferModel != nullptr);
+	assert_error(transferProxyModel != nullptr);
+	assert_error(!selected.isEmpty() || !deseceted.isEmpty());
+
 	for (const auto& idx : deseceted.indexes()) {
 		const auto& index = transferProxyModel->mapToSource(idx);
 		if (index.column() != 0) {
@@ -202,7 +213,7 @@ void MainWindow::showSelectedTransfers(const QItemSelection& selected, const QIt
 }
 	
 void MainWindow::updateTransferTags() {
-	assert(currentTransferId >= 0);
+	assert_error(currentTransferId >= 0);
 
 	const auto& selectedIds = tagHelper->transferIds();
 	const auto& ids = selectedIds.empty() ? std::vector<int>(1, currentTransferId) : selectedIds;
@@ -228,6 +239,8 @@ void MainWindow::updateTransferDetails() {
 
 void MainWindow::resetTransferStats() {
 	transferStats.clear();
+	assert_error(transferStats.revenues() == 0 && transferStats.expenses() == 0 &&
+					transferStats.internal() == 0 && transferStats.profit() == 0, "transfer statistics not cleared correctly");
 	addToTransferStats(-1);
 }
 
@@ -239,23 +252,24 @@ void MainWindow::addToTransferStats(int transferId) {
 		transferStats.add(transfer, transfer.internal || (from.isOwn && to.isOwn));
 	}
 
-	ui->trStatsRevenues->setText(euro(transferStats.revenues()));
-	ui->trStatsExpenses->setText(euro(transferStats.expenses()));
-	ui->trStatsInternal->setText(euro(transferStats.internal()));
-	ui->trStatsProfit->setText(euro(transferStats.profit()));
+	ui->trStatsRevenues->setText(currency(transferStats.revenues()));
+	ui->trStatsExpenses->setText(currency(transferStats.expenses()));
+	ui->trStatsInternal->setText(currency(transferStats.internal()));
+	ui->trStatsProfit->setText(currency(transferStats.profit()));
 }
 
 void MainWindow::removeFromTransferStats(int transferId) {
-	assert(transferId >= 0);
+	assert_error(transferId >= 0);
+
 	const auto& transfer = (*transferModel)[transferId];
 	const auto& from = (*accountModel)[transfer.from.id];
 	const auto& to = (*accountModel)[transfer.to.id];
 	transferStats.remove(transfer, transfer.internal || (from.isOwn && to.isOwn));
 
-	ui->trStatsRevenues->setText(euro(transferStats.revenues()));
-	ui->trStatsExpenses->setText(euro(transferStats.expenses()));
-	ui->trStatsInternal->setText(euro(transferStats.internal()));
-	ui->trStatsProfit->setText(euro(transferStats.profit()));
+	ui->trStatsRevenues->setText(currency(transferStats.revenues()));
+	ui->trStatsExpenses->setText(currency(transferStats.expenses()));
+	ui->trStatsInternal->setText(currency(transferStats.internal()));
+	ui->trStatsProfit->setText(currency(transferStats.profit()));
 }
 
 void MainWindow::saveTransferNote() {
@@ -273,7 +287,7 @@ void MainWindow::exportTransfers() {
 }
 
 void MainWindow::checkSelectedTransfers() {
-	assert(!tagHelper->transferIds().empty());
+	assert_debug(!tagHelper->transferIds().empty());
 	transferModel->setChecked(tagHelper->transferIds(), true);
 }
 
@@ -401,6 +415,7 @@ void MainWindow::createTransferFilterMonthLinks() {
 	auto end = QDateTime::fromMSecsSinceEpoch(startEnd.front().max).date();
 
 	auto addButton = [&](const QString& text) {
+		assert_error(!text.isEmpty());
 		auto button = new QPushButton(text);
 		connect(button, SIGNAL(pressed()), this, SLOT(clickedTransferFilterMonthLink()));
 		ui->trFilterMonthLinks->addWidget(button);
@@ -430,12 +445,12 @@ void MainWindow::openDb() {
 		QFile dbFile(DbPath);
 		if (dbFile.exists()) {
 			bool b = dbFile.remove();
-			assert(b && "Could not remove old database file");
+			assert_error(b, "Could not remove database file");
 		}
 	}
 
 	dbConfig = std::make_shared<sqlpp::sqlite3::connection_config>();
-	assert(dbConfig != nullptr);
+	assert_fatal(dbConfig != nullptr);
 	dbConfig->path_to_database = str(DbPath);
 	dbConfig->flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
 	dbConfig->debug = false;

@@ -1,7 +1,7 @@
 #ifndef TAG_HELPER_H
 #define TAG_HELPER_H
 
-#include "Global.h"
+#include "globals/all.h"
 #include "db.h"
 #include <vector>
 #include <QStringList>
@@ -17,7 +17,7 @@ public:
 	IdList& accountIds() const { return _accountIds; }
 	IdList& transferIds() const { return _transferIds; }
 
-	int tagId(string name);
+	int tagId(cqstring name);
 
 	QStringList tagsFromAccounts(int fromId, int toId);
 

@@ -3,6 +3,8 @@
 #include <QFile>
 #include <QColor>
 
+#include <cassert> // TODO remove
+
 constexpr int COLUMNS_COUNT = 7;
 
 SQLPP_ALIAS_PROVIDER(fromName)
@@ -40,7 +42,7 @@ QVariant TransferModel::data(const QModelIndex& index, int role) const {
 				case 1: return t.from.name;
 				case 2: return t.to.name;
 				case 3: return t.reference;
-				case 4: return euro(t.amount);
+				case 4: return currency(t.amount);
 			}
 			break;
 		case Qt::CheckStateRole:
@@ -140,7 +142,7 @@ const Transfer& TransferModel::getById(int id) const {
 	return get(row);
 }
 
-void TransferModel::setNote(int transferId, string note) {
+void TransferModel::setNote(int transferId, cqstring note) {
 	auto& t = transferById(transferId);
 	if (t.note == note) {
 		return;
@@ -167,7 +169,7 @@ void TransferModel::setChecked(const std::vector<int>& transferIds, bool checked
 	}
 }
 
-void TransferModel::exportTransfers(string path, const std::vector<int>& transferIds) const {
+void TransferModel::exportTransfers(cqstring path, const std::vector<int>& transferIds) const {
 	QFile file(path);
 	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
 		assert(false && "Could not open export file");

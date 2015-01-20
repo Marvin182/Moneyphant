@@ -1,7 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "Global.h"
+#include "globals/all.h"
 #include "AccountModel.h"
 #include "TransferModel.h"
 #include "TransferProxyModel.h"
