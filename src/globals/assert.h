@@ -11,10 +11,11 @@
 #include "pempek_assert.h"
 
 // custom names
-#define assert_warning 			PPK_ASSERT_WARNING
-#define assert_debug 			PPK_ASSERT_DEBUG
-#define assert_error 			PPK_ASSERT_ERROR
-#define assert_fatal 			PPK_ASSERT_FATAL
+#define assert_warning 			PPK_ASSERT_WARNING // Purpose: Something might be wrong but everything should work
+#define assert_debug 			PPK_ASSERT_DEBUG // Purpose: find bugs
+#define assert_error 			PPK_ASSERT_ERROR // Purpose: clearly something wrong
+#define assert_fatal 			PPK_ASSERT_FATAL // Purpose: OMG! Let's pray that we didn't destroy the world
+void assert_unreachable(); // short form for assert_fatal(false, "Reached unexpected code path.")
 
 // not using
 // #define ASSERT 					PPK_ASSERT

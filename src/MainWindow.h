@@ -25,6 +25,7 @@ public:
 
 private slots:
 	void init();
+	void importStatements(QString folder = QString());
 
 	void tabChanged(int index);
 

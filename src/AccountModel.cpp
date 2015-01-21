@@ -25,8 +25,8 @@ int AccountModel::columnCount(const QModelIndex& parent) const {
 }
 
 QVariant AccountModel::data(const QModelIndex& index, int role) const {
-	assert(index.row() >= 0 && index.row() < cachedAccounts.size());
-	assert(index.column() >= 0 && index.column() < COLUMNS_COUNT);
+	assert_error(isValidIndex(index));
+
 	const auto& a = cachedAccounts[index.row()];
 
 	switch (role) {
@@ -216,3 +216,14 @@ Account& AccountModel::accountById(int id) {
 	return cachedAccounts[row];
 }
 
+bool AccountModel::isValidIndex(const QModelIndex& index) const {
+	if (index.column() < 0 || index.column() >= COLUMNS_COUNT) {
+		assert_error(false, "invalid index column %d (row :%d)", index.column(), index.row());
+		return false;
+	}
+	if (index.row() < 0 || index.row() >= cachedAccounts.size()) {
+		assert_error(false, "invalid index row %d (column :%d)", index.row(), index.column());
+		return false;
+	}
+	return true;
+}

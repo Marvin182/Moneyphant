@@ -37,6 +37,7 @@ private:
 	std::vector<Account> cachedAccounts;
 
 	Account& accountById(int id);
+	bool isValidIndex(const QModelIndex& index) const;
 };
 
 #endif // ACCOUNT_MODEL_H

@@ -15,7 +15,6 @@
 #include <QMessageBox>
 
 const char* DbPath = "db.sqlite";
-const char* StatementFolder = "/Users/marvin/Workspace/Moneyphant/statements/";
 const char* BackupFolder = "/Users/marvin/Workspace/Moneyphant/backups";
 
 
@@ -32,6 +31,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	transferProxyModel(nullptr)
 {
 	ui->setupUi(this);
+
+	std::cout << "GIT_VERSION=" << GIT_VERSION << std::endl;
 
 	loadSettings();
 	initAssertHandler();
@@ -59,18 +60,31 @@ void MainWindow::init() {
 	openDb();
 	Evolutions(db).run();
 	tagHelper = new TagHelper(db, this);
-	StatementReader reader(db);
-	reader.importMissingStatementFiles(StatementFolder);
 
 	setupAccountTab();
 	setupTransferTab();
 	connect(ui->tabs, SIGNAL(currentChanged(int)), this, SLOT(tabChanged(int)));
 
+	QTimer::singleShot(0, this, SLOT(importStatements()));
+}
+
+void MainWindow::importStatements(QString folder) {
+	if (folder.isEmpty()) {
+		folder = settings.value("autoimport/folder", QDir::homePath()).toString();
+	}
+	QDir dir(folder);
+	if (!dir.exists()) {
+		assert_warning(false, "folder '%s' dosen't exists", cstr(folder));
+		return;
+	}
+
+	StatementReader reader(db);
+	reader.importMissingStatementFiles(folder);
 }
 
 void MainWindow::loadSettings() {
 	settings.setFallbacksEnabled(false);
-	
+
 	QLocale::setDefault(QLocale(QLocale::German, QLocale::Germany));
 
 	if (settings.value("mainwindow/fullscreen").toBool()) {
@@ -261,7 +275,7 @@ void MainWindow::updateTransferDetails() {
 	const auto& selectedIds = tagHelper->transferIds();
 	bool editEnabled = selectedIds.size() == 1;
 
-	const auto& transfer = (*transferModel)[editEnabled ? selectedIds[0] : currentTransferId];
+	const auto& transfer = transferModel->getById(editEnabled ? selectedIds[0] : currentTransferId);
 
 	ui->transferFrom->setText(transfer.from.name);
 	ui->transferReference->setText(transfer.reference);
@@ -278,7 +292,7 @@ void MainWindow::resetTransferStats() {
 
 void MainWindow::addToTransferStats(int transferId) {
 	if (transferId >= 0) {
-		const auto& transfer = (*transferModel)[transferId];
+		const auto& transfer = transferModel->getById(transferId);
 		const auto& from = (*accountModel)[transfer.from.id];
 		const auto& to = (*accountModel)[transfer.to.id];
 		transferStats.add(transfer, transfer.internal || (from.isOwn && to.isOwn));
@@ -293,7 +307,7 @@ void MainWindow::addToTransferStats(int transferId) {
 void MainWindow::removeFromTransferStats(int transferId) {
 	assert_error(transferId >= 0);
 
-	const auto& transfer = (*transferModel)[transferId];
+	const auto& transfer = transferModel->getById(transferId);
 	const auto& from = (*accountModel)[transfer.from.id];
 	const auto& to = (*accountModel)[transfer.to.id];
 	transferStats.remove(transfer, transfer.internal || (from.isOwn && to.isOwn));

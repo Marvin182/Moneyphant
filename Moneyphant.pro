@@ -12,10 +12,12 @@ ICON = icon.icns
 QMAKE_INFO_PLIST = Info.plist
 OTHER_FILES += Info.plist
 
+include(gitversion.pri)
+
 SOURCES += src/main.cpp\
-        src/MainWindow.cpp \
-        src/Account.cpp \
-        src/Evolutions.cpp \
+    src/MainWindow.cpp \
+    src/Account.cpp \
+    src/Evolutions.cpp \
     src/StatementReader.cpp \
     src/Transfer.cpp \
     src/AccountModel.cpp \
@@ -29,9 +31,9 @@ SOURCES += src/main.cpp\
     src/globals/assert.cpp
 
 HEADERS  += src/MainWindow.h \
-        src/Account.h \
-        src/Evolutions.h \
-        src/db.h \
+    src/Account.h \
+    src/Evolutions.h \
+    src/db.h \
     src/StatementReader.h \
     src/Transfer.h \
     src/AccountModel.h \
@@ -48,6 +50,9 @@ HEADERS  += src/MainWindow.h \
 
 FORMS    += ui/mainwindow.ui
 
+RESOURCES += \
+    sql/evolutions.qrc
+
 # sqlpp11
 LIBS += -L$$PWD/../../lib/sqlpp11-connector-sqlite3/build/src/ -lsqlpp11-connector-sqlite3 \
             -L$$PWD/../../../../usr/lib/ -lsqlite3
@@ -58,7 +63,4 @@ PRE_TARGETDEPS += $$PWD/../../lib/sqlpp11-connector-sqlite3/build/src/libsqlpp11
 
 # libc
 INCLUDEPATH += /Users/marvin/lib/clang2/llvm/projects/libcxx/include/
-
-RESOURCES += \
-    sql/evolutions.qrc
 

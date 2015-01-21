@@ -124,10 +124,10 @@ bool TransferProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sour
 }
 
 bool TransferProxyModel::lessThan(const QModelIndex& left, const QModelIndex& right) const {
+	assert_error(left.column() == right.column(), "columns must match for comparison (left column: %d, right column: %d)", left.column(), right.column());
 	const auto& trLeft = get(left.row());
 	const auto& trRight = get(right.row());
 
-	assert(left.column() == right.column());
 	switch (left.column()) {
 		case 0: return trLeft.date < trRight.date;
 		case 1: return trLeft.from.name < trRight.from.name;

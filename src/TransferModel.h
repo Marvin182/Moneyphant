@@ -22,8 +22,9 @@ public:
 	bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole);
 	Qt::ItemFlags flags(const QModelIndex& index) const;
 
-	const Transfer& operator[](int id) const;
+	Transfer& get(int row);
 	const Transfer& get(int row) const;
+	Transfer& getById(int id);
 	const Transfer& getById(int id) const;
 
 	void setNote(int transferId, cqstring note);
@@ -40,10 +41,9 @@ private:
 	std::unordered_map<int, int> id2Row;
 	std::vector<Transfer> cachedTransfers;
 
-	Transfer& transferById(int id);
-
 	template <typename F>
 	void updateTransfer(int transferId, F f);
+	void assertValidIndex(const QModelIndex& index) const;
 };
 
 #endif // TRANSFER_MODEL_H

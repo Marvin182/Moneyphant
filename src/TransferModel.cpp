@@ -3,8 +3,6 @@
 #include <QFile>
 #include <QColor>
 
-#include <cassert> // TODO remove
-
 constexpr int COLUMNS_COUNT = 7;
 
 SQLPP_ALIAS_PROVIDER(fromName)
@@ -19,18 +17,17 @@ TransferModel::TransferModel(Db db, QObject* parent) :
 }
 
 int TransferModel::rowCount(const QModelIndex& parent) const {
-	Q_UNUSED(parent);
+	assert_debug(parent == QModelIndex());
 	return cachedTransfers.size();
 }
 
 int TransferModel::columnCount(const QModelIndex& parent) const {
-	Q_UNUSED(parent);
+	assert_debug(parent == QModelIndex());
 	return COLUMNS_COUNT;
 }
 
 QVariant TransferModel::data(const QModelIndex& index, int role) const {
-	assert(index.row() >= 0 && index.row() < cachedTransfers.size());
-	assert(index.column() >= 0 && index.column() < COLUMNS_COUNT);
+	assertValidIndex(index);
 	const auto& t = cachedTransfers[index.row()];
 
 	switch (role) {
@@ -78,7 +75,7 @@ QVariant TransferModel::headerData(int section, Qt::Orientation orientation, int
 			case 4: return tr("Amount");
 			case 5: return tr("Checked");
 			case 6: return tr("Internal");
-			default: assert(false && "invalid section");
+			default: assert_unreachable();
 		}
 	}
 	
@@ -86,27 +83,25 @@ QVariant TransferModel::headerData(int section, Qt::Orientation orientation, int
 }
 
 bool TransferModel::setData(const QModelIndex& index, const QVariant& value, int role) {
-	assert(index.row() >= 0 && index.row() < cachedTransfers.size());
+	assertValidIndex(index);
 	auto& t = cachedTransfers[index.row()];
 
-	assert(index.column() >= 0 && index.column() < COLUMNS_COUNT);
-	
 	db::Transfer tr;
 	switch (index.column()) {
 		case 5:
-			assert(value.canConvert<bool>());
-			assert(value.toBool() != t.checked);
+			assert_error(value.canConvert<bool>());
+			assert_error(value.toBool() != t.checked, "checked state didn't change");
 			t.checked = value.toBool();
 			db->run(update(tr).set(tr.checked = t.checked).where(tr.id == t.id));
 			break;
 		case 6:
-			assert(value.canConvert<bool>());
-			assert(value.toBool() != t.internal);
+			assert_error(value.canConvert<bool>());
+			assert_error(value.toBool() != t.internal);
 			t.internal = value.toBool();
 			db->run(update(tr).set(tr.internal = t.internal).where(tr.id == t.id));
 			break;
 		default:
-			assert(false && "cannot setDate for read only column");
+			assert_unreachable();
 			break;
 	}
 
@@ -115,6 +110,8 @@ bool TransferModel::setData(const QModelIndex& index, const QVariant& value, int
 }
 
 Qt::ItemFlags TransferModel::flags(const QModelIndex& index) const {
+	assertValidIndex(index);
+
 	auto commonFlags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 	switch (index.column()) {
 		case 5:
@@ -125,25 +122,30 @@ Qt::ItemFlags TransferModel::flags(const QModelIndex& index) const {
 	}
 }
 
-const Transfer& TransferModel::operator[](int id) const {
-	assert(id >= 0 && id2Row.find(id) != id2Row.end());
+Transfer& TransferModel::get(int row) {
+	assert_error(row >= 0 && row < cachedTransfers.size(), "row %d not cached", row);
+	return cachedTransfers[row];
+}
+
+const Transfer& TransferModel::get(int row) const {
+	assert_error(row >= 0 && row < cachedTransfers.size(), "row %d not cached", row);
+	return cachedTransfers[row];
+}
+
+Transfer& TransferModel::getById(int id) {
+	assert_error(id >= 0 && id2Row.find(id) != id2Row.end(), "id %d not found in cache", id);
 	int row = id2Row.at(id);
 	return get(row);
 }
 
-const Transfer& TransferModel::get(int row) const {
-	assert(row >= 0 && row < cachedTransfers.size());
-	return cachedTransfers[row];
-}
-
 const Transfer& TransferModel::getById(int id) const {
-	assert(id >= 0 && id2Row.find(id) != id2Row.end());
+	assert_error(id >= 0 && id2Row.find(id) != id2Row.end(), "id %d not found in cache", id);
 	int row = id2Row.at(id);
 	return get(row);
 }
 
 void TransferModel::setNote(int transferId, cqstring note) {
-	auto& t = transferById(transferId);
+	auto& t = getById(transferId);
 	if (t.note == note) {
 		return;
 	} else {
@@ -162,9 +164,10 @@ void TransferModel::setChecked(const std::vector<int>& transferIds, bool checked
 	// update cache and inform UI
 	QVector<int> roles(1, Qt::CheckStateRole);
 	for (int id : transferIds) {
-		transferById(id).checked = checked;
+		getById(id).checked = checked;
 		int row = id2Row.at(id);
 		auto idx = index(row, 5);
+		assertValidIndex(idx);
 		emit dataChanged(idx, idx, roles);
 	}
 }
@@ -172,7 +175,7 @@ void TransferModel::setChecked(const std::vector<int>& transferIds, bool checked
 void TransferModel::exportTransfers(cqstring path, const std::vector<int>& transferIds) const {
 	QFile file(path);
 	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-		assert(false && "Could not open export file");
+		assert_error(false, "Could not open export file '%s'", cstr(path));
 	}
 	for (int id : transferIds) {
 		const auto& t = getById(id);
@@ -205,23 +208,16 @@ void TransferModel::reloadCache() {
 void TransferModel::createBackup(const QString& path) {
 	QFile file(path);
 	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-		assert(false && "Could not open accounts backup file");
+		assert_error(false, "Could not open backup file '%s'", cstr(path));
 	}
 	for (const auto& t : cachedTransfers) {
 		file.write((QString("%1;%2;%3;%4;%5;%6;%7;%8").arg(t.id).arg(t.dateMs()).arg(t.from.id).arg(t.from.name).arg(t.to.id).arg(t.to.name).arg(t.reference).arg(t.amount) + QString(";%1;%2;%3\n").arg(t.note).arg(t.checked ? "1" : "0").arg(t.internal ? "1" : "0")).toLocal8Bit());
 	}
 }
 
-Transfer& TransferModel::transferById(int id) {
-	assert(id >= 0 && id2Row.find(id) != id2Row.end());
-	int row = id2Row.at(id);
-	assert(row >= 0 && row < cachedTransfers.size());
-	return cachedTransfers[row];
-}
-
 template <typename F>
 void TransferModel::updateTransfer(int transferId, F f) {
-	auto& t = transferById(transferId);
+	auto& t = getById(transferId);
 	f(t);
 	db::Transfer tr;
 	db->run(update(tr).set(tr.date = t.dateMs(),
@@ -234,3 +230,9 @@ void TransferModel::updateTransfer(int transferId, F f) {
 							tr.internal = t.internal
 						).where(tr.id == transferId));
 }
+
+void TransferModel::assertValidIndex(const QModelIndex& index) const {
+	assert_error(index.column() >= 0 || index.column() < COLUMNS_COUNT, "invalid index column %d (row :%d)", index.column(), index.row());
+	assert_error(index.row() >= 0 || index.row() < cachedTransfers.size(), "invalid index row %d (column :%d)", index.row(), index.column());
+}
+
