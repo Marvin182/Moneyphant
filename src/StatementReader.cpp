@@ -8,7 +8,7 @@ StatementReader::StatementReader(Db db) :
 
 void StatementReader::importMissingStatementFiles(cqstring folder) {
 	auto files = QDir(folder).entryList(QStringList("*.csv"));
-	assert_warning(!files.empty() && "no statements found");
+	//assert_warning(!files.empty() && "no statements found");
 	for (const auto& file : files) {
 		importMissingStatementsCsv(folder + file);
 	}

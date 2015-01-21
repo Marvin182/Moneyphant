@@ -32,8 +32,6 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 	ui->setupUi(this);
 
-	std::cout << "GIT_VERSION=" << GIT_VERSION << std::endl;
-
 	loadSettings();
 	initAssertHandler();
 

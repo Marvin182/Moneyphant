@@ -2,6 +2,7 @@
 #define GLOBALS_ALL_H
 
 #include "assert.h"
+#include "version.h"
 #include "string-util.h"
 #include "sqlpp.h"
 

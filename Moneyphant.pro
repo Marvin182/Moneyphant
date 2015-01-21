@@ -28,7 +28,8 @@ SOURCES += src/main.cpp\
     src/TransferStats.cpp \
     src/globals/pempek_assert.cpp \
     src/globals/string-util.cpp \
-    src/globals/assert.cpp
+    src/globals/assert.cpp \
+    src/globals/version.cpp
 
 HEADERS  += src/MainWindow.h \
     src/Account.h \
@@ -46,7 +47,8 @@ HEADERS  += src/MainWindow.h \
     src/globals/assert.h \
     src/globals/pempek_assert.h \
     src/globals/sqlpp.h \
-    src/globals/string-util.h
+    src/globals/string-util.h \
+    src/globals/version.h
 
 FORMS    += ui/mainwindow.ui
 
