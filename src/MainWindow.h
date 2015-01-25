@@ -25,6 +25,15 @@ public:
 
 private slots:
 	void init();
+	void initMenu();
+
+public slots:
+	// menu actions
+	void onShowPreferences();
+	void onImportStatements();
+	void onExportTransfers();
+	void onShowAbout();
+
 	void importStatements(QString folder = QString());
 
 	void tabChanged(int index);

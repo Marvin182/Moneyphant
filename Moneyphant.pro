@@ -8,7 +8,7 @@ QMAKE_CXXFLAGS_WARN_ON -= -W
 TARGET = Moneyphant
 TEMPLATE = app
 
-ICON = icon.icns
+ICON = graphics/icon.icns
 QMAKE_INFO_PLIST = Info.plist
 OTHER_FILES += Info.plist
 
@@ -29,7 +29,8 @@ SOURCES += src/main.cpp\
     src/globals/pempek_assert.cpp \
     src/globals/string-util.cpp \
     src/globals/assert.cpp \
-    src/globals/version.cpp
+    src/globals/version.cpp \
+    src/ui/AboutDialog.cpp
 
 HEADERS  += src/MainWindow.h \
     src/Account.h \
@@ -48,12 +49,14 @@ HEADERS  += src/MainWindow.h \
     src/globals/pempek_assert.h \
     src/globals/sqlpp.h \
     src/globals/string-util.h \
-    src/globals/version.h
+    src/globals/version.h \
+    src/ui/AboutDialog.h
 
-FORMS    += ui/mainwindow.ui
+FORMS    += src/ui/MainWindow.ui \
+    src/ui/AboutDialog.ui
 
-RESOURCES += \
-    sql/evolutions.qrc
+RESOURCES += sql/evolutions.qrc \
+    graphics/graphics.qrc
 
 # sqlpp11
 LIBS += -L$$PWD/../../lib/sqlpp11-connector-sqlite3/build/src/ -lsqlpp11-connector-sqlite3 \

@@ -57,9 +57,9 @@ int Version::asNumber() const {
 }
 
 QString Version::shortStr() const {
-	return QString("v%1.%2.%3").arg(major).arg(minor).arg(revision);
+	return QString("%1.%2.%3").arg(major).arg(minor).arg(revision);
 }
 
 QString Version::longStr() const {
-	return QString("Version %1.%2.%3%4 (build: %5)").arg(major).arg(minor).arg(revision).arg(status.isEmpty() ? "" : " " + status).arg(commitId);
+	return QString("%1.%2.%3%4 (build: %5)").arg(major).arg(minor).arg(revision).arg(status.isEmpty() ? "" : " " + status).arg(commitId);
 }

@@ -4,6 +4,7 @@
 #include "db.h"
 #include "Transfer.h"
 #include "StatementReader.h"
+#include "ui/AboutDialog.h"
 #include <iostream>
 #include <QDir>
 #include <QStringList>
@@ -59,12 +60,44 @@ void MainWindow::init() {
 	Evolutions(db).run();
 	tagHelper = new TagHelper(db, this);
 
+	initMenu();
+
 	setupAccountTab();
 	setupTransferTab();
 	connect(ui->tabs, SIGNAL(currentChanged(int)), this, SLOT(tabChanged(int)));
 
 	QTimer::singleShot(0, this, SLOT(importStatements()));
 }
+
+void MainWindow::initMenu() {
+	connect(ui->actionAbout_Moneyphant, SIGNAL(triggered()), this, SLOT(onShowAbout()));
+	connect(ui->actionExport_Transfers, SIGNAL(triggered()), this, SLOT(onExportTransfers()));
+	connect(ui->actionImport_Statement_File, SIGNAL(triggered()), this, SLOT(onImportStatements()));
+	connect(ui->actionPreferences, SIGNAL(triggered()), this, SLOT(onShowPreferences()));
+	connect(ui->actionQuit, SIGNAL(triggered()), QApplication::instance(), SLOT(quit()));
+}
+
+//
+// Menu Actions
+//
+void MainWindow::onShowPreferences() {
+
+}
+
+void MainWindow::onImportStatements() {
+
+}
+
+void MainWindow::onExportTransfers() {
+
+}
+
+void MainWindow::onShowAbout() {
+	AboutDialog dialog(this);
+	dialog.exec();
+}
+
+
 
 void MainWindow::importStatements(QString folder) {
 	if (folder.isEmpty()) {
