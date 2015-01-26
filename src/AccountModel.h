@@ -22,9 +22,9 @@ public:
 	bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole);
 	Qt::ItemFlags flags(const QModelIndex& index) const;
 
-	const Account& operator[](int id) const;
 	const Account& get(int row) const;
-	
+	const Account& getById(int id) const;
+
 public slots:
 	void reloadCache();
 	void createBackup(const QString& path);
@@ -36,8 +36,10 @@ private:
 	std::unordered_map<int, int> id2Row;
 	std::vector<Account> cachedAccounts;
 
-	Account& accountById(int id);
-	bool isValidIndex(const QModelIndex& index) const;
+	Account& _get(int row);
+	Account& _getById(int id);
+
+	void assertValidIndex(const QModelIndex& index) const;
 };
 
 #endif // ACCOUNT_MODEL_H

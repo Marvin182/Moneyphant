@@ -2,8 +2,6 @@
 #include "TransferModel.h"
 #include "db.h"
 
-#include <cassert> // TODO remove
-
 TransferProxyModel::TransferProxyModel(Db db, QObject* parent) :
 	QSortFilterProxyModel(parent),
 	db(db),
@@ -35,7 +33,7 @@ void TransferProxyModel::setFilterText(const QString& filterText) {
 	txtRest = "";
 
 	for (const auto& p : parts) {
-		assert(!p.isEmpty());
+		assert_error(!p.isEmpty());
 		if (p.startsWith("from:")) {
 			txtFrom = p.right(p.length() - 5);
 		} else if (p.startsWith("to:")) {
@@ -135,6 +133,6 @@ bool TransferProxyModel::lessThan(const QModelIndex& left, const QModelIndex& ri
 		case 3: return trLeft.reference < trRight.reference;
 		case 4: return trLeft.amount < trRight.amount;
 		case 5: return trLeft.checked;
-		default: assert(false && "invalid column");
+		default: assert_error(false, "invalid column %d for left index (row: %d)", left.column(), left.row());
 	}
 }

@@ -2,8 +2,6 @@
 #include "db.h"
 #include <QFile>
 
-#include <cassert> // TODO remove
-
 constexpr int COLUMNS_COUNT = 5;
 
 AccountModel::AccountModel(Db db, QObject* parent) :
@@ -15,19 +13,19 @@ AccountModel::AccountModel(Db db, QObject* parent) :
 }
 
 int AccountModel::rowCount(const QModelIndex& parent) const {
-	Q_UNUSED(parent);
+	assert_debug(parent == QModelIndex());
 	return cachedAccounts.size();
 }
 
 int AccountModel::columnCount(const QModelIndex& parent) const {
-	Q_UNUSED(parent);
+	assert_debug(parent == QModelIndex());
 	return COLUMNS_COUNT;
 }
 
 QVariant AccountModel::data(const QModelIndex& index, int role) const {
-	assert_error(isValidIndex(index));
+	assertValidIndex(index);
 
-	const auto& a = cachedAccounts[index.row()];
+	const auto& a = get(index.row());
 
 	switch (role) {
 		case Qt::DisplayRole:
@@ -70,7 +68,7 @@ QVariant AccountModel::headerData(int section, Qt::Orientation orientation, int 
 			case 5: return tr("Account Number");
 			case 6: return tr("Bank Code");
 			case 7: return tr("Tags");
-			default: assert(false && "code should not be reached");
+			default: assert_unreachable();
 		}
 	}
 	
@@ -78,24 +76,23 @@ QVariant AccountModel::headerData(int section, Qt::Orientation orientation, int 
 }
 
 bool AccountModel::setData(const QModelIndex& index, const QVariant& value, int role) {
-	assert(index.row() >= 0 && index.row() < cachedAccounts.size());
-	auto& a = cachedAccounts[index.row()];
-
-	assert(index.column() >= 0 && index.column() < COLUMNS_COUNT);
+	assertValidIndex(index);
+	auto& a = _get(index.row());
 	
 	db::Account acc;
 	if (index.column() == 0) {
-		assert(value.canConvert<bool>());
-		assert(value.toBool() != a.isOwn);
+		assert_error(value.canConvert<bool>());
+		assert_error(value.toBool() != a.isOwn);
 		a.isOwn = value.toBool();
 		db->run(update(acc).set(acc.isOwn = a.isOwn).where(acc.id == a.id));
 	} else {
 		switch (index.column()) {
 			case 1:
+				assert_error(value.canConvert<QString>());
 				a.name = value.toString();
 				break;
 			default:
-				assert(false);
+				assert_error(false);
 				return false;
 		}
 	}
@@ -114,6 +111,8 @@ bool AccountModel::setData(const QModelIndex& index, const QVariant& value, int 
 }
 
 Qt::ItemFlags AccountModel::flags(const QModelIndex& index) const {
+	assertValidIndex(index);
+
 	auto commonFlags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 	switch (index.column()) {
 		case 0:
@@ -125,15 +124,15 @@ Qt::ItemFlags AccountModel::flags(const QModelIndex& index) const {
 	}
 }
 
-const Account& AccountModel::operator[](int id) const {
-	assert(id >= 0 && id2Row.find(id) != id2Row.end());
-	int row = id2Row.at(id);
-	return get(row);
+const Account& AccountModel::get(int row) const {
+	assert_error(row >= 0 && row < cachedAccounts.size());
+	return cachedAccounts[row];
 }
 
-const Account& AccountModel::get(int row) const {
-	assert(row >= 0 && row < cachedAccounts.size());
-	return cachedAccounts[row];
+const Account& AccountModel::getById(int id) const {
+	assert_error(id >= 0 && id2Row.find(id) != id2Row.end());
+	int row = id2Row.at(id);
+	return get(row);
 }
 
 void AccountModel::reloadCache() {
@@ -156,7 +155,7 @@ void AccountModel::reloadCache() {
 void AccountModel::createBackup(const QString& path) {
 	QFile file(path);
 	if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-		assert(false && "Could not open accounts backup file");
+		assert_error(false && "Could not open accounts backup file");
 	}
 	for (const auto& a : cachedAccounts) {
 		file.write(QString("%1;%2;%3;%4;%5;%6;%7;%8\n").arg(a.id).arg(a.isOwn ? '1' : '0').arg(a.name).arg(a.owner).arg(a.iban).arg(a.bic).arg(a.accountNumber).arg(a.bankCode).toLocal8Bit());
@@ -164,8 +163,8 @@ void AccountModel::createBackup(const QString& path) {
 }
 
 void AccountModel::mergeAccounts(int firstId, int secondId) {
-	auto& first = accountById(firstId);
-	auto& second = accountById(secondId);
+	auto& first = _getById(firstId);
+	auto& second = _getById(secondId);
 
 	db::Account acc;
 	db::Transfer tr;
@@ -209,21 +208,19 @@ void AccountModel::mergeAccounts(int firstId, int secondId) {
 	reloadCache(); // yes, too expensive, but I don't feel like writing code to update cachedAccounts and id2Row and view
 }
 
-Account& AccountModel::accountById(int id) {
-	assert(id >= 0 && id2Row.find(id) != id2Row.end());
-	int row = id2Row.at(id);
-	assert(row >= 0 && row < cachedAccounts.size());
+Account& AccountModel::_get(int row) {
+	assert_error(row >= 0 && row < cachedAccounts.size());
 	return cachedAccounts[row];
 }
 
-bool AccountModel::isValidIndex(const QModelIndex& index) const {
-	if (index.column() < 0 || index.column() >= COLUMNS_COUNT) {
-		assert_error(false, "invalid index column %d (row :%d)", index.column(), index.row());
-		return false;
-	}
-	if (index.row() < 0 || index.row() >= cachedAccounts.size()) {
-		assert_error(false, "invalid index row %d (column :%d)", index.row(), index.column());
-		return false;
-	}
-	return true;
+Account& AccountModel::_getById(int id) {
+	assert_error(id >= 0 && id2Row.find(id) != id2Row.end());
+	int row = id2Row.at(id);
+	return _get(row);
+}
+
+
+void AccountModel::assertValidIndex(const QModelIndex& index) const {
+	assert_error(index.column() >= 0 || index.column() < COLUMNS_COUNT, "invalid index column %d (row :%d)", index.column(), index.row());
+	assert_error(index.row() >= 0 || index.row() < cachedAccounts.size(), "invalid index row %d (column :%d)", index.row(), index.column());
 }

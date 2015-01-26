@@ -30,7 +30,9 @@ SOURCES += src/main.cpp\
     src/globals/string-util.cpp \
     src/globals/assert.cpp \
     src/globals/version.cpp \
-    src/ui/AboutDialog.cpp
+    src/ui/AboutDialog.cpp \
+    src/ui/PreferenceDialog.cpp \
+    src/globals/qt-util.cpp
 
 HEADERS  += src/MainWindow.h \
     src/Account.h \
@@ -50,10 +52,13 @@ HEADERS  += src/MainWindow.h \
     src/globals/sqlpp.h \
     src/globals/string-util.h \
     src/globals/version.h \
-    src/ui/AboutDialog.h
+    src/ui/AboutDialog.h \
+    src/ui/PreferenceDialog.h \
+    src/globals/qt-util.h
 
 FORMS    += src/ui/MainWindow.ui \
-    src/ui/AboutDialog.ui
+    src/ui/AboutDialog.ui \
+    src/ui/PreferenceDialog.ui
 
 RESOURCES += sql/evolutions.qrc \
     graphics/graphics.qrc

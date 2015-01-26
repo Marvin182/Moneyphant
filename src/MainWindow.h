@@ -57,6 +57,8 @@ public slots:
 	void removeFromTransferStats(int transferId);
 	void clickedTransferFilterMonthLink();
 
+	void backupDb();
+
 private:
 	Ui::MainWindow *ui;
 	QSettings settings;

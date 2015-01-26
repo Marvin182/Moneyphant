@@ -51,9 +51,9 @@ AssertAction::AssertAction onAssert(const char* file,
 		// write message to output
 		std::cerr << "Assertion failed: " << expression << "\n";
 		if (message != nullptr) {
-			std::cerr << "\tmessage: " << message << "(level " << level2Str(level) << ", " << level << ")\n";
+			std::cerr << "\tmessage: " << message << " (level: " << level << " = " << level2Str(level) << ")\n";
 		} else {
-			std::cerr << "\tlevel " << level2Str(level) << ", " << level << ")\n";
+			std::cerr << "\tlevel: " << level << " = " << level2Str(level) << "\n";
 		}
 		std::cerr << "\tfunction: " << function << "\n\tfile: " << file << " line " << line << std::endl;
 	}

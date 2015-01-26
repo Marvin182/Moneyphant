@@ -3,8 +3,8 @@
 
 int main(int argc, char *argv[])
 {
-	QApplication::setOrganizationName("Ritter Apps");
-	QApplication::setOrganizationDomain("ritter.moneyphant");
+	QApplication::setOrganizationName("Moneyphant");
+	QApplication::setOrganizationDomain("moneyphant");
 	QApplication::setApplicationName("Moneyphant");
 
 	QApplication a(argc, argv);

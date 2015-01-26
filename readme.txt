@@ -5,17 +5,13 @@ TODO: short description
 
 Roadmap for Version 0.1
 -----------------------
-- [ ] Preference Window
-	- [x] settings object
-	- [ ] Dialog
 - [x] About Dialog
-- [ ] CSV Importer
-	- [ ] dynamically set line format (also: "" and ignore first line)
 - [x] Menu
+- [ ] CSV Importer
+- [ ] Account Search & Filter
 
 Roadmap for Version 0.2
 ------------------------
-- Shortcuts
 - better export (improve statement backups)
 - improve tags
 	- auto completion in various places

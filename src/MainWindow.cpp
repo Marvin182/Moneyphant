@@ -13,7 +13,7 @@
 #include <QTimer>
 #include <QFileDialog>
 
-#include <QMessageBox>
+#include <QRegExp>
 
 const char* DbPath = "db.sqlite";
 const char* BackupFolder = "/Users/marvin/Workspace/Moneyphant/backups";
@@ -42,14 +42,14 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow() {
 	saveSettings();
 
-	auto now = QDateTime::currentDateTime().toString("yyyy-MM-dd_hh-mm-ss");
+	backupDb();
 
-	assert_error(accountModel != nullptr);
-	accountModel->createBackup(QString("%1/%2.accounts.csv").arg(BackupFolder).arg(now));
+	// assert_error(accountModel != nullptr);
+	// accountModel->createBackup(QString("%1/%2.accounts.csv").arg(BackupFolder).arg(now));
 	delete accountModel;
 
-	assert_error(transferModel != nullptr);
-	transferModel->createBackup(QString("%1/%2.transfers.csv").arg(BackupFolder).arg(now));
+	// assert_error(transferModel != nullptr);
+	// transferModel->createBackup(QString("%1/%2.transfers.csv").arg(BackupFolder).arg(now));
 	delete transferModel;
 
 	delete ui;
@@ -66,7 +66,9 @@ void MainWindow::init() {
 	setupTransferTab();
 	connect(ui->tabs, SIGNAL(currentChanged(int)), this, SLOT(tabChanged(int)));
 
-	QTimer::singleShot(0, this, SLOT(importStatements()));
+	// QTimer::singleShot(0, this, SLOT(importStatements()));
+
+	QTimer::singleShot(0, this, SLOT(onImportStatements()));
 }
 
 void MainWindow::initMenu() {
@@ -85,7 +87,54 @@ void MainWindow::onShowPreferences() {
 }
 
 void MainWindow::onImportStatements() {
+	// auto files = QFileDialog::getOpenFileNames(this, tr("Select one ore more statement files"), QString(), "CSV-Files (*.csv)");
+	// for (auto f : files) {
+	// 	std::cout << "file: " << f << std::endl;
+	// }
 
+	std::vector<QString> fieldNames{"id", "date", "senderOwner", "senderIban", "senderBic", "senderId", "senderIdLong", "receiverOwner", "receiverIban", "receiverBic", "receiverId", "receiverIdLong", "amount", "reference", "note", "checked"};
+	std::vector<int> fieldsPos(fieldNames.size(), -1);
+
+	QString dateFmt("dd.MM.yy");
+	QString currencyFmt("0.00"); // TODO: currency?
+
+	// get from user
+	QString format("\"{id}\";\"{date=dd/MM/yyyy}\";\"{senderIban}\";\"{receiverIdLong}\";\"{amount}\";\"{reference}\";\"{checked}\"");
+	QString line("\"1\";\"26/01/2015\";\"DE23413934750293\";\"mail@spotify.com\";\"5.00\";\"Thank you\";\"1\"");
+
+
+	QRegExp findFieldsRx("\\{([\\w=,\\.\\/]+)\\}");
+	int nextFieldPos = 0;
+	while (findFieldsRx.indexIn(format) != -1) {
+		auto fieldName = findFieldsRx.cap(1);
+		if (fieldName.contains('=')) {
+			auto fieldWithSpec = fieldName.split('=');
+			assert_warning(fieldWithSpec.size() == 2, "invalid fieldName specification '%s'", cstr(fieldName));
+			fieldName = fieldWithSpec[0];
+			if (fieldName == "date") {
+				dateFmt = fieldWithSpec[1];
+			} else if (fieldName == "amount") {
+				currencyFmt = fieldWithSpec[1];
+			}
+		}
+
+		auto it = std::find(fieldNames.begin(), fieldNames.end(), fieldName);
+		if (it != fieldNames.end()) {
+			int index = std::distance(fieldNames.begin(), it);
+			assert_error(index >= 0, "index was %d", index);
+			fieldsPos[index] = nextFieldPos++;
+			format.replace(findFieldsRx.pos(), findFieldsRx.matchedLength(), "([\\w,\\.//]+)");
+		} else {
+			format.replace(findFieldsRx.pos(), findFieldsRx.matchedLength(), "");
+		}
+	}
+
+	// std::cout << cstr(format) << std::endl;
+	// for (int i = 0; i < fieldNames.size(); i++) {
+	// 	std::cout << cstr(fieldNames[i]) << ": " << fieldsPos[i] << std::endl;
+	// }
+
+	// QTimer::singleShot(500, QApplication::instance(), SLOT(quit()));
 }
 
 void MainWindow::onExportTransfers() {
@@ -225,7 +274,7 @@ void MainWindow::updateAccountDetails() {
 
 	ui->accountName->setEnabled(editEnabled);
 
-	const auto& account = (*accountModel)[editEnabled ? selectedIds[0] : currentAccountId];
+	const auto& account = accountModel->getById(editEnabled ? selectedIds[0] : currentAccountId);
 
 	ui->accountName->setText(account.name);
 	ui->accountOwner->setText(account.owner);
@@ -324,8 +373,8 @@ void MainWindow::resetTransferStats() {
 void MainWindow::addToTransferStats(int transferId) {
 	if (transferId >= 0) {
 		const auto& transfer = transferModel->getById(transferId);
-		const auto& from = (*accountModel)[transfer.from.id];
-		const auto& to = (*accountModel)[transfer.to.id];
+		const auto& from = accountModel->getById(transfer.from.id);
+		const auto& to = accountModel->getById(transfer.to.id);
 		transferStats.add(transfer, transfer.internal || (from.isOwn && to.isOwn));
 	}
 
@@ -339,8 +388,8 @@ void MainWindow::removeFromTransferStats(int transferId) {
 	assert_error(transferId >= 0);
 
 	const auto& transfer = transferModel->getById(transferId);
-	const auto& from = (*accountModel)[transfer.from.id];
-	const auto& to = (*accountModel)[transfer.to.id];
+	const auto& from = accountModel->getById(transfer.from.id);
+	const auto& to = accountModel->getById(transfer.to.id);
 	transferStats.remove(transfer, transfer.internal || (from.isOwn && to.isOwn));
 
 	ui->trStatsRevenues->setText(currency(transferStats.revenues()));
@@ -518,20 +567,31 @@ void MainWindow::createTransferFilterMonthLinks() {
 }
 
 void MainWindow::openDb() {
-	if (false) {
-		QFile dbFile(DbPath);
-		if (dbFile.exists()) {
-			bool b = dbFile.remove();
-			assert_error(b, "Could not remove database file");
-		}
-	}
-
+	assert_error(dbConfig == nullptr);
 	dbConfig = std::make_shared<sqlpp::sqlite3::connection_config>();
 	assert_fatal(dbConfig != nullptr);
-	dbConfig->path_to_database = str(DbPath);
+
+	QString dbPath = appDataLocation() + "/db.sqlite3";
+	dbConfig->path_to_database = str(dbPath);
 	dbConfig->flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
 	dbConfig->debug = false;
 
 	db = std::make_shared<sqlpp::sqlite3::connection>(dbConfig);
+}
+
+void MainWindow::backupDb() {
+	QFile dbFile(appDataLocation() + "/db.sqlite3");
+	QDir backupDir(appDataLocation() + "/backups");
+	if (!backupDir.exists()) {
+		bool b = backupDir.mkpath(".");
+		assert_error(b, "backup directory '%s' could not be created", cstr(backupDir.absolutePath()));
+	}
+	assert_error(backupDir.exists(), "backup directory '%s' doesn't exists and could not be created", cstr(backupDir.absolutePath()));
+	assert_error(dbFile.exists(), "database file '%s' not found", cstr(dbFile.fileName()));
+
+	auto now = QDateTime::currentDateTime().toString("yyyy-MM-dd_hh-mm-ss");
+	auto backupFileName = backupDir.absolutePath() + QDir::separator() + now + "_db.sqlite3";
+	bool success = dbFile.copy(backupFileName);
+	assert_error(success, "could not copy database file '%s' to '%s'", cstr(dbFile.fileName()), cstr(backupFileName));
 }
 

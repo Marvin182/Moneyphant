@@ -1,8 +1,6 @@
 #include "TagHelper.h"
 #include <algorithm>
 
-#include <cassert> // TODO remove
-
 TagHelper::TagHelper(Db db, QObject* parent) :
 	QObject(parent),
 	db(db),
@@ -13,12 +11,12 @@ TagHelper::TagHelper(Db db, QObject* parent) :
 int TagHelper::tagId(cqstring name) {
 	auto tags = db->run(select(tag.id).from(tag).where(tag.name == str(name)));
 	if (!tags.empty()) {
-		assert(tags.front().id >= 0);
+		assert_error(tags.front().id >= 0, "database returned invalid id %d for tag '%s'", (int)tags.front().id, cstr(name));
 		return tags.front().id;
 	}
 
 	int id = db->run(insert_into(tag).set(tag.name = str(name)));
-	assert(id >= 0);
+	assert_error(id >= 0, "inserting tag '%s' failed (id: %d)", cstr(name), id);
 	return id;
 }
 
@@ -34,40 +32,40 @@ QStringList TagHelper::tagsFromAccounts(int fromId, int toId) {
 }
 
 void TagHelper::addAccountId(int accountId) {
-	assert(accountId >= 0);
+	assert_error(accountId >= 0, "invalid account id %d", accountId);
 	if (_accountIds.size() == 1 && _accountIds.front() == accountId) {
 		return;			
 	}
-	assert(std::find(_accountIds.begin(), _accountIds.end(), accountId) == _accountIds.end());
+	assert_error(std::find(_accountIds.begin(), _accountIds.end(), accountId) == _accountIds.end(), "account id %d was already added", accountId);
 	_accountIds.push_back(accountId);
 }
 
 void TagHelper::removeAccountId(int accountId) {
-	assert(accountId >= 0);
+	assert_error(accountId >= 0, "invalid account id %d", accountId);
 	auto it = std::find(_accountIds.begin(), _accountIds.end(), accountId);
-	assert(it != _accountIds.end());
+	assert_error(it != _accountIds.end(), "account id %d cannot be removed", accountId);
 	_accountIds.erase(it, it + 1);
 }
 
 void TagHelper::addTransferId(int transferId) {
-	assert(transferId >= 0);
+	assert_error(transferId >= 0, "invalid transferId id %d", transferId);
 	if (_transferIds.size() == 1 && _transferIds.front() == transferId) {
 		return;			
 	}
-	assert(std::find(_transferIds.begin(), _transferIds.end(), transferId) == _transferIds.end());
+	assert_error(std::find(_transferIds.begin(), _transferIds.end(), transferId) == _transferIds.end(), "transfer id %d was already added", transferId);
 	_transferIds.push_back(transferId);
 }
 
 void TagHelper::removeTransferId(int transferId) {
-	assert(transferId >= 0);
+	assert_error(transferId >= 0, "invalid transferId id %d", transferId);
 	auto it = std::find(_transferIds.begin(), _transferIds.end(), transferId);
-	assert(it != _transferIds.end());	
+	assert_error(it != _transferIds.end(), "transfer id %d cannot be removed", transferId);
 	_transferIds.erase(it, it + 1);
 }
 
 QStringList TagHelper::getAccountTags(TagHelper::IdList& customAccIds) {
 	std::vector<int> accIds = customAccIds.empty() ? accountIds() : customAccIds;
-	for (int id : accIds) { assert(id >= 0); }
+	for (int id : accIds) { assert_error(id >= 0, "invalid account id %d", id); }
 
 	QStringList tags;
 
@@ -106,12 +104,15 @@ void TagHelper::addAccountTags(QStringList tags, const std::vector<int>& customA
 	auto accIds = customAccIds.empty() ? accountIds() : customAccIds;
 
 	for (int accId : accIds) {
-		assert(accId >= 0);
+		assert_error(accId >= 0, "invalid account id %d", accId);
 		for (const auto& t : tags) {
+			assert_error(!t.isEmpty(), "empty tag name");
 			int tid = tagId(t);
-			assert(tid >= 0);
-			assert(0 == db->run(select(count(accTag.tagId)).from(accTag).where(accTag.tagId == tid and accTag.accountId == accId)).front().count);
-			db->run(insert_into(accTag).set(accTag.tagId = tid, accTag.accountId = accId));
+			assert_error(tid >= 0, "invalid tag id %d for '%s'", tid, cstr(t));
+			bool exists = db->run(select(count(accTag.tagId)).from(accTag).where(accTag.tagId == tid and accTag.accountId == accId)).front().count == 1;
+			if (!exists) {
+				db->run(insert_into(accTag).set(accTag.tagId = tid, accTag.accountId = accId));
+			}
 		}
 	}
 }
@@ -120,12 +121,12 @@ void TagHelper::removeAccountTags(QStringList tags, const std::vector<int>& cust
 	auto accIds = customAccIds.empty() ? accountIds() : customAccIds;
 
 	for (int accId : accIds) {
-		assert(accId >= 0);
+		assert_error(accId >= 0, "invalid account id %d", accId);
 		for (const auto& t : tags) {
-			assert(!t.isEmpty());
+			assert_error(!t.isEmpty(), "empty tag name");
 			int tid = tagId(t);
-			assert(tid >= 0);
-			assert(1 == db->run(select(count(accTag.tagId)).from(accTag).where(accTag.tagId == tid and accTag.accountId == accId)).front().count);
+			assert_error(tid >= 0, "invalid tag id %d for '%s'", tid, cstr(t));
+			assert_error(db->run(select(count(accTag.tagId)).from(accTag).where(accTag.tagId == tid and accTag.accountId == accId)).front().count == 1, "account tag (account id: %d, tag id: %d, tag name: '%s') does not exists", accId, tid, cstr(t));
 			db->run(remove_from(accTag).where(accTag.tagId == tid and accTag.accountId == accId));
 		}
 	}
@@ -133,7 +134,7 @@ void TagHelper::removeAccountTags(QStringList tags, const std::vector<int>& cust
 
 QStringList TagHelper::getTransferTags(TagHelper::IdList& customTrId) {
 	std::vector<int> trIds = customTrId.empty() ? accountIds() : customTrId;
-	for (int id : trIds) { assert(id >= 0); }
+	for (int id : trIds) { assert_error(id >= 0, "invalid transfer id %d", id); }
 
 	QStringList tags;
 
@@ -170,13 +171,16 @@ QStringList TagHelper::getTransferTags(TagHelper::IdList& customTrId) {
 void TagHelper::addTransferTags(QStringList tags, const std::vector<int>& customTrId) {
 	auto trIds = customTrId.empty() ? transferIds() : customTrId;
 
-	for (int accId : trIds) {
-		assert(accId >= 0);
+	for (int trId : trIds) {
+		assert_error(trId >= 0, "invalid transfer id %d", trId);
 		for (const auto& t : tags) {
+			assert_error(!t.isEmpty(), "empty tag name");
 			int tid = tagId(t);
-			assert(tid >= 0);
-			assert(0 == db->run(select(count(trTag.tagId)).from(trTag).where(trTag.tagId == tid and trTag.transferId == accId)).front().count);
-			db->run(insert_into(trTag).set(trTag.tagId = tid, trTag.transferId = accId));
+			assert_error(tid >= 0, "invalid tag id %d for '%s'", tid, cstr(t));
+			bool exists = db->run(select(count(trTag.tagId)).from(trTag).where(trTag.tagId == tid and trTag.transferId == trId)).front().count == 1;
+			if (!exists) {
+				db->run(insert_into(trTag).set(trTag.tagId = tid, trTag.transferId = trId));
+			}
 		}
 	}
 }
@@ -184,14 +188,14 @@ void TagHelper::addTransferTags(QStringList tags, const std::vector<int>& custom
 void TagHelper::removeTransferTags(QStringList tags, const std::vector<int>& customTrId) {
 	auto trIds = customTrId.empty() ? transferIds() : customTrId;
 
-	for (int accId : trIds) {
-		assert(accId >= 0);
+	for (int trId : trIds) {
+		assert_error(trId >= 0, "invalid transfer id %d", trId);
 		for (const auto& t : tags) {
-			assert(!t.isEmpty());
+			assert_error(!t.isEmpty(), "empty tag name");
 			int tid = tagId(t);
-			assert(tid >= 0);
-			assert(1 == db->run(select(count(trTag.tagId)).from(trTag).where(trTag.tagId == tid and trTag.transferId == accId)).front().count);
-			db->run(remove_from(trTag).where(trTag.tagId == tid and trTag.transferId == accId));
+			assert_error(tid >= 0, "invalid tag id %d for '%s'", tid, cstr(t));
+			assert_error(db->run(select(count(trTag.tagId)).from(trTag).where(trTag.tagId == tid and trTag.transferId == trId)).front().count == 1, "transfer tag (transfer id: %d, tag id: %d, tag name: '%s') does not exists", trId, tid, cstr(t));
+			db->run(remove_from(trTag).where(trTag.tagId == tid and trTag.transferId == trId));
 		}
 	}
 }
