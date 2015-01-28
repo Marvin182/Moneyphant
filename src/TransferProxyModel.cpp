@@ -135,4 +135,7 @@ bool TransferProxyModel::lessThan(const QModelIndex& left, const QModelIndex& ri
 		case 5: return trLeft.checked;
 		default: assert_error(false, "invalid column %d for left index (row: %d)", left.column(), left.row());
 	}
+
+	assert_unreachable();
+	return false;
 }

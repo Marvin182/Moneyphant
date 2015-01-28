@@ -1,9 +1,9 @@
 #include "string-util.h"
+#include "assert.h"
 #include <QLocale>
 
 std::ostream& operator<<(std::ostream& os, cqstring s) {
-	os << cstr(s);
-	return os;
+	return (os << s.toStdString());
 }
 
 const char* cstr(cqstring s) {

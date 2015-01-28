@@ -5,11 +5,11 @@
 
 using cqstring = const QString&;
 
-std::ostream& operator<<(std::ostream& os, cqstring s);
-
 const char* cstr(cqstring s);
 std::string str(cqstring s);
 QString qstr(const std::string& s);
+
+std::ostream& operator<<(std::ostream& os, cqstring s);
 
 QString currency(int amount, cqstring symbol = "€");
 

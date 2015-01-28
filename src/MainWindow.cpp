@@ -5,6 +5,7 @@
 #include "Transfer.h"
 #include "StatementReader.h"
 #include "ui/AboutDialog.h"
+#include "ui/StatementImporterDialog.h"
 #include <iostream>
 #include <QDir>
 #include <QStringList>
@@ -13,6 +14,7 @@
 #include <QTimer>
 #include <QFileDialog>
 
+#include <QFileInfo>
 #include <QRegExp>
 
 const char* DbPath = "db.sqlite";
@@ -87,10 +89,20 @@ void MainWindow::onShowPreferences() {
 }
 
 void MainWindow::onImportStatements() {
-	// auto files = QFileDialog::getOpenFileNames(this, tr("Select one ore more statement files"), QString(), "CSV-Files (*.csv)");
-	// for (auto f : files) {
-	// 	std::cout << "file: " << f << std::endl;
-	// }
+	auto dir = settings.value("import/lastdir", QDir::home().absolutePath()).toString();
+	auto filePath = QFileDialog::getOpenFileName(this, tr("Select one ore more statement files"), dir, "CSV-Files (*.csv);;Text Files (*.txt);;All Files (*)");
+	if (filePath.isEmpty()) {
+		return;
+	}
+
+	QFileInfo info(filePath);
+	assert_error(info.exists(), "choosen file '%s' does not exists", cstr(filePath));
+	settings.setValue("import/lastdir", info.absolutePath());
+
+	// StatementImporterDialog dialog(filePath, this);
+	// dialog.exec();
+
+	return;
 
 	std::vector<QString> fieldNames{"id", "date", "senderOwner", "senderIban", "senderBic", "senderId", "senderIdLong", "receiverOwner", "receiverIban", "receiverBic", "receiverId", "receiverIdLong", "amount", "reference", "note", "checked"};
 	std::vector<int> fieldsPos(fieldNames.size(), -1);
@@ -571,7 +583,7 @@ void MainWindow::openDb() {
 	dbConfig = std::make_shared<sqlpp::sqlite3::connection_config>();
 	assert_fatal(dbConfig != nullptr);
 
-	QString dbPath = appDataLocation() + "/db.sqlite3";
+	QString dbPath = appLocalDataLocation() + "/db.sqlite3";
 	dbConfig->path_to_database = str(dbPath);
 	dbConfig->flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
 	dbConfig->debug = false;
@@ -580,8 +592,8 @@ void MainWindow::openDb() {
 }
 
 void MainWindow::backupDb() {
-	QFile dbFile(appDataLocation() + "/db.sqlite3");
-	QDir backupDir(appDataLocation() + "/backups");
+	QFile dbFile(appLocalDataLocation() + "/db.sqlite3");
+	QDir backupDir(appLocalDataLocation() + "/backups");
 	if (!backupDir.exists()) {
 		bool b = backupDir.mkpath(".");
 		assert_error(b, "backup directory '%s' could not be created", cstr(backupDir.absolutePath()));

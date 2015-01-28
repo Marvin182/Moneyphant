@@ -3,6 +3,6 @@
 
 #include <QString>
 
-QString appDataLocation();
+QString appLocalDataLocation();
 
 #endif // QT_UTIL_H

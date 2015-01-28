@@ -32,7 +32,9 @@ SOURCES += src/main.cpp\
     src/globals/version.cpp \
     src/ui/AboutDialog.cpp \
     src/ui/PreferenceDialog.cpp \
-    src/globals/qt-util.cpp
+    src/globals/qt-util.cpp \
+    src/ui/StatementImporterDialog.cpp \
+    src/ui/DataChooser.cpp
 
 HEADERS  += src/MainWindow.h \
     src/Account.h \
@@ -54,11 +56,14 @@ HEADERS  += src/MainWindow.h \
     src/globals/version.h \
     src/ui/AboutDialog.h \
     src/ui/PreferenceDialog.h \
-    src/globals/qt-util.h
+    src/globals/qt-util.h \
+    src/ui/StatementImporterDialog.h \
+    src/ui/DataChooser.h
 
 FORMS    += src/ui/MainWindow.ui \
     src/ui/AboutDialog.ui \
-    src/ui/PreferenceDialog.ui
+    src/ui/PreferenceDialog.ui \
+    src/ui/StatementImporterDialog.ui
 
 RESOURCES += sql/evolutions.qrc \
     graphics/graphics.qrc
