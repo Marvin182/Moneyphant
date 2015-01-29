@@ -71,11 +71,7 @@ RESOURCES += sql/evolutions.qrc \
 # sqlpp11
 LIBS += -L$$PWD/../../lib/sqlpp11-connector-sqlite3/build/src/ -lsqlpp11-connector-sqlite3 \
             -L$$PWD/../../../../usr/lib/ -lsqlite3
-INCLUDEPATH +=  /Users/marvin/lib/sqlpp11/include \
+INCLUDEPATH +=  /../../lib/sqlpp11/include \
                 $$PWD/../../lib/sqlpp11-connector-sqlite3/include
 DEPENDPATH += $$PWD/../../lib/sqlpp11-connector-sqlite3/include
 PRE_TARGETDEPS += $$PWD/../../lib/sqlpp11-connector-sqlite3/build/src/libsqlpp11-connector-sqlite3.a
-
-# libc
-INCLUDEPATH += /Users/marvin/lib/clang2/llvm/projects/libcxx/include/
-

@@ -46,12 +46,7 @@ MainWindow::~MainWindow() {
 
 	backupDb();
 
-	// assert_error(accountModel != nullptr);
-	// accountModel->createBackup(QString("%1/%2.accounts.csv").arg(BackupFolder).arg(now));
 	delete accountModel;
-
-	// assert_error(transferModel != nullptr);
-	// transferModel->createBackup(QString("%1/%2.transfers.csv").arg(BackupFolder).arg(now));
 	delete transferModel;
 
 	delete ui;
@@ -70,7 +65,7 @@ void MainWindow::init() {
 
 	// QTimer::singleShot(0, this, SLOT(importStatements()));
 
-	QTimer::singleShot(0, this, SLOT(onImportStatements()));
+	// QTimer::singleShot(0, this, SLOT(onImportStatements()));
 }
 
 void MainWindow::initMenu() {
@@ -99,54 +94,8 @@ void MainWindow::onImportStatements() {
 	assert_error(info.exists(), "choosen file '%s' does not exists", cstr(filePath));
 	settings.setValue("import/lastdir", info.absolutePath());
 
-	// StatementImporterDialog dialog(filePath, this);
-	// dialog.exec();
-
-	return;
-
-	std::vector<QString> fieldNames{"id", "date", "senderOwner", "senderIban", "senderBic", "senderId", "senderIdLong", "receiverOwner", "receiverIban", "receiverBic", "receiverId", "receiverIdLong", "amount", "reference", "note", "checked"};
-	std::vector<int> fieldsPos(fieldNames.size(), -1);
-
-	QString dateFmt("dd.MM.yy");
-	QString currencyFmt("0.00"); // TODO: currency?
-
-	// get from user
-	QString format("\"{id}\";\"{date=dd/MM/yyyy}\";\"{senderIban}\";\"{receiverIdLong}\";\"{amount}\";\"{reference}\";\"{checked}\"");
-	QString line("\"1\";\"26/01/2015\";\"DE23413934750293\";\"mail@spotify.com\";\"5.00\";\"Thank you\";\"1\"");
-
-
-	QRegExp findFieldsRx("\\{([\\w=,\\.\\/]+)\\}");
-	int nextFieldPos = 0;
-	while (findFieldsRx.indexIn(format) != -1) {
-		auto fieldName = findFieldsRx.cap(1);
-		if (fieldName.contains('=')) {
-			auto fieldWithSpec = fieldName.split('=');
-			assert_warning(fieldWithSpec.size() == 2, "invalid fieldName specification '%s'", cstr(fieldName));
-			fieldName = fieldWithSpec[0];
-			if (fieldName == "date") {
-				dateFmt = fieldWithSpec[1];
-			} else if (fieldName == "amount") {
-				currencyFmt = fieldWithSpec[1];
-			}
-		}
-
-		auto it = std::find(fieldNames.begin(), fieldNames.end(), fieldName);
-		if (it != fieldNames.end()) {
-			int index = std::distance(fieldNames.begin(), it);
-			assert_error(index >= 0, "index was %d", index);
-			fieldsPos[index] = nextFieldPos++;
-			format.replace(findFieldsRx.pos(), findFieldsRx.matchedLength(), "([\\w,\\.//]+)");
-		} else {
-			format.replace(findFieldsRx.pos(), findFieldsRx.matchedLength(), "");
-		}
-	}
-
-	// std::cout << cstr(format) << std::endl;
-	// for (int i = 0; i < fieldNames.size(); i++) {
-	// 	std::cout << cstr(fieldNames[i]) << ": " << fieldsPos[i] << std::endl;
-	// }
-
-	// QTimer::singleShot(500, QApplication::instance(), SLOT(quit()));
+	StatementImporterDialog dialog(db, filePath, this);
+	dialog.exec();
 }
 
 void MainWindow::onExportTransfers() {
