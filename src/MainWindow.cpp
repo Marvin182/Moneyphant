@@ -1,7 +1,7 @@
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
 #include "Evolutions.h"
-#include "db.h"
+#include "sql.h"
 #include "Transfer.h"
 #include "StatementReader.h"
 #include "ui/AboutDialog.h"
@@ -17,10 +17,6 @@
 #include <QFileInfo>
 #include <QRegExp>
 
-const char* DbPath = "db.sqlite";
-const char* BackupFolder = "/Users/marvin/Workspace/Moneyphant/backups";
-
-
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
 	ui(new Ui::MainWindow),
@@ -34,6 +30,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	transferProxyModel(nullptr)
 {
 	ui->setupUi(this);
+
+	mr::Version::get(GIT_VERSION);
 
 	loadSettings();
 	initAssertHandler();
@@ -96,6 +94,14 @@ void MainWindow::onImportStatements() {
 
 	StatementImporterDialog dialog(db, filePath, this);
 	dialog.exec();
+
+	if (dialog.success()) {
+		db::Format format;
+		format.delimiter = str(dialog.delimiter());
+		format.textQualifier = str(dialog.textQualifier());
+		auto columnsOrder = dialog.columnsOrder();
+		
+	}
 }
 
 void MainWindow::onExportTransfers() {
@@ -532,7 +538,7 @@ void MainWindow::openDb() {
 	dbConfig = std::make_shared<sqlpp::sqlite3::connection_config>();
 	assert_fatal(dbConfig != nullptr);
 
-	QString dbPath = appLocalDataLocation() + "/db.sqlite3";
+	QString dbPath = appLocalDataLocation() + "/db.sqlite";
 	dbConfig->path_to_database = str(dbPath);
 	dbConfig->flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
 	dbConfig->debug = false;
@@ -541,7 +547,7 @@ void MainWindow::openDb() {
 }
 
 void MainWindow::backupDb() {
-	QFile dbFile(appLocalDataLocation() + "/db.sqlite3");
+	QFile dbFile(appLocalDataLocation() + "/db.sqlite");
 	QDir backupDir(appLocalDataLocation() + "/backups");
 	if (!backupDir.exists()) {
 		bool b = backupDir.mkpath(".");
@@ -551,7 +557,7 @@ void MainWindow::backupDb() {
 	assert_error(dbFile.exists(), "database file '%s' not found", cstr(dbFile.fileName()));
 
 	auto now = QDateTime::currentDateTime().toString("yyyy-MM-dd_hh-mm-ss");
-	auto backupFileName = backupDir.absolutePath() + QDir::separator() + now + "_db.sqlite3";
+	auto backupFileName = backupDir.absolutePath() + QDir::separator() + now + "_db.sqlite";
 	bool success = dbFile.copy(backupFileName);
 	assert_error(success, "could not copy database file '%s' to '%s'", cstr(dbFile.fileName()), cstr(backupFileName));
 }

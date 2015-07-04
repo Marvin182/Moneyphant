@@ -1,7 +1,6 @@
 #include "StatementImporterDialog.h"
 #include "ui_StatementImporterDialog.h"
 
-#include "DataChooser.h"
 #include <vector>
 #include <algorithm>
 #include <QFileInfo>
@@ -14,6 +13,7 @@ const std::vector<QString> textQualifiers{"\"", "\'"};
 StatementImporterDialog::StatementImporterDialog(Db db, cqstring filePath, QWidget *parent) :
 	QDialog(parent),
 	ui(new Ui::StatementImporterDialog),
+	_success(false),
 	db(db)
 {
 	ui->setupUi(this);
@@ -22,30 +22,69 @@ StatementImporterDialog::StatementImporterDialog(Db db, cqstring filePath, QWidg
 
 	ui->delimiter->setCurrentIndex(guessDelimiter());
 	ui->textQualifier->setCurrentIndex(guessTextQualifier());
-	assert_error(ui->delimiter->currentIndex() >= 0, "invalid delimiter index %d", ui->delimiter->currentIndex());
-	assert_error(ui->textQualifier->currentIndex() >= 0, "invalid text qualifier index %d", ui->textQualifier->currentIndex());
+	assert_error(ui->delimiter->currentIndex() >= 0, "guessed invalid delimiter index %d", ui->delimiter->currentIndex());
+	assert_error(ui->textQualifier->currentIndex() >= 0, "guessed invalid text qualifier index %d", ui->textQualifier->currentIndex());
+	connect(ui->delimiter, SIGNAL(currentIndexChanged(int)), this, SLOT(createColumnChoosers()));
+	connect(ui->textQualifier, SIGNAL(currentIndexChanged(int)), this, SLOT(createColumnChoosers()));
 
-	createDataChoosers();
-	createDataChoosers();
-
-	connect(ui->delimiter, SIGNAL(currentIndexChanged(int)), this, SLOT(createDataChoosers()));
-	connect(ui->textQualifier, SIGNAL(currentIndexChanged(int)), this, SLOT(createDataChoosers()));
+	createColumnChoosers();
 
 	connect(ui->cancel, SIGNAL(clicked()), this, SLOT(close()));
+	connect(ui->importStatements, SIGNAL(clicked()), this, SLOT(doImport()));
 }
 
-StatementImporterDialog::~StatementImporterDialog()
-{
+StatementImporterDialog::~StatementImporterDialog() {
 	delete ui;
 }
 
-void StatementImporterDialog::onDataChooserChanged(int row, int index) {
-	std::cout << "onDataChooserChanged(" << row << ", " << index << ")" << std::endl;
-	for (auto dc : dataChoosers) {
-		if (dc->row() != row) {
-			dc->unsetIndex(index);
+const QString& StatementImporterDialog::delimiter() const {
+	return delimiters[ui->delimiter->currentIndex()];
+}
+
+const QString& StatementImporterDialog::textQualifier() const {
+	return textQualifiers[ui->textQualifier->currentIndex()];
+}
+
+ColumnChooser::InputFormat StatementImporterDialog::columnsOrder() const {
+	ColumnChooser::InputFormat format;
+	for (auto ic : columnChoosers) {
+		ic->save(format);
+	}
+	return format;
+}
+
+bool StatementImporterDialog::validateFormat() {
+	auto format = columnsOrder();
+	ui->importStatements->setEnabled(false);
+
+	if (!format.contains("date")) {
+		return false;
+	}
+	if (!format.contains("amount")) {
+		return false;
+	}
+	if (!format.contains("receiverIban") && !format.contains("receiverId") && !format.contains("receiverEmail")) {
+		return false;
+	}
+
+	ui->importStatements->setEnabled(true);
+	return true;
+}
+
+void StatementImporterDialog::doImport() {
+	assert_error(validateFormat());
+	_success = true;
+}
+
+void StatementImporterDialog::onColumnChooserChanged(int columnIndex, int inputTypeIndex) {
+	if (inputTypeIndex > 0) {
+		for (auto ic : columnChoosers) {
+			if (ic->columnIndex() != columnIndex) {
+				ic->unsetIfInputTypeIndex(inputTypeIndex);
+			}
 		}
 	}
+	validateFormat();
 }
 
 void StatementImporterDialog::readFile(cqstring filePath) {
@@ -116,9 +155,8 @@ int StatementImporterDialog::guessTextQualifier() {
 	return textQualifiers.size(); // index for none
 }
 
-void StatementImporterDialog::createDataChoosers() {
-	const auto& delim = delimiters[ui->delimiter->currentIndex()];
-	auto header = lines.front().split(delim);
+void StatementImporterDialog::createColumnChoosers() {
+	auto header = lines.front().split(delimiter());
 	if (ui->textQualifier->currentIndex() < textQualifiers.size()) {
 		for (auto& h : header) {
 			if (!h.isEmpty() && h.length() > 1) {
@@ -128,23 +166,24 @@ void StatementImporterDialog::createDataChoosers() {
 	}
 
 	bool hasExampleLine = lines.size() > 1;
-	auto exampleLine = hasExampleLine ? lines[1].split(delim) : QStringList();
+	auto exampleLine = hasExampleLine ? lines[1].split(delimiter()) : QStringList();
 	if (ui->textQualifier->currentIndex() < textQualifiers.size()) {
-		for (auto& h : exampleLine) {
-			if (!h.isEmpty() && h.length() > 1) {
-				h = QStringRef(&h, 1, h.length() - 2).toString();
+		for (auto& l : exampleLine) {
+			if (!l.isEmpty() && l.length() > 1) {
+				l = QStringRef(&l, 1, l.length() - 2).toString();
 			}
 		}
 	}
 
-	for (auto dc : dataChoosers) { delete dc; }
-	dataChoosers.clear();
-	delete ui->dataChoosers->layout();
-	new QGridLayout(ui->dataChoosers);
-
+	for (auto dc : columnChoosers) { delete dc; }
+	columnChoosers.clear();
+	delete ui->columnChoosers->layout();
+	new QGridLayout(ui->columnChoosers);
 
 	for (int i = 0; i < header.size(); i++) {
-		dataChoosers.push_back(new DataChooser(i, header[i], hasExampleLine ? exampleLine[i] : "", ui->dataChoosers));
-		connect(dataChoosers.back(), SIGNAL(columnChanged(int, int)), this, SLOT(onDataChooserChanged(int, int)));
+		columnChoosers.push_back(new ColumnChooser(i, header[i], hasExampleLine ? exampleLine[i] : "", ui->columnChoosers));
+		connect(columnChoosers.back(), SIGNAL(inputTypeIndexChanged(int, int)), this, SLOT(onColumnChooserChanged(int, int)));
 	}
+
+	validateFormat();
 }

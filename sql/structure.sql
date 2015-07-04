@@ -32,7 +32,7 @@ create table transfer (
 
 create table tag (
 	id integer primary key autoincrement,
-	name varchar(32)
+	name varchar(64)
 );
 
 create table accountTag (
@@ -45,6 +45,14 @@ create table transferTag (
 	tagId integer not null,
 	transferId integer not null,
 	primary key (tagId, transferId)
+);
+
+create table format (
+	id integer primary key autoincrement,
+	name varchar(64) default '',
+	delimiter varchar(8),
+	textQualifier varchar(8),
+	columnsOrder text
 );
 
 -- create table budget (

@@ -1,6 +1,6 @@
 #include "AboutDialog.h"
 #include "ui_AboutDialog.h"
-#include "../globals/all.h"
+#include "mr/common.h"
 #include <QUrl>
 #include <QDesktopServices>
 
@@ -10,7 +10,7 @@ AboutDialog::AboutDialog(QWidget *parent) :
 {
 	ui->setupUi(this);
 
-	ui->version->setText(tr("Version: %1").arg(Version::get().longStr()));
+	ui->version->setText(tr("Version: %1").arg(mr::Version::get().longStr()));
 }
 
 AboutDialog::~AboutDialog()

@@ -4,5 +4,6 @@
         <file>evolutions/1.sql</file>
         <file>evolutions/2.sql</file>
         <file>evolutions/3.sql</file>
+        <file>evolutions/4.sql</file>
     </qresource>
 </RCC>

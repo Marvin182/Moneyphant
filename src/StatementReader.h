@@ -1,8 +1,8 @@
 #ifndef STATEMENT_READER_H
 #define STATEMENT_READER_H
 
-#include "globals/all.h"
-#include "globals/pempek_assert.h"
+#include "mr/common.h"
+#include "sql.h"
 #include "Account.h"
 #include "Transfer.h"
 #include <QFile>
@@ -22,8 +22,32 @@ protected:
 	void parseMastercardStatements(QFile& file);
 	void parsePayPalStatements(QFile& file);
 
+	/* TODO
 	template <typename F>
-	void parseCsvFile(QFile& file, cqstring delimiter, F lineFunc) {
+	void parseCsvFile(QFile& file, const db::Format& format, F lineFunc) {
+		if (format.skipFirstLine) {
+			file.readLine();
+		}
+		int tqLen = format.textQualifier.size();
+		int lineNumber = 1;
+		while (!file.atEnd()) {
+			lineNumber++;
+			auto line = QString(file.readLine());
+			auto fields = line.split(format.delimiter);
+			if (fields.isEmpty()) {
+				continue;
+			}
+			if (tqLen > 0)
+				for (auto& f : fields) {
+					assert_error(f == "" || f.size() >= 2 * tqLen, "bad formatted line '%s' in file %s line %d", cstr(line), cstr(file.fileName()), lineNumber);
+					f = f.right(f.length() - tqLen).left(f.length() - 2 * tqLen).trimmed();
+			}
+			lineFunc(fields, lineNumber);
+		}
+	}*/
+
+	template <typename F>
+	void parseCsvFile(QFile& file, cqstring delimiter, cqstring textQualifier, F lineFunc) {
 		auto separator = '"' + delimiter + '"';
 		int lineNumber = 1;
 		while (!file.atEnd()) {

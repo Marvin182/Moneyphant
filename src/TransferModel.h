@@ -1,7 +1,8 @@
 #ifndef TRANSFER_MODEL_H
 #define TRANSFER_MODEL_H
 
-#include "globals/all.h"
+#include "mr/common.h"
+#include "sql.h"
 #include "Transfer.h"
 #include <vector>
 #include <unordered_map>

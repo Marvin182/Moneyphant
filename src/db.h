@@ -562,5 +562,103 @@ namespace db
       };
     };
   };
+  namespace Format_
+  {
+    struct Id
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "id"; }
+        template<typename T>
+        struct _member_t
+          {
+            T id;
+            T& operator()() { return id; }
+            const T& operator()() const { return id; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::integer, sqlpp::tag::can_be_null>;
+    };
+    struct Name
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "name"; }
+        template<typename T>
+        struct _member_t
+          {
+            T name;
+            T& operator()() { return name; }
+            const T& operator()() const { return name; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::varchar, sqlpp::tag::can_be_null>;
+    };
+    struct Delimiter
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "delimiter"; }
+        template<typename T>
+        struct _member_t
+          {
+            T delimiter;
+            T& operator()() { return delimiter; }
+            const T& operator()() const { return delimiter; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::varchar, sqlpp::tag::can_be_null>;
+    };
+    struct TextQualifier
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "textQualifier"; }
+        template<typename T>
+        struct _member_t
+          {
+            T textQualifier;
+            T& operator()() { return textQualifier; }
+            const T& operator()() const { return textQualifier; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::varchar, sqlpp::tag::can_be_null>;
+    };
+    struct ColumnsOrder
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "columnsOrder"; }
+        template<typename T>
+        struct _member_t
+          {
+            T columnsOrder;
+            T& operator()() { return columnsOrder; }
+            const T& operator()() const { return columnsOrder; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::text, sqlpp::tag::can_be_null>;
+    };
+  }
+
+  struct Format: sqlpp::table_t<Format,
+               Format_::Id,
+               Format_::Name,
+               Format_::Delimiter,
+               Format_::TextQualifier,
+               Format_::ColumnsOrder>
+  {
+    struct _name_t
+    {
+      static constexpr const char* _get_name() { return "format"; }
+      template<typename T>
+      struct _member_t
+      {
+        T format;
+        T& operator()() { return format; }
+        const T& operator()() const { return format; }
+      };
+    };
+  };
 }
 #endif

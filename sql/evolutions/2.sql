@@ -3,7 +3,7 @@
 
 create table tag (
 	id integer primary key autoincrement,
-	name varchar(32)
+	name varchar(64)
 );
 
 create table accountTag (

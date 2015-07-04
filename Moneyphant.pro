@@ -26,15 +26,10 @@ SOURCES += src/main.cpp\
     src/TransferModel.cpp \
     src/TransferProxyModel.cpp \
     src/TransferStats.cpp \
-    src/globals/pempek_assert.cpp \
-    src/globals/string-util.cpp \
-    src/globals/assert.cpp \
-    src/globals/version.cpp \
     src/ui/AboutDialog.cpp \
     src/ui/PreferenceDialog.cpp \
-    src/globals/qt-util.cpp \
     src/ui/StatementImporterDialog.cpp \
-    src/ui/DataChooser.cpp
+    src/ui/ColumnChooser.cpp
 
 HEADERS  += src/MainWindow.h \
     src/Account.h \
@@ -48,17 +43,11 @@ HEADERS  += src/MainWindow.h \
     src/TransferModel.h \
     src/TransferProxyModel.h \
     src/TransferStats.h \
-    src/globals/all.h \
-    src/globals/assert.h \
-    src/globals/pempek_assert.h \
-    src/globals/sqlpp.h \
-    src/globals/string-util.h \
-    src/globals/version.h \
     src/ui/AboutDialog.h \
     src/ui/PreferenceDialog.h \
-    src/globals/qt-util.h \
     src/ui/StatementImporterDialog.h \
-    src/ui/DataChooser.h
+    src/ui/ColumnChooser.h \
+    src/sql.h
 
 FORMS    += src/ui/MainWindow.ui \
     src/ui/AboutDialog.ui \
@@ -68,10 +57,13 @@ FORMS    += src/ui/MainWindow.ui \
 RESOURCES += sql/evolutions.qrc \
     graphics/graphics.qrc
 
+INCLUDEPATH += ../mr/include
+LIBS += -L../mr/release -lmr
+
 # sqlpp11
 LIBS += -L$$PWD/../../lib/sqlpp11-connector-sqlite3/build/src/ -lsqlpp11-connector-sqlite3 \
             -L$$PWD/../../../../usr/lib/ -lsqlite3
-INCLUDEPATH +=  /../../lib/sqlpp11/include \
+INCLUDEPATH += $$PWD/../../lib/sqlpp11/include \
                 $$PWD/../../lib/sqlpp11-connector-sqlite3/include
 DEPENDPATH += $$PWD/../../lib/sqlpp11-connector-sqlite3/include
 PRE_TARGETDEPS += $$PWD/../../lib/sqlpp11-connector-sqlite3/build/src/libsqlpp11-connector-sqlite3.a

@@ -1,5 +1,5 @@
 #include "AccountModel.h"
-#include "db.h"
+#include "sql.h"
 #include <QFile>
 
 constexpr int COLUMNS_COUNT = 5;

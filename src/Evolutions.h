@@ -1,7 +1,8 @@
 #ifndef EVOLUTIONS_H
 #define EVOLUTIONS_H
 
-#include "globals/all.h"
+#include "mr/common.h"
+#include "sql.h"
 #include <vector>
 #include <QStringList>
 

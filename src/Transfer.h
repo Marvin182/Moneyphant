@@ -1,7 +1,7 @@
 #ifndef OPERATION
 #define OPERATION
 
-#include "globals/all.h"
+#include "mr/common.h"
 #include "Account.h"
 #include <QDateTime>
 #include <QStringList>

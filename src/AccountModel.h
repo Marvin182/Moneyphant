@@ -1,7 +1,8 @@
 #ifndef ACCOUNT_MODEL_H
 #define ACCOUNT_MODEL_H
 
-#include "globals/all.h"
+#include "mr/common.h"
+#include "sql.h"
 #include "Account.h"
 #include <vector>
 #include <unordered_map>

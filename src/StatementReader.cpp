@@ -14,6 +14,28 @@ void StatementReader::importMissingStatementFiles(cqstring folder) {
 	}
 }
 
+/*void StatementReader::importMissingStatements(cqstring path, db::Format format) {
+	QFile file(path);
+	assert_error(file.exists(), "statement file '%s' dosen't exist", cstr(path));
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+		assert_error(false, "Could not open statement file '%s'", cstr(path));
+	}
+	assert_error(!file.atEnd(), "statement file '%s' is empty", cstr(path));
+
+	parseCsvFile(file, format, [&](const QStringList& fields, int lineNumber) {
+		// auto from = acc("", fields[0], "");
+		// auto to = acc("Abbuchung Kreditkarte", "#11", "");
+		// assert_error(from.id >= 0 && to.id >= 0);
+		// assert_error(from.id != to.id); // accounts are not allowed to match
+		// Transfer t(fields[2], from, to, fields[8], fields[6]);
+		// findOrAdd(t);
+		// assert_error(t.id >= 0);
+	});
+
+	assert_error(file.atEnd(), "did not parse whole statement file '%s'", cstr(path));
+	// file.close() // TODO
+}*/
+
 void StatementReader::importMissingStatementsCsv(cqstring path) {
 	// open file
 	QFile file(path);
@@ -177,7 +199,7 @@ void StatementReader::parsePayPalStatements(QFile& file) {
 		Land: 
 		Telefonnummer der Kontaktperson: 
 	*/
-	parseCsvFile(file, ",", [&](const QStringList& fields, int lineNumber) {
+	parseCsvFile(file, ",", "", [&](const QStringList& fields, int lineNumber) {
 		assert_error(fields.length() == 43, "invalid line %d in '%s'", lineNumber, cstr(file.fileName()));
 		auto from = acc("PayPal Konto", fields[10], "");
 		auto to = acc(fields[3], fields[11], "");

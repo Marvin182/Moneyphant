@@ -172,7 +172,7 @@
     </layout>
    </item>
    <item>
-    <widget class="QFrame" name="dataChoosers">
+    <widget class="QFrame" name="columnChoosers">
      <layout class="QGridLayout" name="gridLayout"/>
     </widget>
    </item>
@@ -199,7 +199,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="import_2">
+      <widget class="QPushButton" name="importStatements">
        <property name="enabled">
         <bool>false</bool>
        </property>

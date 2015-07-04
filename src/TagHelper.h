@@ -1,7 +1,8 @@
 #ifndef TAG_HELPER_H
 #define TAG_HELPER_H
 
-#include "globals/all.h"
+#include "mr/common.h"
+#include "sql.h"
 #include "db.h"
 #include <vector>
 #include <QStringList>
