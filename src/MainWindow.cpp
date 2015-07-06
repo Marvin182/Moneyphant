@@ -95,7 +95,7 @@ void MainWindow::onImportStatements() {
 	StatementImporterDialog dialog(db, filePath, this);
 	if (dialog.exec() == QDialog::Accepted) {
 		auto f = dialog.format();
-		
+
 	}
 }
 
@@ -369,6 +369,7 @@ void MainWindow::saveTransferNote() {
 
 void MainWindow::exportTransfers() {
 	auto filename = QFileDialog::getSaveFileName(this, tr("Export Transfers"), QString(), tr("CSV (*.csv)"));
+	if (filename.isEmpty()) return;
 	bool hasSelection = ui->transferView->selectionModel()->hasSelection();
 	auto ids = hasSelection ? tagHelper->transferIds() : transferStats.includedTransferIds();
 	transferModel->exportTransfers(filename, ids);
