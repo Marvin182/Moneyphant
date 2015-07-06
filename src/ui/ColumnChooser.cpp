@@ -2,7 +2,7 @@
 
 #include <QGridLayout>
 
-QStringList ColumnChooser::inputTypes = QStringList{"", "id", "date", "amount", "reference", "senderOwnerName", "senderIban", "senderBic", "senderEmail", "senderId", "receiverOwnerName", "receiverIban", "receiverBic", "receiverEmail", "receiverId", "note", "checked"};
+QStringList InputTypes = QStringList{"", "id", "date", "amount", "reference", "senderOwnerName", "senderIban", "senderBic", "senderEmail", "senderId", "receiverOwnerName", "receiverIban", "receiverBic", "receiverEmail", "receiverId", "note", "checked"};
 
 ColumnChooser::ColumnChooser(int columnIndex, cqstring headerLine, cqstring exampleLine, QWidget* parent) :
 	QObject(parent),
@@ -21,8 +21,8 @@ ColumnChooser::ColumnChooser(int columnIndex, cqstring headerLine, cqstring exam
 	layout->addWidget(lHeaderLabel, _columnIndex, 0);
 	layout->addWidget(lExampleLabel, _columnIndex, 1);
 
-	for (auto inType : inputTypes) {
-		cbInputType->addItem(tr(cstr(inType))); // TODO
+	for (auto inputType : InputTypes) {
+		cbInputType->addItem(inputType);
 	}
 	connect(cbInputType, SIGNAL(currentIndexChanged(int)), this, SLOT(onCurrentInputTypeChanged(int)));
 
@@ -35,26 +35,28 @@ ColumnChooser::~ColumnChooser() {
 	delete cbInputType;
 }
 
-void ColumnChooser::unsetIfInputTypeIndex(int inputTypeIndex) {
-	assert_warning(inputTypeIndex > 0);
-	if (cbInputType->currentIndex() == inputTypeIndex) {
-		cbInputType->setCurrentIndex(0);
+cqstring ColumnChooser::inputType() const {
+	return InputTypes[inputTypeIndex()];
+}
+
+void ColumnChooser::unset() {
+	cbInputType->setCurrentIndex(0);
+}
+
+void ColumnChooser::unsetIfInputTypeIndex(cqstring inputType) {
+	int inputTypeIdx = InputTypes.indexOf(inputType);
+	assert_warning(inputTypeIdx > 0);
+	if (cbInputType->currentIndex() == inputTypeIdx) {
+		unset();
 	}
 }
 
-void ColumnChooser::load(const InputFormat& format) {
-	cqstring inType = format.key(_columnIndex, "");
-	int inIndex = inputTypes.indexOf(inType);
-	assert_warning(inIndex >= 0, "invalid input format with input type %s form column %d, resulting in input index %d", cstr(inType), _columnIndex, inIndex);
-	cbInputType->setCurrentIndex(inIndex);
-}
-
-void ColumnChooser::save(InputFormat& format) const {
-	if (inputTypeIndex() > 0) {
-		format[inputType()] = _columnIndex;
-	}
+void ColumnChooser::setInputType(cqstring inputType) {
+	int inputTypeIdx = InputTypes.indexOf(inputType);
+	assert_warning(inputTypeIdx >= 0, "invalid input format with input type %s form column %d, resulting in input index %d", cstr(inputType), _columnIndex, inputTypeIdx);
+	cbInputType->setCurrentIndex(inputTypeIdx);
 }
 
 void ColumnChooser::onCurrentInputTypeChanged(int inputTypeIndex) {
-	emit inputTypeIndexChanged(_columnIndex, inputTypeIndex);
+	emit inputTypeChanged(_columnIndex, InputTypes[inputTypeIndex]);
 }

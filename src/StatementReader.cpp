@@ -1,5 +1,5 @@
 #include "StatementReader.h"
-#include "db.h"
+#include "sql.h"
 #include <QDir>
 
 StatementReader::StatementReader(Db db) :

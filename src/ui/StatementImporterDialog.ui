@@ -58,7 +58,7 @@
     </layout>
    </item>
    <item>
-    <widget class="QPlainTextEdit" name="firstLines">
+    <widget class="QPlainTextEdit" name="exampleLines">
      <property name="enabled">
       <bool>true</bool>
      </property>

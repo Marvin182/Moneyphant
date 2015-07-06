@@ -12,34 +12,30 @@
 class ColumnChooser : public QObject {
 	Q_OBJECT
 public:
-	typedef QMap<QString, int> InputFormat;
-
 	ColumnChooser(int columnIndex, cqstring headerLine, cqstring exampleLine, QWidget* parent);
 	~ColumnChooser();
 
 	int columnIndex() const { return _columnIndex; }
-	int inputTypeIndex() const { return cbInputType->currentIndex(); }
-	cqstring inputType() const { return inputTypes[inputTypeIndex()]; }
+	cqstring inputType() const;
 
-	void unsetIfInputTypeIndex(int inputTypeIndex);
-
-	void load(const InputFormat& format);
-	void save(InputFormat& format) const;
+	void setInputType(cqstring inputType);
+	void unset();
+	void unsetIfInputTypeIndex(cqstring inputType);
 
 signals:
-	void inputTypeIndexChanged(int columnIndex, int inputTypeIndex);
+	void inputTypeChanged(int columnIndex, const QString& inputType);
 
 private slots:
 	void onCurrentInputTypeChanged(int inputTypeIndex);
 
 private:
-	static QStringList inputTypes;
-
 	const int _columnIndex;
 
 	QLabel* lHeaderLabel;
 	QLabel* lExampleLabel;
 	QComboBox* cbInputType;
+
+	int inputTypeIndex() const { return cbInputType->currentIndex(); }
 };
 
 #endif // COLUMN_CHOOSER_H

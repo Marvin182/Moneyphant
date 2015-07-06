@@ -93,14 +93,9 @@ void MainWindow::onImportStatements() {
 	settings.setValue("import/lastdir", info.absolutePath());
 
 	StatementImporterDialog dialog(db, filePath, this);
-	dialog.exec();
+	if (dialog.exec() == QDialog::Accepted) {
+		auto f = dialog.format();
 
-	if (dialog.success()) {
-		db::Format format;
-		format.delimiter = str(dialog.delimiter());
-		format.textQualifier = str(dialog.textQualifier());
-		auto columnsOrder = dialog.columnsOrder();
-		
 	}
 }
 
@@ -539,6 +534,7 @@ void MainWindow::openDb() {
 	assert_fatal(dbConfig != nullptr);
 
 	QString dbPath = appLocalDataLocation() + "/db.sqlite";
+	std::cout << dbPath << std::endl;
 	dbConfig->path_to_database = str(dbPath);
 	dbConfig->flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
 	dbConfig->debug = false;
