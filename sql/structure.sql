@@ -3,8 +3,8 @@ create table evolution (
 	id integer primary key,
 	upTs integer not null default 0,
 	downTs integer not null default 0,
-	ups text not null,
-	downs text not null
+	ups text not null default '',
+	downs text not null default ''
 );
 
 create table account (
@@ -50,14 +50,9 @@ create table transferTag (
 create table format (
 	id integer primary key autoincrement,
 	name varchar(64) default '',
-	delimiter varchar(8),
-	textQualifier varchar(8),
-	columnsOrder text
+	hashedHeader varchar(256) not null,
+	delimiter varchar(8) not null default ";",
+	textQualifier varchar(8) not null default "",
+	skipFirstLine bool not null default 0,
+	columnPositions text not null
 );
-
--- create table budget (
--- 	id integer primary key autoincrement,
--- 	name varchar(64) not null,
--- 	amount integer not null,
--- 	keepSavings bool not null default 1
--- );

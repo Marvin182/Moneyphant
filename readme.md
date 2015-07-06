@@ -21,6 +21,12 @@ Roadmap for Version 0.2
 Build
 -----
 TODO: how to build (ddl2cpp)
+- db schema changes
+	1. update the structure in sql/structure.sql
+	2. add an evolution in sql/evolutions with the correct commands to update an existing database
+	3. add the evolution file to evolutions.qrc
+	4. execute to `sql/ddl2cpp sql/structure.sql src/db db` to update database classes
+
 
 Thanks To ...
 -------------

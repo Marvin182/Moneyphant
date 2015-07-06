@@ -95,7 +95,7 @@ void MainWindow::onImportStatements() {
 	StatementImporterDialog dialog(db, filePath, this);
 	if (dialog.exec() == QDialog::Accepted) {
 		auto f = dialog.format();
-
+		
 	}
 }
 

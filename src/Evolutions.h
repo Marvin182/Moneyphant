@@ -10,6 +10,9 @@ struct Evolution {
 	int id;
 	QStringList ups;
 	QStringList downs;
+
+	Evolution();
+	Evolution(int id, cqstring upCmds, cqstring downCmds);
 };
 
 class Evolutions {
@@ -21,10 +24,11 @@ public:
 private:
 	Db db;
 
-	std::vector<Evolution> evolutions();
+	std::pair<std::vector<Evolution>, std::vector<Evolution>> upAndDownsForDb(std::vector<Evolution> evolutions);
+	std::vector<Evolution> evolutionsFromFiles();
 
-	void up(const Evolution& evolution);
-	void down(const Evolution& evolution);
+	void executeUp(const Evolution& evolution);
+	void executeDown(const Evolution& evolution);
 };
 
 #endif // EVOLUTIONS_H

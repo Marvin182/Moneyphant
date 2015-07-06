@@ -66,7 +66,7 @@ namespace db
             const T& operator()() const { return ups; }
           };
       };
-      using _traits = sqlpp::make_traits<sqlpp::text, sqlpp::tag::require_insert>;
+      using _traits = sqlpp::make_traits<sqlpp::text>;
     };
     struct Downs
     {
@@ -81,7 +81,7 @@ namespace db
             const T& operator()() const { return downs; }
           };
       };
-      using _traits = sqlpp::make_traits<sqlpp::text, sqlpp::tag::require_insert>;
+      using _traits = sqlpp::make_traits<sqlpp::text>;
     };
   }
 
@@ -594,6 +594,21 @@ namespace db
       };
       using _traits = sqlpp::make_traits<sqlpp::varchar, sqlpp::tag::can_be_null>;
     };
+    struct HashedHeader
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "hashedHeader"; }
+        template<typename T>
+        struct _member_t
+          {
+            T hashedHeader;
+            T& operator()() { return hashedHeader; }
+            const T& operator()() const { return hashedHeader; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::varchar, sqlpp::tag::require_insert>;
+    };
     struct Delimiter
     {
       struct _name_t
@@ -607,7 +622,7 @@ namespace db
             const T& operator()() const { return delimiter; }
           };
       };
-      using _traits = sqlpp::make_traits<sqlpp::varchar, sqlpp::tag::can_be_null>;
+      using _traits = sqlpp::make_traits<sqlpp::varchar>;
     };
     struct TextQualifier
     {
@@ -622,31 +637,48 @@ namespace db
             const T& operator()() const { return textQualifier; }
           };
       };
-      using _traits = sqlpp::make_traits<sqlpp::varchar, sqlpp::tag::can_be_null>;
+      using _traits = sqlpp::make_traits<sqlpp::varchar>;
     };
-    struct ColumnsOrder
+    struct SkipFirstLine
     {
       struct _name_t
       {
-        static constexpr const char* _get_name() { return "columnsOrder"; }
+        static constexpr const char* _get_name() { return "skipFirstLine"; }
         template<typename T>
         struct _member_t
           {
-            T columnsOrder;
-            T& operator()() { return columnsOrder; }
-            const T& operator()() const { return columnsOrder; }
+            T skipFirstLine;
+            T& operator()() { return skipFirstLine; }
+            const T& operator()() const { return skipFirstLine; }
           };
       };
-      using _traits = sqlpp::make_traits<sqlpp::text, sqlpp::tag::can_be_null>;
+      using _traits = sqlpp::make_traits<sqlpp::boolean>;
+    };
+    struct ColumnPositions
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "columnPositions"; }
+        template<typename T>
+        struct _member_t
+          {
+            T columnPositions;
+            T& operator()() { return columnPositions; }
+            const T& operator()() const { return columnPositions; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::text, sqlpp::tag::require_insert>;
     };
   }
 
   struct Format: sqlpp::table_t<Format,
                Format_::Id,
                Format_::Name,
+               Format_::HashedHeader,
                Format_::Delimiter,
                Format_::TextQualifier,
-               Format_::ColumnsOrder>
+               Format_::SkipFirstLine,
+               Format_::ColumnPositions>
   {
     struct _name_t
     {

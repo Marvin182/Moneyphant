@@ -21,3 +21,5 @@ create table transferTag (
 # --- !Downs
 
 drop table tag;
+drop table accountTag;
+drop table transferTag;

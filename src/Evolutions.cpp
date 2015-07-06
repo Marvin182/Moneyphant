@@ -1,10 +1,30 @@
 #include "Evolutions.h"
 
-#include "db.h"
+#include <algorithm>
 #include <QDir>
 #include <QFile>
 #include <QStringRef>
 #include <QDateTime>
+
+Evolution::Evolution() :
+	id(-1),
+	ups(),
+	downs()
+{}
+
+Evolution::Evolution(int id, cqstring upCmds, cqstring downCmds) :
+	id(id),
+	ups(upCmds.split(";\n")),
+	downs(downCmds.split(";\n"))
+{
+	for (auto& up : ups) {
+		if (!up.endsWith(';')) up += ';';
+	}
+	for (auto& down : downs) {
+		if (!down.endsWith(';')) down += ';';
+	}
+
+}
 
 Evolutions::Evolutions(Db db) :
 	db(db)
@@ -16,20 +36,21 @@ void Evolutions::run() {
 		id integer primary key,\
 		upTs integer not null default 0,\
 		downTs integer not null default 0,\
-		ups text not null,\
-		downs text not null\
+		ups text not null default '',\
+		downs text not null default ''\
 	);");
 
-	db::Evolution evo;
-	for (const auto& evolution : evolutions()) {
-		auto result = db->run(select(all_of(evo)).from(evo).where(evo.id == evolution.id));
-		if (result.empty()) {
-			up(evolution);
-		}
+	auto upsAndDowns = upAndDownsForDb(evolutionsFromFiles());
+
+	for (int i = upsAndDowns.second.size() - 1; i >= 0; i--) {
+		executeDown(upsAndDowns.second[i]);
+	}
+	for (int i = 0; i < upsAndDowns.first.size(); i++) {
+		executeUp(upsAndDowns.first[i]);
 	}
 }
 
-std::vector<Evolution> Evolutions::evolutions() {
+std::vector<Evolution> Evolutions::evolutionsFromFiles() {
 	Q_INIT_RESOURCE(evolutions);
 	auto evoFiles = QDir(":/evolutions/").entryList(QStringList("*.sql"));
 	assert_fatal(evoFiles.length() > 0, "no sql evolution files found");
@@ -91,7 +112,48 @@ std::vector<Evolution> Evolutions::evolutions() {
 	return evos;
 }
 
-void Evolutions::up(const Evolution& evolution) {
+std::pair<std::vector<Evolution>, std::vector<Evolution>> Evolutions::upAndDownsForDb(std::vector<Evolution> evolutions) {
+	std::sort(evolutions.begin(), evolutions.end(), [](const Evolution& evo1, const Evolution& evo2) { return evo1.id <= evo2.id; });
+	assert_debug(evolutions.front().id == 0);
+	assert_debug(evolutions.back().id == evolutions.size() - 1);
+
+	std::vector<Evolution> upEvos, downEvos;
+	db::Evolution evo;
+	for (const auto& evolution : evolutions) {
+		auto result = db->run(select(all_of(evo)).from(evo).where(evo.id == evolution.id));
+		if (result.empty()) {
+			// Case 1: evolution missing, definitely needs a up
+			db->run(insert_into(evo).set(evo.id = evolution.id));
+			upEvos.push_back(evolution);
+		} else {
+			// check if evolution has the same ups as expected
+			auto ups = qstr(result.front().ups);
+			auto upsExpected = evolution.ups.join('\n');
+			if (ups == upsExpected) {
+				if (result.front().upTs == 0) {
+					upEvos.push_back(evolution);
+					if (result.front().downTs != 0) {
+						downEvos.push_back(Evolution(result.front().id, qstr(result.front().ups), qstr(result.front().downs)));
+					}
+				}
+			} else {
+				if (evolution.id == evolutions.back().id) {
+					// newest evolution might change in dev/beta state, allow reapply
+					downEvos.push_back(Evolution(result.front().id, qstr(result.front().ups), qstr(result.front().downs)));
+					upEvos.push_back(evolution);
+				} else {
+					// evolutions are not meant to change, throw error
+					assert_fatal(false, "Evolution %d changed, changes will not be applied as there are newer evolutions\n\tups in db: %s\n\tups in file: %s", evolution.id, cstr(ups), cstr(upsExpected));
+				}
+			}
+		}
+	}
+
+	return std::make_pair(upEvos, downEvos);
+}
+
+void Evolutions::executeUp(const Evolution& evolution) {
+	std::cout << "Applying evolution " << evolution.id << std::endl;
 	auto ups = str(evolution.ups.join('\n'));
 	auto downs = str(evolution.downs.join('\n'));
 	for (auto& up : evolution.ups) {
@@ -101,18 +163,19 @@ void Evolutions::up(const Evolution& evolution) {
 
 	long long now = QDateTime::currentMSecsSinceEpoch();
 	db::Evolution evo;
-	db->run(insert_into(evo).set(evo.id = evolution.id, evo.upTs = now, evo.ups = ups, evo.downs = downs));
+	db->run(update(evo).set(evo.upTs = now, evo.downTs = 0, evo.ups = ups, evo.downs = downs).where(evo.id == evolution.id));
 }
 
-void Evolutions::down(const Evolution& evolution) {
-	auto ups = evolution.ups.join('\n');
-	auto downs = evolution.downs.join('\n');
+void Evolutions::executeDown(const Evolution& evolution) {
+	std::cout << "Undoing evolution " << evolution.id << std::endl;
+	auto ups = str(evolution.ups.join('\n'));
+	auto downs = str(evolution.downs.join('\n'));
 	for (auto& down : evolution.downs) {
-		assert_debug(down.endsWith(';'));
+		assert_debug(down.endsWith(';'), "down command ('%s') of evolution does not end with ';'", cstr(down));
 		db->execute(str(down));
 	}
 
 	long long now = QDateTime::currentMSecsSinceEpoch();
 	db::Evolution evo;
-	db->run(insert_into(evo).set(evo.id = evolution.id, evo.upTs = 0, evo.downTs = now, evo.ups = str(ups), evo.downs = str(downs)));
+	db->run(update(evo).set(evo.upTs = 0, evo.downTs = now, evo.ups = ups, evo.downs = downs).where(evo.id == evolution.id));
 }
