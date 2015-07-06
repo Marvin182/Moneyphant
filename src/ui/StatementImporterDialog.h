@@ -5,21 +5,12 @@
 #include <QDialog>
 #include "mr/common.h"
 #include "../sql.h"
+#include "../model/StatementFileFormat.h"
 #include "ColumnChooser.h"
 
 namespace Ui {
 	class StatementImporterDialog;
 }
-
-struct StatementFileFormat {
-	int id;
-	QString name;
-	QString hashedHeader;
-	QString delimiter;
-	QString textQualifier;
-	bool skipFirstLine;
-	QMap<QString, int> columnPositions;
-};
 
 class StatementImporterDialog : public QDialog
 {
@@ -50,9 +41,6 @@ private:
 	std::vector<QString> lines;
 	std::vector<ColumnChooser*> columnChoosers;
 
-	bool loadFromDb(StatementFileFormat& f);
-	void saveFormatToDb(StatementFileFormat& f);
-
 	bool hasTextQualifier() const;
 	const QString& delimiter() const;
 	const QString& textQualifier() const;
@@ -65,7 +53,5 @@ private:
 	QString guessDelimiter();
 	QString guessTextQualifier();
 };
-
-std::ostream& operator<<(std::ostream& os, const StatementFileFormat& f);
 
 #endif // UI_STATEMENT_IMPORTER_DIALOG_H

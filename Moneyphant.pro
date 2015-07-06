@@ -29,7 +29,8 @@ SOURCES += src/main.cpp\
     src/ui/AboutDialog.cpp \
     src/ui/PreferenceDialog.cpp \
     src/ui/StatementImporterDialog.cpp \
-    src/ui/ColumnChooser.cpp
+    src/ui/ColumnChooser.cpp \
+    src/model/StatementFileFormat.cpp
 
 HEADERS  += src/MainWindow.h \
     src/Account.h \
@@ -47,7 +48,8 @@ HEADERS  += src/MainWindow.h \
     src/ui/PreferenceDialog.h \
     src/ui/StatementImporterDialog.h \
     src/ui/ColumnChooser.h \
-    src/sql.h
+    src/sql.h \
+    src/model/StatementFileFormat.h
 
 FORMS    += src/ui/MainWindow.ui \
     src/ui/AboutDialog.ui \

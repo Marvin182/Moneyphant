@@ -22,14 +22,11 @@ StatementImporterDialog::StatementImporterDialog(Db db, cqstring filePath, QWidg
 
 	lines = readFile(filePath);
 
-	_format.hashedHeader = QCryptographicHash::hash(lines.front().toUtf8(), QCryptographicHash::Sha256);
+	_format.setHeader(lines.front());
 
-	if (!loadFromDb(_format)) {
-		_format.id = -1;
-		_format.name = "";
+	if (!_format.load(db)) {
 		_format.delimiter = guessDelimiter();
 		_format.textQualifier = guessTextQualifier();
-		_format.skipFirstLine = true;
 		assert_error(delimiterIndex(_format.delimiter) >= 0, "guessed invalid delimiter (%s, %d)", cstr(_format.delimiter), delimiterIndex(_format.delimiter));
 		assert_error(textQualifierIndex(_format.textQualifier) >= 0, "guessed invalid text qualifier (%s, %d)", cstr(_format.textQualifier), textQualifierIndex(_format.textQualifier));
 	}
@@ -49,8 +46,10 @@ StatementImporterDialog::StatementImporterDialog(Db db, cqstring filePath, QWidg
 	}
 
 	connect(ui->cancel, SIGNAL(clicked()), this, SLOT(reject()));
-	connect(ui->importStatements, SIGNAL(clicked()), this, SLOT(saveFormatToDb()));
-	connect(ui->importStatements, SIGNAL(clicked()), this, SLOT(accept()));
+	connect(ui->importStatements, &QPushButton::clicked, [&]() {
+		_format.save(db);
+		accept();
+	});
 }
 
 StatementImporterDialog::~StatementImporterDialog() {
@@ -120,7 +119,7 @@ void StatementImporterDialog::onSkipFirstLineChanged(int state) {
 }
 
 void StatementImporterDialog::saveFormatToDb() {
-	saveFormatToDb(_format);
+	//saveFormatToDb(_format);
 }
 
 bool StatementImporterDialog::validateFormat(const StatementFileFormat& format) {
@@ -145,59 +144,6 @@ bool StatementImporterDialog::validateFormat(const StatementFileFormat& format) 
 // 
 // Private Methods
 //
-
-bool StatementImporterDialog::loadFromDb(StatementFileFormat& f) {
-	db::Format fm;
-	auto fms = db->run(select(all_of(fm)).from(fm).where(fm.hashedHeader == str(f.hashedHeader)));
-	if (fms.empty()) {
-		return false;
-	}
-
-	f.id = fms.front().id;
-	f.name = qstr(fms.front().name);
-	f.delimiter = qstr(fms.front().delimiter);
-	f.textQualifier = qstr(fms.front().textQualifier);
-	f.skipFirstLine = fms.front().skipFirstLine;
-	
-	for (auto s : qstr(fms.front().columnPositions).split(';', QString::SkipEmptyParts)) {
-		assert_debug(!s.isEmpty());
-		auto kv = s.split(':');
-		assert_debug(kv.size() == 2);
-		f.columnPositions[kv[0]] = kv[1].toInt();
-	}
-
-	return true;
-}
-
-void StatementImporterDialog::saveFormatToDb(StatementFileFormat& f) {
-	assert_error(validateFormat(f));
-	db::Format fm;
-
-	QString cpData;
-	cpData.reserve(f.columnPositions.size() * 20);
-	for (auto it = f.columnPositions.begin(); it != f.columnPositions.end(); it++) {
-		cpData += it.key() + ":" + QString::number(it.value()) + ";"; 
-	}
-
-	if (f.id == -1) {
-		int id = db->run(insert_into(fm).set(fm.name = str(f.name),
-											fm.hashedHeader = str(f.hashedHeader),
-											fm.delimiter = str(f.delimiter),
-											fm.textQualifier = str(f.textQualifier),
-											fm.skipFirstLine = f.skipFirstLine,
-											fm.columnPositions = str(cpData)));
-		assert_error(id >= 0);
-		f.id = id;
-	} else {
-		db->run(sqlpp::update(fm).set(fm.name = str(f.name),
-									fm.hashedHeader = str(f.hashedHeader),
-									fm.delimiter = str(f.delimiter),
-									fm.textQualifier = str(f.textQualifier),
-									fm.skipFirstLine = f.skipFirstLine,
-									fm.columnPositions = str(cpData)
-									).where(fm.id == f.id));
-	}
-}
 
 bool StatementImporterDialog::hasTextQualifier() const {
 	return _format.textQualifier != "";
@@ -306,15 +252,4 @@ QString StatementImporterDialog::guessTextQualifier() {
 	}
 
 	return "";
-}
-
-std::ostream& operator<<(std::ostream& os, const StatementFileFormat& f) {
-	os << "StatementFileFormat " << f.name
-		<< " (#" << f.hashedHeader
-		<< ", delimiter: " << f.delimiter
-		<< ", text qualifier: " << f.textQualifier << ")";
-	for (auto k : f.columnPositions.keys()) {
-		os << "\n\t" << cstr(k) << " => " << f.columnPositions[k];
-	}
-	return os;
 }
