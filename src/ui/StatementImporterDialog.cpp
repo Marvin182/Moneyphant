@@ -34,10 +34,12 @@ StatementImporterDialog::StatementImporterDialog(Db db, cqstring filePath, QWidg
 	ui->delimiter->setCurrentIndex(delimiterIndex(_format.delimiter));
 	ui->textQualifier->setCurrentIndex(textQualifierIndex(_format.textQualifier));
 	ui->skipFirstLine->setEnabled(_format.skipFirstLine);
+	ui->dateFormat->setText(_format.dateFormat);
 
 	connect(ui->delimiter, SIGNAL(currentIndexChanged(int)), this, SLOT(onDelimiterChanged(int)));
 	connect(ui->textQualifier, SIGNAL(currentIndexChanged(int)), this, SLOT(onTextQualifierChanged(int)));
 	connect(ui->skipFirstLine, SIGNAL(stateChanged(int)), this, SLOT(onSkipFirstLineChanged(int)));
+	connect(ui->dateFormat, &QLineEdit::textEdited, [&](cqstring text) { _format.dateFormat = text; });
 
 	createColumnChoosers();
 	for (auto it = _format.columnPositions.begin(); it != _format.columnPositions.end(); it++) {
@@ -116,10 +118,6 @@ void StatementImporterDialog::onTextQualifierChanged(int index) {
 
 void StatementImporterDialog::onSkipFirstLineChanged(int state) {
 	_format.skipFirstLine = state == Qt::Checked; 
-}
-
-void StatementImporterDialog::saveFormatToDb() {
-	//saveFormatToDb(_format);
 }
 
 bool StatementImporterDialog::validateFormat(const StatementFileFormat& format) {

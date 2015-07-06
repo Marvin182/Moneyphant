@@ -12,6 +12,7 @@ struct StatementFileFormat {
 	QString delimiter;
 	QString textQualifier;
 	bool skipFirstLine;
+	QString dateFormat;
 	QMap<QString, int> columnPositions;
 
 	StatementFileFormat();

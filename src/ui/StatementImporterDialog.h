@@ -28,7 +28,6 @@ private slots:
 	void onDelimiterChanged(int);
 	void onTextQualifierChanged(int);
 	void onSkipFirstLineChanged(int state);
-	void saveFormatToDb();
 	bool validateFormat(const StatementFileFormat& f);
 
 private:

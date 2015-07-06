@@ -654,6 +654,21 @@ namespace db
       };
       using _traits = sqlpp::make_traits<sqlpp::boolean>;
     };
+    struct DateFormat
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "dateFormat"; }
+        template<typename T>
+        struct _member_t
+          {
+            T dateFormat;
+            T& operator()() { return dateFormat; }
+            const T& operator()() const { return dateFormat; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::varchar>;
+    };
     struct ColumnPositions
     {
       struct _name_t
@@ -678,6 +693,7 @@ namespace db
                Format_::Delimiter,
                Format_::TextQualifier,
                Format_::SkipFirstLine,
+               Format_::DateFormat,
                Format_::ColumnPositions>
   {
     struct _name_t

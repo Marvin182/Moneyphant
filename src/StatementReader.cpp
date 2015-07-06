@@ -6,6 +6,36 @@ StatementReader::StatementReader(Db db) :
 	db(db)
 {}
 
+void StatementReader::importStatementFile(cqstring path, const StatementFileFormat& format) {
+	QFile file(path);
+	assert_error(file.exists(), "statement file '%s' dosen't exist", cstr(path));
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+		assert_error(false, "Could not open statement file '%s'", cstr(path));
+	}
+	assert_debug(!file.atEnd(), "statement file '%s' is empty", cstr(path));
+
+	mr::io::parseCsvFile(file, format.delimiter, format.textQualifier, format.skipFirstLine, [&](int lineNumber, QStringList& fields) {
+		int defaultPos = fields.size();
+		fields.append("");
+		auto val = [&](cqstring key) { return fields[format.columnPositions.value(key, defaultPos)]; };
+
+		// QStringList InputTypes = QStringList{"", "id", "date", "amount", "reference", "senderOwnerName", "senderIban", "senderBic", "senderEmail", "senderId", "receiverOwnerName", "receiverIban", "receiverBic", "receiverEmail", "receiverId", "note", "checked"};
+
+		auto from = acc(val("senderOwnerName"), val("senderIban"), val("senderBic"));
+		auto to = acc(val("receiverOwnerName"), val("receiverIban"), val("receiverBic"));
+
+		assert_error(from.id >= 0 && to.id >= 0);
+		assert_error(from.id != to.id); // accounts are not allowed to match
+
+		Transfer t(QDateTime::fromString(val("date"), format.dateFormat), from, to, val("reference"), val("amount"));
+		findOrAdd(t);
+		assert_error(t.id >= 0);
+	});
+
+	assert_error(file.atEnd(), "did not parse whole statement file '%s'", cstr(path));
+
+}
+
 void StatementReader::importMissingStatementFiles(cqstring folder) {
 	auto files = QDir(folder).entryList(QStringList("*.csv"));
 	//assert_warning(!files.empty() && "no statements found");
@@ -13,28 +43,6 @@ void StatementReader::importMissingStatementFiles(cqstring folder) {
 		importMissingStatementsCsv(folder + file);
 	}
 }
-
-/*void StatementReader::importMissingStatements(cqstring path, db::Format format) {
-	QFile file(path);
-	assert_error(file.exists(), "statement file '%s' dosen't exist", cstr(path));
-	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-		assert_error(false, "Could not open statement file '%s'", cstr(path));
-	}
-	assert_error(!file.atEnd(), "statement file '%s' is empty", cstr(path));
-
-	parseCsvFile(file, format, [&](const QStringList& fields, int lineNumber) {
-		// auto from = acc("", fields[0], "");
-		// auto to = acc("Abbuchung Kreditkarte", "#11", "");
-		// assert_error(from.id >= 0 && to.id >= 0);
-		// assert_error(from.id != to.id); // accounts are not allowed to match
-		// Transfer t(fields[2], from, to, fields[8], fields[6]);
-		// findOrAdd(t);
-		// assert_error(t.id >= 0);
-	});
-
-	assert_error(file.atEnd(), "did not parse whole statement file '%s'", cstr(path));
-	// file.close() // TODO
-}*/
 
 void StatementReader::importMissingStatementsCsv(cqstring path) {
 	// open file

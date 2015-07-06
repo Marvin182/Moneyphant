@@ -3,6 +3,7 @@
 
 #include "mr/common.h"
 #include "sql.h"
+#include "model/StatementFileFormat.h"
 #include "Account.h"
 #include "Transfer.h"
 #include <QFile>
@@ -10,6 +11,8 @@
 class StatementReader {
 public:
 	StatementReader(Db db);
+
+	void importStatementFile(cqstring path, const StatementFileFormat& format);
 
 	void importMissingStatementFiles(cqstring folder);
 	void importMissingStatementsCsv(cqstring path);
@@ -21,30 +24,6 @@ protected:
 	void parseAccountFile(QFile& file);
 	void parseMastercardStatements(QFile& file);
 	void parsePayPalStatements(QFile& file);
-
-	/* TODO
-	template <typename F>
-	void parseCsvFile(QFile& file, const db::Format& format, F lineFunc) {
-		if (format.skipFirstLine) {
-			file.readLine();
-		}
-		int tqLen = format.textQualifier.size();
-		int lineNumber = 1;
-		while (!file.atEnd()) {
-			lineNumber++;
-			auto line = QString(file.readLine());
-			auto fields = line.split(format.delimiter);
-			if (fields.isEmpty()) {
-				continue;
-			}
-			if (tqLen > 0)
-				for (auto& f : fields) {
-					assert_error(f == "" || f.size() >= 2 * tqLen, "bad formatted line '%s' in file %s line %d", cstr(line), cstr(file.fileName()), lineNumber);
-					f = f.right(f.length() - tqLen).left(f.length() - 2 * tqLen).trimmed();
-			}
-			lineFunc(fields, lineNumber);
-		}
-	}*/
 
 	template <typename F>
 	void parseCsvFile(QFile& file, cqstring delimiter, cqstring textQualifier, F lineFunc) {

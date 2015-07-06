@@ -10,6 +10,7 @@ StatementFileFormat::StatementFileFormat() :
 	delimiter(";"),
 	textQualifier("\""),
 	skipFirstLine(true),
+	dateFormat("dd.MM.yy"),
 	columnPositions()
 {}
 
@@ -29,6 +30,7 @@ bool StatementFileFormat::load(Db db) {
 	delimiter = qstr(fms.front().delimiter);
 	textQualifier = qstr(fms.front().textQualifier);
 	skipFirstLine = fms.front().skipFirstLine;
+	dateFormat = qstr(fms.front().dateFormat);
 	
 	for (auto s : qstr(fms.front().columnPositions).split(';', QString::SkipEmptyParts)) {
 		assert_debug(!s.isEmpty());
@@ -55,6 +57,7 @@ int StatementFileFormat::save(Db db) {
 											fm.delimiter = str(delimiter),
 											fm.textQualifier = str(textQualifier),
 											fm.skipFirstLine = skipFirstLine,
+											fm.dateFormat = str(dateFormat),
 											fm.columnPositions = str(cp)));
 		assert_error(id >= 0);
 	} else {
@@ -63,6 +66,7 @@ int StatementFileFormat::save(Db db) {
 									fm.delimiter = str(delimiter),
 									fm.textQualifier = str(textQualifier),
 									fm.skipFirstLine = skipFirstLine,
+									fm.dateFormat = str(dateFormat),
 									fm.columnPositions = str(cp)
 									).where(fm.id == id));
 	}
@@ -74,7 +78,8 @@ std::ostream& operator<<(std::ostream& os, const StatementFileFormat& f) {
 	os << "StatementFileFormat " << f.name
 		<< " (#" << f.hashedHeader
 		<< ", delimiter: " << f.delimiter
-		<< ", text qualifier: " << f.textQualifier << ")";
+		<< ", text qualifier: " << f.textQualifier
+		<< ", date format: " << f.dateFormat << ")";
 	for (auto k : f.columnPositions.keys()) {
 		os << "\n\t" << cstr(k) << " => " << f.columnPositions[k];
 	}

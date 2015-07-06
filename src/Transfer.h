@@ -36,7 +36,8 @@ struct Transfer {
 	bool internal;
 
 	Transfer();
-	Transfer(cqstring dateStr, const Acc& from, const Acc& to, cqstring reference, cqstring amountStr);
+	Transfer(QDateTime dateTime, const Acc& from, const Acc& to, cqstring reference, cqstring amountStr);
+	Transfer(cqstring dateStr, const Acc& from, const Acc& to, cqstring reference, cqstring amountStr); // deprecated // TODO: remove
 	Transfer(int id, const QDateTime& date, const Acc& from, const Acc& to, cqstring reference, int amount, cqstring note, bool checked, bool internal);
 
 	qint64 dateMs() const { return date.toMSecsSinceEpoch(); }
