@@ -13,7 +13,7 @@
 #include <QLabel>
 #include <QTimer>
 #include <QFileDialog>
-
+#include <QMessageBox>
 #include <QFileInfo>
 #include <QRegExp>
 
@@ -31,10 +31,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 	ui->setupUi(this);
 
-	mr::Version::get(GIT_VERSION);
-
 	loadSettings();
-	initAssertHandler();
 
 	QTimer::singleShot(0, this, SLOT(init()));
 }
@@ -62,8 +59,6 @@ void MainWindow::init() {
 	connect(ui->tabs, SIGNAL(currentChanged(int)), this, SLOT(tabChanged(int)));
 
 	// QTimer::singleShot(0, this, SLOT(importStatements()));
-
-	// QTimer::singleShot(0, this, SLOT(onImportStatements()));
 }
 
 void MainWindow::initMenu() {

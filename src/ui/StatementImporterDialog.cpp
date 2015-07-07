@@ -6,6 +6,8 @@
 #include <QFileInfo>
 #include <QStringRef>
 #include <QGridLayout>
+#include <QTextStream>
+#include <QTextCodec>
 #include <QCryptographicHash>
 
 const std::vector<QString> Delimiters{",", ";", "\t"};
@@ -166,30 +168,24 @@ const QString& StatementImporterDialog::textQualifier() const {
 	return _format.textQualifier;
 }
 
-std::vector<QString> StatementImporterDialog::readFile(cqstring filePath) {
-	QFile file(filePath);
-
-	// verify that the file is opened correctly
-	assert_error(file.exists(), "file '%s' does not exists", cstr(filePath));
-	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-		assert_error(false, "Could not open statement file '%s'", cstr(filePath));
-	}
-	assert_error(!file.atEnd(), "statement file '%s' is empty", cstr(filePath));
-
-	// read all lines
+std::vector<QString> StatementImporterDialog::readFile(cqstring filename) {
 	std::vector<QString> lines;
-	while (!file.atEnd()) {
-		auto line = file.readLine();
-		if (line.isEmpty()) {
-			continue;
+	
+	mr::io::readTextFile(filename, [&lines](QTextStream& in) {
+		// read all lines
+		while (!in.atEnd()) {
+			auto line = in.readLine().trimmed();
+			if (line.isEmpty()) {
+				continue;
+			}
+			assert_debug(!line.endsWith('\n'), "line should not end with new line char: '%s'", cstr(line));
+			lines.push_back(line);
 		}
-		assert_debug(line[line.length() - 1] == '\n');
-		lines.push_back(line.left(line.length() - 1));
-	}
-	assert_error(file.atEnd(), "statement file not read until the end");
-	assert_error(!lines.empty(), "statement file had only empty lines");
-
-	ui->filename->setText(QFileInfo(filePath).fileName());
+		assert_error(in.atEnd(), "statement file not read until the end");
+		assert_error(!lines.empty(), "statement file had only empty lines");
+	});
+	
+	ui->filename->setText(QFileInfo(filename).fileName());
 
 	auto exampleLines = lines.front();
 	for (int i = 1; i < std::min(5ul, lines.size()); i++) {

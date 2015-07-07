@@ -6,15 +6,8 @@ StatementReader::StatementReader(Db db) :
 	db(db)
 {}
 
-void StatementReader::importStatementFile(cqstring path, const StatementFileFormat& format) {
-	QFile file(path);
-	assert_error(file.exists(), "statement file '%s' dosen't exist", cstr(path));
-	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-		assert_error(false, "Could not open statement file '%s'", cstr(path));
-	}
-	assert_debug(!file.atEnd(), "statement file '%s' is empty", cstr(path));
-
-	mr::io::parseCsvFile(file, format.delimiter, format.textQualifier, format.skipFirstLine, [&](int lineNumber, QStringList& fields) {
+void StatementReader::importStatementFile(cqstring filename, const StatementFileFormat& format) {
+	mr::io::parseCsvFile(filename, format.delimiter, format.textQualifier, format.skipFirstLine, [&](int lineNumber, QStringList& fields) {
 		int defaultPos = fields.size();
 		fields.append("");
 		auto val = [&](cqstring key) { return fields[format.columnPositions.value(key, defaultPos)]; };
@@ -31,9 +24,6 @@ void StatementReader::importStatementFile(cqstring path, const StatementFileForm
 		findOrAdd(t);
 		assert_error(t.id >= 0);
 	});
-
-	assert_error(file.atEnd(), "did not parse whole statement file '%s'", cstr(path));
-
 }
 
 void StatementReader::importMissingStatementFiles(cqstring folder) {
