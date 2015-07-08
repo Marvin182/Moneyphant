@@ -1,7 +1,7 @@
 #ifndef STATEMENT_READER_H
 #define STATEMENT_READER_H
 
-#include "mr/common.h"
+#include <mr/common>
 #include "sql.h"
 #include "model/StatementFileFormat.h"
 #include "Account.h"

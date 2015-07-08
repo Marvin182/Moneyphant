@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <QDialog>
-#include "mr/common.h"
+#include <mr/common>
 #include "../sql.h"
 #include "../model/StatementFileFormat.h"
 #include "ColumnChooser.h"

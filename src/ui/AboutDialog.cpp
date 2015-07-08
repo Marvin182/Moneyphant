@@ -1,6 +1,7 @@
 #include "AboutDialog.h"
 #include "ui_AboutDialog.h"
-#include "mr/common.h"
+#include <mr/common>
+#include <mr/version>
 #include <QUrl>
 #include <QDesktopServices>
 

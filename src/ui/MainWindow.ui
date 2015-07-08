@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabs">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="transferTab">
        <attribute name="title">
@@ -44,12 +44,22 @@
            </item>
            <item row="2" column="3">
             <widget class="QDateEdit" name="trFilterEndDate">
+             <property name="dateTime">
+              <datetime>
+               <hour>0</hour>
+               <minute>0</minute>
+               <second>0</second>
+               <year>2038</year>
+               <month>12</month>
+               <day>31</day>
+              </datetime>
+             </property>
              <property name="displayFormat">
               <string>d. MMMM yyyy</string>
              </property>
              <property name="date">
               <date>
-               <year>2014</year>
+               <year>2038</year>
                <month>12</month>
                <day>31</day>
               </date>
@@ -79,7 +89,7 @@
                <hour>0</hour>
                <minute>0</minute>
                <second>0</second>
-               <year>2014</year>
+               <year>1970</year>
                <month>1</month>
                <day>1</day>
               </datetime>

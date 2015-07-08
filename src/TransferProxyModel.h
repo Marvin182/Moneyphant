@@ -1,7 +1,7 @@
 #ifndef TRANSFER_PROXY_MODEL_H
 #define TRANSFER_PROXY_MODEL_H
 
-#include "mr/common.h"
+#include <mr/common>
 #include "sql.h"
 #include "Transfer.h"
 #include <vector>

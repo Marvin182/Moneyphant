@@ -1,7 +1,7 @@
 #ifndef UI_STATEMENT_FILE_FORMAT_H
 #define UI_STATEMENT_FILE_FORMAT_H
 
-#include "mr/common.h"
+#include <mr/common>
 #include "../sql.h"
 #include <QMap>
 

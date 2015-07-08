@@ -1,7 +1,8 @@
 #include "MainWindow.h"
 #include <QApplication>
 #include <QMessageBox>
-#include "mr/common.h"
+#include <mr/common>
+#include <mr/version>
 
 AssertAction::AssertAction customAssertHandler(const char* file,
 									int line,

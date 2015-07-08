@@ -1,7 +1,7 @@
 #ifndef COLUMN_CHOOSER_H
 #define COLUMN_CHOOSER_H
 
-#include "mr/common.h"
+#include <mr/common>
 #include <QMap>
 #include <QStringList>
 #include <QWidget>

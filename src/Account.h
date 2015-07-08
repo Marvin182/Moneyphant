@@ -1,7 +1,7 @@
 #ifndef ACCOUNT_H
 #define ACCOUNT_H
 
-#include "mr/common.h"
+#include <mr/common>
 #include <QStringList>
 
 struct Account {
