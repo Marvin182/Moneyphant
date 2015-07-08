@@ -469,14 +469,20 @@ void MainWindow::clickedTransferFilterMonthLink() {
 	auto text = senderButton->text();
 
 	QDateTime start, end;
-	if (text == "201x") {
-		start = QDateTime(QDate(2010, 1, 1));
-		end = QDateTime(QDate(2019, 12, 31), QTime(23, 59));
+	if (text == "all") {
+		start = QDateTime::fromMSecsSinceEpoch(0);
+		end = QDateTime::fromMSecsSinceEpoch(4398046511104);// 2^42
 	} else if (text.length() == 4) {
 		// year range
 		int year = text.toInt();
 		start = QDateTime(QDate(year, 1, 1));
-		end = QDateTime(QDate(year, 12, 31), QTime(23, 59));
+		end = QDateTime(QDate(year + 1, 1, 1)).addSecs(-1);
+	} else if (text.length() == 7) {
+		// quarter range
+		int year = text.left(4).toInt();
+		int quarter = text.right(1).toInt();
+		start = QDateTime(QDate(year, 3 * quarter - 2, 1));
+		end = start.addMonths(3).addSecs(-1);
 	} else {
 		// month range
 		start = QDateTime::fromString(senderButton->text(), "MMM yy");
@@ -506,14 +512,29 @@ void MainWindow::createTransferFilterMonthLinks() {
 		ui->trFilterMonthLinks->addWidget(button);
 	};
 
-	addButton("201x");
+	addButton("all");
 
 	// years
 	for (int y = start.year(); y <= end.year(); y++) {
 		addButton(QString::number(y));
 	}
 
-	// months
+	// quarters
+	while (start <= end) {
+		if (start.month() <= 3) {
+			addButton(start.toString("yyyy Q1"));
+		} else if (start.month() <= 6) {
+			addButton(start.toString("yyyy Q2"));
+		} else if (start.month() <= 9) {
+			addButton(start.toString("yyyy Q3"));
+		} else {
+			addButton(start.toString("yyyy Q4"));
+		}
+		start = start.addMonths(3);
+	}
+
+	// months (last 3)
+	start = end.addMonths(-2);
 	while (start <= end) {
 		addButton(start.toString("MMM yy"));
 		start = start.addMonths(1);
