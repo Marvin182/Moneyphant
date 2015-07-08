@@ -1,7 +1,7 @@
 
 # --- !Ups
 
-alter table transfer add column internal bool not null default 0;
+alter table transfer add column internal integer not null default 0;
 
 # --- !Downs
 
@@ -15,7 +15,7 @@ create table transfer (
 	reference text not null,
 	amount integer not null,
 	note text not null default '',
-	checked bool not null default 0
+	checked integer not null default 0
 );
 insert into transfer (id, date, fromId, toId, reference, amount, note, checked) select id, date, fromId, toId, reference, amount, note, checked from transferTmp;
 drop table transferTmp;

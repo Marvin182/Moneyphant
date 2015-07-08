@@ -9,7 +9,7 @@ create table transfer (
 	reference text not null,
 	amount integer not null,
 	note text not null default '',
-	checked bool not null default 0
+	checked integer not null default 0
 );
 
 # --- !Downs

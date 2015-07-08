@@ -10,19 +10,19 @@ create table evolution (
 create table account (
 	id integer primary key autoincrement,
 	isOwn bool not null default 0,
-	name varchar(128) not null default '',
-	owner varchar(128) not null,
-	iban varchar(64) not null default '',
-	bic varchar(32) not null default '',
-	accountNumber varchar(32) not null default '',
-	bankCode varchar(32) not null default ''
+	name text not null default '',
+	owner text not null,
+	iban text not null default '',
+	bic text not null default '',
+	accountNumber text not null default '',
+	bankCode text not null default ''
 );
 
 create table transfer (
 	id integer primary key autoincrement,
 	date integer not null,
 	fromId integer not null,
-	toId integer not null,
+	toId integer not null,	
 	reference text not null,
 	amount integer not null,
 	note text not null default '',
@@ -32,7 +32,7 @@ create table transfer (
 
 create table tag (
 	id integer primary key autoincrement,
-	name varchar(64)
+	name text
 );
 
 create table accountTag (
@@ -49,11 +49,11 @@ create table transferTag (
 
 create table format (
 	id integer primary key autoincrement,
-	name varchar(64) default '',
-	hashedHeader varchar(256) not null,
-	delimiter varchar(8) not null default ";",
-	textQualifier varchar(8) not null default "",
+	name text default '',
+	hashedHeader text not null,
+	delimiter text not null default ";",
+	textQualifier text not null default "",
 	skipFirstLine bool not null default 0,
-	dateFormat varchar(32) not null default "dd.MM.yy",
+	dateFormat text not null default "dd.MM.yy",
 	columnPositions text not null
 );

@@ -19,5 +19,12 @@
 using namespace sqlpp;
 using Db = std::shared_ptr<sqlpp::sqlite3::connection>;
 
+/*
+Useful commands for sqlite
+--------------------------
+export dump for db: echo '.dump' | sqlite3 db.sqlite > test.dump
+import dump into new db: cat test.dump | sqlite3 db2.sqlite
+*/
+
 #endif // SQLPP_H
 

@@ -3,13 +3,13 @@
 
 create table account (
 	id integer primary key autoincrement,
-	isOwn bool not null default 0,
-	name varchar(128) not null default '',
-	owner varchar(128) not null,
-	iban varchar(64) not null default '',
-	bic varchar(32) not null default '',
-	accountNumber varchar(32) not null default '',
-	bankCode varchar(32) not null default ''
+	isOwn integer not null default 0,
+	name text not null default '',
+	owner text not null,
+	iban text not null default '',
+	bic text not null default '',
+	accountNumber text not null default '',
+	bankCode text not null default ''
 );
 
 # --- !Downs

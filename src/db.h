@@ -149,7 +149,7 @@ namespace db
             const T& operator()() const { return name; }
           };
       };
-      using _traits = sqlpp::make_traits<sqlpp::varchar>;
+      using _traits = sqlpp::make_traits<sqlpp::text>;
     };
     struct Owner
     {
@@ -164,7 +164,7 @@ namespace db
             const T& operator()() const { return owner; }
           };
       };
-      using _traits = sqlpp::make_traits<sqlpp::varchar, sqlpp::tag::require_insert>;
+      using _traits = sqlpp::make_traits<sqlpp::text, sqlpp::tag::require_insert>;
     };
     struct Iban
     {
@@ -179,7 +179,7 @@ namespace db
             const T& operator()() const { return iban; }
           };
       };
-      using _traits = sqlpp::make_traits<sqlpp::varchar>;
+      using _traits = sqlpp::make_traits<sqlpp::text>;
     };
     struct Bic
     {
@@ -194,7 +194,7 @@ namespace db
             const T& operator()() const { return bic; }
           };
       };
-      using _traits = sqlpp::make_traits<sqlpp::varchar>;
+      using _traits = sqlpp::make_traits<sqlpp::text>;
     };
     struct AccountNumber
     {
@@ -209,7 +209,7 @@ namespace db
             const T& operator()() const { return accountNumber; }
           };
       };
-      using _traits = sqlpp::make_traits<sqlpp::varchar>;
+      using _traits = sqlpp::make_traits<sqlpp::text>;
     };
     struct BankCode
     {
@@ -224,7 +224,7 @@ namespace db
             const T& operator()() const { return bankCode; }
           };
       };
-      using _traits = sqlpp::make_traits<sqlpp::varchar>;
+      using _traits = sqlpp::make_traits<sqlpp::text>;
     };
   }
 
@@ -442,7 +442,7 @@ namespace db
             const T& operator()() const { return name; }
           };
       };
-      using _traits = sqlpp::make_traits<sqlpp::varchar, sqlpp::tag::can_be_null>;
+      using _traits = sqlpp::make_traits<sqlpp::text, sqlpp::tag::can_be_null>;
     };
   }
 
@@ -592,7 +592,7 @@ namespace db
             const T& operator()() const { return name; }
           };
       };
-      using _traits = sqlpp::make_traits<sqlpp::varchar, sqlpp::tag::can_be_null>;
+      using _traits = sqlpp::make_traits<sqlpp::text, sqlpp::tag::can_be_null>;
     };
     struct HashedHeader
     {
@@ -607,7 +607,7 @@ namespace db
             const T& operator()() const { return hashedHeader; }
           };
       };
-      using _traits = sqlpp::make_traits<sqlpp::varchar, sqlpp::tag::require_insert>;
+      using _traits = sqlpp::make_traits<sqlpp::text, sqlpp::tag::require_insert>;
     };
     struct Delimiter
     {
@@ -622,7 +622,7 @@ namespace db
             const T& operator()() const { return delimiter; }
           };
       };
-      using _traits = sqlpp::make_traits<sqlpp::varchar>;
+      using _traits = sqlpp::make_traits<sqlpp::text>;
     };
     struct TextQualifier
     {
@@ -637,7 +637,7 @@ namespace db
             const T& operator()() const { return textQualifier; }
           };
       };
-      using _traits = sqlpp::make_traits<sqlpp::varchar>;
+      using _traits = sqlpp::make_traits<sqlpp::text>;
     };
     struct SkipFirstLine
     {
@@ -667,7 +667,7 @@ namespace db
             const T& operator()() const { return dateFormat; }
           };
       };
-      using _traits = sqlpp::make_traits<sqlpp::varchar>;
+      using _traits = sqlpp::make_traits<sqlpp::text>;
     };
     struct ColumnPositions
     {
