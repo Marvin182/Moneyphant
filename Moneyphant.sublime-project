@@ -2,15 +2,17 @@
 	"folders":
 	[
 		{
-			"follow_symlinks": true,
 			"path": "."
 		},
 		{
-			"follow_symlinks": true,
+			"name": "mr",
+			"path": "../mr"
+		},
+		{
 			"path": "/Users/marvin/lib/sqlpp11/include/sqlpp11"
 		},
 		{
-			"follow_symlinks": true,
+			"name": "sqlite-connector",
 			"path": "/Users/marvin/lib/sqlpp11-connector-sqlite3/src"
 		}
 	]

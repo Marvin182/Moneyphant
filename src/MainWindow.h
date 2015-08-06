@@ -4,6 +4,7 @@
 #include <mr/common>
 #include "sql.h"
 #include "AccountModel.h"
+#include "AccountProxyModel.h"
 #include "TransferModel.h"
 #include "TransferProxyModel.h"
 #include "TransferStats.h"
@@ -71,11 +72,12 @@ private:
 	
 	int currentAccountId;
 	AccountModel* accountModel;
-	QSortFilterProxyModel* accountProxyModel;
+	AccountProxyModel* accountProxyModel;
 	
 	int currentTransferId;
 	TransferModel* transferModel;
 	TransferProxyModel* transferProxyModel;
+
 	TransferStats transferStats;
 
 	void openDb();

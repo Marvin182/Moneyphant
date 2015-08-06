@@ -1,6 +1,5 @@
 #include "TransferProxyModel.h"
 #include "TransferModel.h"
-#include "db.h"
 
 TransferProxyModel::TransferProxyModel(Db db, QObject* parent) :
 	QSortFilterProxyModel(parent),

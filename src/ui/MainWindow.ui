@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabs">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="transferTab">
        <attribute name="title">
@@ -320,7 +320,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="accountSearch"/>
+           <widget class="QLineEdit" name="accFilterText"/>
           </item>
          </layout>
         </item>
@@ -587,7 +587,7 @@
   <tabstop>accountName</tabstop>
   <tabstop>transferView</tabstop>
   <tabstop>tabs</tabstop>
-  <tabstop>accountSearch</tabstop>
+  <tabstop>accFilterText</tabstop>
   <tabstop>checkSelectedTransfers</tabstop>
   <tabstop>accountView</tabstop>
   <tabstop>accountOwner</tabstop>

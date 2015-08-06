@@ -377,17 +377,16 @@ void MainWindow::checkSelectedTransfers() {
 }
 
 void MainWindow::setupAccountTab() {
+	// model and proxy model for filtering and sorting
 	accountModel = new AccountModel(db, this);
-
-	// setup proxy model for sorting and filtering
-	accountProxyModel = new QSortFilterProxyModel(this);
+	accountProxyModel = new AccountProxyModel(db, this);
 	accountProxyModel->setSourceModel(accountModel);
-	accountProxyModel->setFilterKeyColumn(1);
-	accountProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
-	accountProxyModel->setFilterRole(Qt::UserRole + 1);
+
+	// filter edits
+	connect(ui->accFilterText, SIGNAL(textChanged(const QString&)), accountProxyModel, SLOT(setFilterText(const QString&)));
 
 	ui->accountView->setModel(accountProxyModel);
-	// ui->accountView->setSortingEnabled(true);
+	ui->accountView->setSortingEnabled(true);
 
 	// mouse tracking for hover
 	ui->accountView->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -408,12 +407,9 @@ void MainWindow::setupAccountTab() {
 	ui->accountView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 	ui->accountView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
 	ui->accountView->horizontalHeader()->setDefaultSectionSize(60);
-	
-	connect(ui->accountSearch, SIGNAL(textChanged(const QString&)), accountProxyModel, SLOT(setFilterWildcard(const QString&)));
 }
 
 void MainWindow::setupTransferTab() {
-
 	// model and proxy model for filtering and sorting
 	transferModel = new TransferModel(db, this);
 	transferProxyModel = new TransferProxyModel(db, this);

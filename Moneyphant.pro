@@ -21,6 +21,7 @@ SOURCES += src/main.cpp\
     src/StatementReader.cpp \
     src/Transfer.cpp \
     src/AccountModel.cpp \
+    src/AccountProxyModel.cpp \
     src/TagEdit.cpp \
     src/TagHelper.cpp \
     src/TransferModel.cpp \
@@ -39,6 +40,7 @@ HEADERS  += src/MainWindow.h \
     src/StatementReader.h \
     src/Transfer.h \
     src/AccountModel.h \
+    src/AccountProxyModel.h \
     src/TagEdit.h \
     src/TagHelper.h \
     src/TransferModel.h \

@@ -8,7 +8,9 @@ Roadmap for Version 0.1
 - [x] About Dialog
 - [x] Menu
 - [x] CSV Importer
+- [X] Watch Statement Files
 - [ ] Account Search & Filter
+- [ ] Expenses Overview (needs _main_ tags)
 
 Roadmap for Version 0.2
 ------------------------
@@ -17,6 +19,7 @@ Roadmap for Version 0.2
 	- auto completion in various places
 	- list of tags
 	- auto delete unused tags (db maintenance?)
+- Charts for Expenses Overview
 
 Build
 -----
