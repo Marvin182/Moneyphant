@@ -61,6 +61,10 @@ Transfer::Transfer(int id, const QDateTime& date, const Acc& from, const Acc& to
 	internal(internal)
 {}
 
+Transfer::operator QString() const {
+	return QString("Transfer(%1: %2 -> %3: %4, %5)").arg(dateStr()).arg(from.name).arg(to.name).arg(amount).arg(reference);
+}
+
 bool Transfer::operator==(const Transfer& tr) const {
 	return date == tr.date &&
 			from == tr.from &&
@@ -82,4 +86,3 @@ std::ostream& operator<<(std::ostream& os, const Transfer& tr) {
 	os << "Transfer(" << str(tr.dateStr()) << ": " << tr.from << " -> " << tr.to << ": " << tr.amount << ", " << str(tr.reference) << ")";
 	return os;
 }
-

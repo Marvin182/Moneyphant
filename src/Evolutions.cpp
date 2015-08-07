@@ -5,6 +5,7 @@
 #include <QFile>
 #include <QStringRef>
 #include <QDateTime>
+#include <QtDebug>
 
 Evolution::Evolution() :
 	id(-1),
@@ -153,7 +154,7 @@ std::pair<std::vector<Evolution>, std::vector<Evolution>> Evolutions::upAndDowns
 }
 
 void Evolutions::executeUp(const Evolution& evolution) {
-	std::cout << "Applying evolution " << evolution.id << std::endl;
+	qDebug("Applying evolution %d", evolution.id);
 	auto ups = str(evolution.ups.join('\n'));
 	auto downs = str(evolution.downs.join('\n'));
 	for (auto& up : evolution.ups) {
@@ -167,7 +168,7 @@ void Evolutions::executeUp(const Evolution& evolution) {
 }
 
 void Evolutions::executeDown(const Evolution& evolution) {
-	std::cout << "Undoing evolution " << evolution.id << std::endl;
+	qDebug("Undoing evolution %d", evolution.id);
 	auto ups = str(evolution.ups.join('\n'));
 	auto downs = str(evolution.downs.join('\n'));
 	for (auto& down : evolution.downs) {

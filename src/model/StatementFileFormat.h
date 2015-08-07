@@ -14,10 +14,13 @@ struct StatementFileFormat {
 	bool skipFirstLine;
 	QString dateFormat;
 	QMap<QString, int> columnPositions;
+	QString lineSuffix;
 
 	StatementFileFormat();
 
 	void setHeader(cqstring header);
+
+	bool isValid() const;
 
 	bool load(Db db);
 	int save(Db db);

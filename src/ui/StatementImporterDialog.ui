@@ -172,6 +172,16 @@
     </layout>
    </item>
    <item>
+    <widget class="QLabel" name="label_5">
+     <property name="text">
+      <string>Line Suffix:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="lineSuffix"/>
+   </item>
+   <item>
     <widget class="QFrame" name="columnChoosers">
      <layout class="QGridLayout" name="gridLayout"/>
     </widget>

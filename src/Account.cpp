@@ -45,6 +45,10 @@ bool Account::isSpecial() const {
 	return iban.length() > 1 && iban[0] == QChar('#');
 }
 
+Account::operator QString() const {
+	return QString("Account(%1, %2, %3, %4, %5, %6)").arg(id).arg(name).arg(accountNumber).arg(bankCode).arg(iban).arg(bic);
+}
+
 bool Account::operator==(const Account& acc) const {
 	bool x = false;
 	if (!iban.isEmpty() && !acc.iban.isEmpty()) {
@@ -98,6 +102,6 @@ bool Account::isValidBic(cqstring bic) {
 }
 
 std::ostream& operator<<(std::ostream& os, const Account& a) {
-	os << "Account(" << a.id << ", "<< a.accountNumber << ", "<< a.bankCode << ", "<< a.iban << ", "<< a.bic << ")";
+	os << "Account(" << a.id << ", "<< str(a.name) << ", "<< a.accountNumber << ", "<< a.bankCode << ", "<< a.iban << ", "<< a.bic << ")";
 	return os;
 }

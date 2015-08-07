@@ -12,17 +12,14 @@ struct Transfer {
 		QString name;
 		Acc() :
 			id(-1)
-		 {}
+		{}
 		Acc(int id, cqstring name) :
 			id(id),
 			name(name)
 		{}
-		bool operator==(const Acc& other) const {
-			return id == other.id;
-		}
-		bool operator<(const Acc& other) const {
-			return name < other.name;
-		}
+		operator QString() const { return QString("Acc(%1, %2").arg(id).arg(name); }
+		bool operator==(const Acc& other) const { return id == other.id; }
+		bool operator<(const Acc& other) const { return name < other.name; }
 	};
 
 	int id;
@@ -43,6 +40,7 @@ struct Transfer {
 	qint64 dateMs() const { return date.toMSecsSinceEpoch(); }
 	QString dateStr() const { return date.toString("dd.MM.yyyy"); }
 
+	operator QString() const;
 	bool operator==(const Transfer& tr) const;
 	bool operator<(const Transfer& tr) const;
 };

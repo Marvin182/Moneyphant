@@ -21,6 +21,7 @@ public:
 
 	bool isSpecial() const;
 
+	operator QString() const;
 	bool operator==(const Account& acc) const;
 	bool operator!=(const Account& acc) const { return !(*this == acc); }
 

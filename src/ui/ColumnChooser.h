@@ -18,6 +18,7 @@ public:
 	int columnIndex() const { return _columnIndex; }
 	cqstring inputType() const;
 
+	void set(cqstring headerLine, cqstring exampleLine);
 	void setInputType(cqstring inputType);
 	void unset();
 	void unsetIfInputTypeIndex(cqstring inputType);

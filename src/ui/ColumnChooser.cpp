@@ -16,7 +16,7 @@ ColumnChooser::ColumnChooser(int columnIndex, cqstring headerLine, cqstring exam
 	assert_error(parent != nullptr);
 	assert_error(_columnIndex >= 0 && _columnIndex < 1000, "invalid column index %d", _columnIndex);
 	assert_error(layout != nullptr);
-	assert_error(_columnIndex == 0 || layout->rowCount() == _columnIndex, "non empty layout before ColumnChoosers were constructed: rowCount was %d, columnIndex was %d", layout->rowCount(), _columnIndex);
+	// assert_error(_columnIndex == 0 || layout->rowCount() == _columnIndex, "non empty layout before ColumnChoosers were constructed: rowCount was %d, columnIndex was %d", layout->rowCount(), _columnIndex);
 
 	layout->addWidget(lHeaderLabel, _columnIndex, 0);
 	layout->addWidget(lExampleLabel, _columnIndex, 1);
@@ -33,6 +33,11 @@ ColumnChooser::~ColumnChooser() {
 	delete lHeaderLabel;
 	delete lExampleLabel;
 	delete cbInputType;
+}
+
+void ColumnChooser::set(cqstring headerLine, cqstring exampleLine) {
+	lHeaderLabel->setText(headerLine);
+	lExampleLabel->setText(exampleLine);
 }
 
 cqstring ColumnChooser::inputType() const {

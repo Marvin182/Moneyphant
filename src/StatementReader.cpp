@@ -1,13 +1,25 @@
 #include "StatementReader.h"
 #include "sql.h"
 #include <QDir>
+#include <QtDebug>
 
 StatementReader::StatementReader(Db db) :
 	db(db)
 {}
 
+QStringList& StatementReader::addFieldsFromLineSuffix(QStringList& fields, const StatementFileFormat& format) {
+	if (format.lineSuffix.isEmpty()) return fields;
+	auto suffix = format.lineSuffix;
+	if (suffix.startsWith(format.delimiter)) {
+		suffix = suffix.right(suffix.length() - format.delimiter.length());
+	}
+	if (format.textQualifier.isEmpty()) return fields << suffix.split(format.delimiter);
+	return fields << mr::string::splitAndTrim(suffix, format.delimiter, format.textQualifier);
+}
+
 void StatementReader::importStatementFile(cqstring filename, const StatementFileFormat& format) {
 	mr::io::parseCsvFile(filename, format.delimiter, format.textQualifier, format.skipFirstLine, [&](int lineNumber, QStringList& fields) {
+		fields = addFieldsFromLineSuffix(fields, format);
 		int defaultPos = fields.size();
 		fields.append("");
 		auto val = [&](cqstring key) { return fields[format.columnPositions.value(key, defaultPos)]; };
@@ -273,6 +285,7 @@ int StatementReader::add(Account& account) {
 										acc.bankCode = str(account.bankCode)));
 	assert_error(id >= 0);
 	account.id = id;
+	qDebug() << "added account: " << account;
 	return id;
 }
 
@@ -288,6 +301,7 @@ void StatementReader::insert(Account& account) {
 										acc.bic = str(account.bic),
 										acc.accountNumber = str(account.accountNumber),
 										acc.bankCode = str(account.bankCode)));
+	qDebug() << "inserted account: " << account;
 }
 
 int StatementReader::add(Transfer& transfer) {
@@ -299,6 +313,7 @@ int StatementReader::add(Transfer& transfer) {
 										tr.amount = transfer.amount));
 	assert_error(id >= 0);
 	transfer.id = id;
+	qDebug() << "added transfer: " << transfer;
 	return id;
 }
 

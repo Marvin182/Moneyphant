@@ -547,7 +547,7 @@ void MainWindow::openDb() {
 	dbConfig = std::make_shared<sqlpp::sqlite3::connection_config>();
 	assert_fatal(dbConfig != nullptr);
 
-	QString dbPath = appLocalDataLocation() + "/db.sqlite";
+	QString dbPath = mr::qt::appLocalDataLocation() + "/db.sqlite";
 	std::cout << dbPath << std::endl;
 	dbConfig->path_to_database = str(dbPath);
 	dbConfig->flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
@@ -557,8 +557,8 @@ void MainWindow::openDb() {
 }
 
 void MainWindow::backupDb() {
-	QFile dbFile(appLocalDataLocation() + "/db.sqlite");
-	QDir backupDir(appLocalDataLocation() + "/backups");
+	QFile dbFile(mr::qt::appLocalDataLocation() + "/db.sqlite");
+	QDir backupDir(mr::qt::appLocalDataLocation() + "/backups");
 	if (!backupDir.exists()) {
 		bool b = backupDir.mkpath(".");
 		assert_error(b, "backup directory '%s' could not be created", cstr(backupDir.absolutePath()));

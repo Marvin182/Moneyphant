@@ -22,32 +22,45 @@ StatementImporterDialog::StatementImporterDialog(Db db, cqstring filePath, QWidg
 {
 	ui->setupUi(this);
 
+	// file is only read once
 	lines = readFile(filePath);
+	assert_error(!lines.empty());
 
+	// try loading format from database (identify formats based on a hash of the header)
 	_format.setHeader(lines.front());
-
 	if (!_format.load(db)) {
+		// format not found in the database, guess good starting values
 		_format.delimiter = guessDelimiter();
 		_format.textQualifier = guessTextQualifier();
 		assert_error(delimiterIndex(_format.delimiter) >= 0, "guessed invalid delimiter (%s, %d)", cstr(_format.delimiter), delimiterIndex(_format.delimiter));
 		assert_error(textQualifierIndex(_format.textQualifier) >= 0, "guessed invalid text qualifier (%s, %d)", cstr(_format.textQualifier), textQualifierIndex(_format.textQualifier));
 	}
 
+	// sync ui with format
 	ui->delimiter->setCurrentIndex(delimiterIndex(_format.delimiter));
 	ui->textQualifier->setCurrentIndex(textQualifierIndex(_format.textQualifier));
 	ui->skipFirstLine->setEnabled(_format.skipFirstLine);
 	ui->dateFormat->setText(_format.dateFormat);
+	ui->lineSuffix->setText(_format.lineSuffix);
+	if (!_format.lineSuffix.isEmpty()) {
+		for (auto& line : lines) {
+			line += _format.lineSuffix;
+		}
+	}
 
-	connect(ui->delimiter, SIGNAL(currentIndexChanged(int)), this, SLOT(onDelimiterChanged(int)));
-	connect(ui->textQualifier, SIGNAL(currentIndexChanged(int)), this, SLOT(onTextQualifierChanged(int)));
-	connect(ui->skipFirstLine, SIGNAL(stateChanged(int)), this, SLOT(onSkipFirstLineChanged(int)));
-	connect(ui->dateFormat, &QLineEdit::textEdited, [&](cqstring text) { _format.dateFormat = text; });
-
+	// create and load ColumnChoosers
 	createColumnChoosers();
 	for (auto it = _format.columnPositions.begin(); it != _format.columnPositions.end(); it++) {
 		assert_error(it.value() >= 0 && it.value() < columnChoosers.size());
 		columnChoosers[it.value()]->setInputType(it.key());
 	}
+
+	// listen for changes to format options
+	connect(ui->delimiter, SIGNAL(currentIndexChanged(int)), SLOT(onDelimiterChanged(int)));
+	connect(ui->textQualifier, SIGNAL(currentIndexChanged(int)), SLOT(onTextQualifierChanged(int)));
+	connect(ui->skipFirstLine, SIGNAL(stateChanged(int)), SLOT(onSkipFirstLineChanged(int)));
+	connect(ui->dateFormat, &QLineEdit::textEdited, [&](cqstring text) { _format.dateFormat = text; });
+	connect(ui->lineSuffix, SIGNAL(textEdited(const QString&)), SLOT(onLineSuffixChanged(const QString&)));
 
 	connect(ui->cancel, SIGNAL(clicked()), this, SLOT(reject()));
 	connect(ui->importStatements, &QPushButton::clicked, [&]() {
@@ -66,46 +79,62 @@ StatementImporterDialog::~StatementImporterDialog() {
 //
 
 void StatementImporterDialog::createColumnChoosers() {
-	// remove old columns choosers
-	for (auto dc : columnChoosers) { delete dc; }
-	columnChoosers.clear();
-	delete ui->columnChoosers->layout();
-	new QGridLayout(ui->columnChoosers);
-
 	auto header = lineAsStringList(lines.front());
 	bool hasExampleLine = lines.size() > 1;
 	auto exampleLine = hasExampleLine ? lineAsStringList(lines[1]) : QStringList();
 
+	// create a ColumnChooser for each header field (= column)
 	for (int i = 0; i < header.size(); i++) {
-		columnChoosers.push_back(new ColumnChooser(i, header[i], hasExampleLine ? exampleLine[i] : "", ui->columnChoosers));
-		connect(columnChoosers.back(), SIGNAL(inputTypeChanged(int, const QString&)), this, SLOT(onColumnChooserChanged(int, const QString&)));
+		if (i < columnChoosers.size()) {
+			// reuse existing ColumnChooser
+			columnChoosers[i]->set(header[i], hasExampleLine ? exampleLine[i] : "");
+		} else {
+			columnChoosers.push_back(new ColumnChooser(i, header[i], hasExampleLine ? exampleLine[i] : "", ui->columnChoosers));
+			connect(columnChoosers.back(), SIGNAL(inputTypeChanged(int, const QString&)), this, SLOT(onColumnChooserChanged(int, const QString&)));
+		}
 	}
+
+	// drop unused column choosers
+	// from layout...
+	while (columnChoosers.size() > header.size()) {
+		delete columnChoosers.back();
+		columnChoosers.pop_back();
+	}
+	// and from format...
+	auto& cp = _format.columnPositions;
+	for (auto it = cp.begin(); it != cp.end(); it++) {
+		if (it.value() >= header.size()) {
+			it = cp.erase(it);
+		}
+	}
+
+	ui->importStatements->setEnabled(_format.isValid());
 }
 
 void StatementImporterDialog::onColumnChooserChanged(int columnIndex, const QString& inputType) {
 	auto& cp = _format.columnPositions;
 
-	// remove old column meaning
+	// unset other ColumnChooser pointing to the same inputType
+	if (cp.contains(inputType)) {
+		auto ic = columnChoosers[cp[inputType]];
+		assert_error(ic->inputType() == inputType);
+		ic->unset();
+	}
+
+	// erase old association between previous inputType and the column
 	for (auto it = cp.begin(); it != cp.end(); it++) {
 		if (it.value() == columnIndex) {
-			it = cp.erase(it);
-			if (it == cp.end()) {
-				break;
-			}
-		}
-		if (it.key() == inputType) {
-			assert_error(it.value() >= 0 && it.value() < columnChoosers.size(), "it.value() was %d, columnChoosers.size() was %lu", it.value(), columnChoosers.size());
-			auto ic = columnChoosers[it.value()];
-			assert_error(ic->inputType() == inputType);
-			ic->unset();
+			cp.erase(it);
+			break;
 		}
 	}
 
+	// set new association between inputType and column
 	if (!inputType.isEmpty()) {
 		cp[inputType] = columnIndex;
 	}
 
-	validateFormat(_format);
+	ui->importStatements->setEnabled(_format.isValid());
 }
 
 void StatementImporterDialog::onDelimiterChanged(int index) {
@@ -122,24 +151,19 @@ void StatementImporterDialog::onSkipFirstLineChanged(int state) {
 	_format.skipFirstLine = state == Qt::Checked; 
 }
 
-bool StatementImporterDialog::validateFormat(const StatementFileFormat& format) {
-	ui->importStatements->setEnabled(false);
-	auto& cp = format.columnPositions;
+void StatementImporterDialog::onLineSuffixChanged(const QString& newSuffix) {
+	auto oldSuffix = _format.lineSuffix;
+	_format.lineSuffix = newSuffix;
 
-	if (!cp.contains("date")) {
-		return false;
-	}
-	if (!cp.contains("amount")) {
-		return false;
-	}
-	if (!cp.contains("receiverIban") && !cp.contains("receiverId") && !cp.contains("receiverEmail")) {
-		return false;
+	for (auto& line : lines) {
+		if (!oldSuffix.isEmpty()) {
+			line = line.left(line.length() - oldSuffix.length());
+		}
+		line += newSuffix;
 	}
 
-	ui->importStatements->setEnabled(true);
-	return true;
+	createColumnChoosers();
 }
-
 
 // 
 // Private Methods
@@ -171,7 +195,7 @@ const QString& StatementImporterDialog::textQualifier() const {
 std::vector<QString> StatementImporterDialog::readFile(cqstring filename) {
 	std::vector<QString> lines;
 	
-	mr::io::readTextFile(filename, [&lines](QTextStream& in) {
+	mr::io::readTextFile(filename, [&](QTextStream& in) {
 		// read all lines
 		while (!in.atEnd()) {
 			auto line = in.readLine().trimmed();
@@ -179,7 +203,7 @@ std::vector<QString> StatementImporterDialog::readFile(cqstring filename) {
 				continue;
 			}
 			assert_debug(!line.endsWith('\n'), "line should not end with new line char: '%s'", cstr(line));
-			lines.push_back(line);
+			lines.push_back(line + _format.lineSuffix);
 		}
 		assert_error(in.atEnd(), "statement file not read until the end");
 		assert_error(!lines.empty(), "statement file had only empty lines");
@@ -197,19 +221,7 @@ std::vector<QString> StatementImporterDialog::readFile(cqstring filename) {
 }
 
 QStringList StatementImporterDialog::lineAsStringList(cqstring line) const {
-	auto list = line.split(delimiter());
-
-	// remove text qualifiers
-	if (hasTextQualifier()) {
-		int tqLen = textQualifier().length();
-		for (auto& w : list) {
-			if (!w.isEmpty() && w.length() >= 2 * tqLen) {
-				w = QStringRef(&w, tqLen, w.length() - 2 * tqLen).toString();
-			}
-		}
-	}
-
-	return list;
+	return mr::string::splitAndTrim(line, _format.delimiter, _format.textQualifier);	
 }
 
 QString StatementImporterDialog::guessDelimiter() {

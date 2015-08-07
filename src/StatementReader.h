@@ -45,6 +45,9 @@ protected:
 		}
 	}
 
+	static QStringList& addFieldsFromLineSuffix(QStringList& fields, const StatementFileFormat& format);
+
+
 	Transfer::Acc acc(cqstring owner, cqstring iban, cqstring bic);
 
 	int find(Account& account);

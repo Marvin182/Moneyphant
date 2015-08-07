@@ -11,11 +11,26 @@ StatementFileFormat::StatementFileFormat() :
 	textQualifier("\""),
 	skipFirstLine(true),
 	dateFormat("dd.MM.yy"),
-	columnPositions()
+	columnPositions(),
+	lineSuffix("")
 {}
 
 void StatementFileFormat::setHeader(cqstring header) {
 	hashedHeader = QCryptographicHash::hash(header.toUtf8(), QCryptographicHash::Sha256);
+}
+
+bool StatementFileFormat::isValid() const {
+	if (!columnPositions.contains("date")) {
+		return false;
+	}
+	if (!columnPositions.contains("amount")) {
+		return false;
+	}
+	if (!columnPositions.contains("receiverIban") && !columnPositions.contains("receiverId") && !columnPositions.contains("receiverEmail")) {
+		return false;
+	}
+
+	return true;
 }
 
 bool StatementFileFormat::load(Db db) {
@@ -31,25 +46,14 @@ bool StatementFileFormat::load(Db db) {
 	textQualifier = qstr(fms.front().textQualifier);
 	skipFirstLine = fms.front().skipFirstLine;
 	dateFormat = qstr(fms.front().dateFormat);
-	
-	for (auto s : qstr(fms.front().columnPositions).split(';', QString::SkipEmptyParts)) {
-		assert_debug(!s.isEmpty());
-		auto kv = s.split(':');
-		assert_debug(kv.size() == 2);
-		columnPositions[kv[0]] = kv[1].toInt();
-	}
+	mr::qt::deserialize(qstr(fms.front().columnPositions), columnPositions);
+	lineSuffix = qstr(fms.front().lineSuffix);
 
 	return true;
 }
 
 int StatementFileFormat::save(Db db) {
 	db::Format fm;
-
-	QString cp;
-	cp.reserve(20 * columnPositions.size());
-	for (auto it = columnPositions.begin(); it != columnPositions.end(); it++) {
-		cp += it.key() + ":" + QString::number(it.value()) + ";"; 
-	}
 
 	if (id == -1) {
 		id = db->run(insert_into(fm).set(fm.name = str(name),
@@ -58,7 +62,9 @@ int StatementFileFormat::save(Db db) {
 											fm.textQualifier = str(textQualifier),
 											fm.skipFirstLine = skipFirstLine,
 											fm.dateFormat = str(dateFormat),
-											fm.columnPositions = str(cp)));
+											fm.columnPositions = str(mr::qt::serialize(columnPositions)),
+											fm.lineSuffix = str(lineSuffix)
+											));
 		assert_error(id >= 0);
 	} else {
 		db->run(sqlpp::update(fm).set(fm.name = str(name),
@@ -67,7 +73,8 @@ int StatementFileFormat::save(Db db) {
 									fm.textQualifier = str(textQualifier),
 									fm.skipFirstLine = skipFirstLine,
 									fm.dateFormat = str(dateFormat),
-									fm.columnPositions = str(cp)
+									fm.columnPositions = str(mr::qt::serialize(columnPositions)),
+									fm.lineSuffix = str(lineSuffix)
 									).where(fm.id == id));
 	}
 
