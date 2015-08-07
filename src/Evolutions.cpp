@@ -172,7 +172,17 @@ void Evolutions::executeDown(const Evolution& evolution) {
 	auto downs = str(evolution.downs.join('\n'));
 	for (auto& down : evolution.downs) {
 		assert_debug(down.endsWith(';'), "down command ('%s') of evolution does not end with ';'", cstr(down));
-		db->execute(str(down));
+		try {
+			db->execute(str(down));
+		} catch (sqlpp::exception e) {
+			if (down.contains("drop table") && QString(e.what()).contains("no such table")) {
+				// table was already dropped, but maybe something else failed previously (e.g. syntax error in up command)
+				// => ignore and continue
+			} else {
+				throw e;
+			}
+		}
+
 	}
 
 	long long now = QDateTime::currentMSecsSinceEpoch();
