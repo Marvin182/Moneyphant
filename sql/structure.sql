@@ -55,5 +55,6 @@ create table format (
 	textQualifier text not null default "",
 	skipFirstLine bool not null default 0,
 	dateFormat text not null default "dd.MM.yy",
-	columnPositions text not null
+	columnPositions text not null,
+	lineSuffix text not null
 );

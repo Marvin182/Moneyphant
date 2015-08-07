@@ -684,6 +684,21 @@ namespace db
       };
       using _traits = sqlpp::make_traits<sqlpp::text, sqlpp::tag::require_insert>;
     };
+    struct LineSuffix
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "lineSuffix"; }
+        template<typename T>
+        struct _member_t
+          {
+            T lineSuffix;
+            T& operator()() { return lineSuffix; }
+            const T& operator()() const { return lineSuffix; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::text, sqlpp::tag::require_insert>;
+    };
   }
 
   struct Format: sqlpp::table_t<Format,
@@ -694,7 +709,8 @@ namespace db
                Format_::TextQualifier,
                Format_::SkipFirstLine,
                Format_::DateFormat,
-               Format_::ColumnPositions>
+               Format_::ColumnPositions,
+               Format_::LineSuffix>
   {
     struct _name_t
     {
