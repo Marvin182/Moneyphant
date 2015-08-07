@@ -11,7 +11,8 @@ AboutDialog::AboutDialog(QWidget *parent) :
 {
 	ui->setupUi(this);
 
-	ui->version->setText(tr("Version: %1").arg(mr::Version::get().longStr()));
+	ui->version->setText(tr("Version: %1").arg(mr::Version::app().longStr()));
+	ui->libversion->setText(tr("mr-lib version: %1").arg(mr::Version::lib().longStr()));
 }
 
 AboutDialog::~AboutDialog()

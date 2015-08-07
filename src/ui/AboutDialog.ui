@@ -95,6 +95,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QLabel" name="libversion">
+       <property name="text">
+        <string>mr-lib version: 0.1.7-zyxwvu</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="verticalSpacer_2">
        <property name="orientation">
         <enum>Qt::Vertical</enum>

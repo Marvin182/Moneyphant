@@ -1,15 +1,17 @@
 Moneyphant
 ==========
 
-TODO: short description
+Small programm that helps you combining bank statements from different sources (e.g. many banks allow export in csv files). You can tag, search and sort your transaction and I plan to add some graphs. This helps you to retain control of your expenses. Knowing how much you spend on what (food, car, holidays, ...) lets you safe money more effectively, if you want to ;)
 
-Roadmap for Version 0.1
+The program doesn't need an internet connection and will not send any data. All your data is saved on your computer (unencrypted for now).
+
+Roadmap for Version 0.1.x
 -----------------------
 - [x] About Dialog
 - [x] Menu
 - [x] CSV Importer
-- [X] Watch Statement Files
-- [ ] Account Search & Filter
+- [x] Account Search & Filter
+- [ ] Watch Statement Files
 - [ ] Expenses Overview (needs _main_ tags)
 
 Roadmap for Version 0.2
@@ -21,19 +23,21 @@ Roadmap for Version 0.2
 	- auto delete unused tags (db maintenance?)
 - Charts for Expenses Overview
 
+
 Build
 -----
-TODO: how to build (ddl2cpp)
+TODO
+
 
 Devolopement
 ------------
-The (sqlite3) database schema is defined in sql/structure.sql After changing it you must create a new evolution in sql/evolutions with update commands for the database. The schema is then managed by the app itself (via the Evolutions class). Once released Evolutions are not allowed to change.
+Moneyphant uses a sqlite3 database. The (sqlite3) database schema is defined in sql/structure.sql After changing it you must create a new evolution in sql/evolutions with update commands for the database. The schema is then managed by the app itself (via the `Evolutions` class). Once released evolutions are not allowed to change, so think twice before changing the database schema.
 Steps:
-1. update the structure in sql/structure.sql
-2. add an evolution in sql/evolutions with the correct commands to update an existing database
-3. add the evolution file to evolutions.qrc
+1. add an evolution in sql/evolutions with the correct commands to update an existing database
+2. add the evolution file to evolutions.qrc
+3. update the structure in sql/structure.sql
 4. execute to `sql/ddl2cpp sql/structure.sql src/db db` to update database classes
-5. (Nothing to do for you) At startup the app will execute evolutions to update the database schema if necessary.
+5. At startup the app will execute evolutions to update the database schema if necessary. You don't need to do anything.
 
 
 Thanks To ...

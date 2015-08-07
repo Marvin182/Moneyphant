@@ -61,4 +61,3 @@ macx {
     QMAKE_POST_LINK += /usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $${VERSION}\" $${INFO_PLIST_PATH}
 }
 
-RESOURCES +=

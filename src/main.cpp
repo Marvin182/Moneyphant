@@ -2,7 +2,6 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <mr/common>
-#include <mr/version>
 
 AssertAction::AssertAction customAssertHandler(const char* file,
 									int line,
@@ -32,8 +31,6 @@ int main(int argc, char *argv[])
 	QApplication::setOrganizationName("Moneyphant");
 	QApplication::setOrganizationDomain("moneyphant");
 	QApplication::setApplicationName("Moneyphant");
-
-	mr::Version::get(GIT_VERSION);
 
 	mr::assert::setCustomAssertHandler(customAssertHandler);
 	mr::assert::initAssertHandler();
