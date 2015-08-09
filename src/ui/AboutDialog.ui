@@ -27,17 +27,35 @@
        <property name="enabled">
         <bool>true</bool>
        </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="maximumSize">
         <size>
          <width>200</width>
          <height>200</height>
         </size>
        </property>
+       <property name="baseSize">
+        <size>
+         <width>200</width>
+         <height>200</height>
+        </size>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::NoFrame</enum>
+       </property>
        <property name="text">
         <string/>
        </property>
+       <property name="textFormat">
+        <enum>Qt::PlainText</enum>
+       </property>
        <property name="pixmap">
-        <pixmap resource="../../graphics/graphics.qrc">:/icon.png</pixmap>
+        <pixmap resource="../../graphics/graphics.qrc">:/icon200.png</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>
@@ -84,7 +102,7 @@
      <item>
       <widget class="QLabel" name="linkToWebsite">
        <property name="text">
-        <string>Website: &lt;a href=&quot;https://github.com/Marvin182/Moneyhpant&quot;&gt;github.com/Marvin182/Moneyhpant&lt;/a&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Website: &lt;a href=&quot;https://github.com/Marvin182/Moneyphant&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#000000;&quot;&gt;github.com/Marvin182/Moneyphant&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="openExternalLinks">
         <bool>true</bool>
