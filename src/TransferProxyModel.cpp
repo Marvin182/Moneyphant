@@ -50,7 +50,7 @@ void TransferProxyModel::setFilterText(const QString& filterText) {
 		} else {
 			// search for tag
 			db::Tag tag;
-			auto t = db->run(select(tag.id).from(tag).where(tag.name == str(p)));
+			auto t = (*db)(select(tag.id).from(tag).where(tag.name == str(p)));
 			if (!t.empty()) {
 				txtTags.push_back(t.front().id);
 			} else {
@@ -97,9 +97,9 @@ bool TransferProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sour
 		db::TransferTag trTag;
 		db::AccountTag accTag;
 		for (int tagId : txtTags) {
-			bool hasTag = db->run(select(count(trTag.tagId)).from(trTag).where(trTag.tagId == tagId and trTag.transferId == transfer.id)).front().count > 0;
+			bool hasTag = (*db)(select(count(trTag.tagId)).from(trTag).where(trTag.tagId == tagId and trTag.transferId == transfer.id)).front().count > 0;
 			if (!hasTag) {
-				hasTag = db->run(select(count(accTag.tagId)).from(accTag).where(accTag.tagId == tagId
+				hasTag = (*db)(select(count(accTag.tagId)).from(accTag).where(accTag.tagId == tagId
 					and (accTag.accountId == transfer.from.id or accTag.accountId == transfer.to.id))).front().count > 0;
 			}
 			if (!hasTag) {

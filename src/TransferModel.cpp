@@ -92,13 +92,13 @@ bool TransferModel::setData(const QModelIndex& index, const QVariant& value, int
 			assert_error(value.canConvert<bool>());
 			assert_error(value.toBool() != t.checked, "checked state didn't change");
 			t.checked = value.toBool();
-			db->run(update(tr).set(tr.checked = t.checked).where(tr.id == t.id));
+			(*db)(update(tr).set(tr.checked = t.checked).where(tr.id == t.id));
 			break;
 		case 6:
 			assert_error(value.canConvert<bool>());
 			assert_error(value.toBool() != t.internal);
 			t.internal = value.toBool();
-			db->run(update(tr).set(tr.internal = t.internal).where(tr.id == t.id));
+			(*db)(update(tr).set(tr.internal = t.internal).where(tr.id == t.id));
 			break;
 		default:
 			assert_unreachable();
@@ -151,7 +151,7 @@ void TransferModel::setNote(int transferId, cqstring note) {
 	} else {
 		t.note = note;
 		db::Transfer tr;
-		db->run(update(tr).set(tr.note = str(note)).where(tr.id == transferId));
+		(*db)(update(tr).set(tr.note = str(note)).where(tr.id == transferId));
 	}
 }
 
@@ -159,7 +159,7 @@ void TransferModel::setChecked(const std::vector<int>& transferIds, bool checked
 	// update database
 	db::Transfer tr;
 	auto ids = value_list_t<std::vector<int>>(transferIds);
-	db->run(update(tr).set(tr.checked = checked).where(tr.id.in(ids)));
+	(*db)(update(tr).set(tr.checked = checked).where(tr.id.in(ids)));
 
 	// update cache and inform UI
 	QVector<int> roles(1, Qt::CheckStateRole);
@@ -191,12 +191,12 @@ void TransferModel::reloadCache() {
 	auto accFrom = acc.as(fromName);
 	auto accTo = acc.as(toName);
 	
-	int rowCount = db->run(select(count(tr.id)).from(tr).where(true)).front().count;
+	int rowCount = (*db)(select(count(tr.id)).from(tr).where(true)).front().count;
 	cachedTransfers.clear();
 	cachedTransfers.reserve(rowCount);
 
 	int row = 0;
-	for (const auto& t : db->run(select(all_of(tr), accFrom.name.as(fromName), accTo.name.as(toName)).from(tr, accFrom, accTo).
+	for (const auto& t : (*db)(select(all_of(tr), accFrom.name.as(fromName), accTo.name.as(toName)).from(tr, accFrom, accTo).
 									where(tr.fromId == accFrom.id and tr.toId == accTo.id))) {
 		id2Row[t.id] = row++;
 		cachedTransfers.push_back({(int)t.id, QDateTime::fromMSecsSinceEpoch(t.date), Transfer::Acc(t.fromId, qstr(t.fromName)), Transfer::Acc(t.toId, qstr(t.toName)), qstr(t.reference), (int)t.amount, qstr(t.note), t.checked, t.internal});
@@ -220,7 +220,7 @@ void TransferModel::updateTransfer(int transferId, F f) {
 	auto& t = getById(transferId);
 	f(t);
 	db::Transfer tr;
-	db->run(update(tr).set(tr.date = t.dateMs(),
+	(*db)(update(tr).set(tr.date = t.dateMs(),
 							tr.fromId = t.from.id,
 							tr.toId = t.to.id,
 							tr.reference = str(t.reference),

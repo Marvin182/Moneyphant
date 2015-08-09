@@ -21,6 +21,7 @@ public:
 	~StatementImporterDialog();
 
 	StatementFileFormat format() const { return _format; }
+	bool watchFile() const;
 
 private slots:
 	void createColumnChoosers();

@@ -35,7 +35,7 @@ bool StatementFileFormat::isValid() const {
 
 bool StatementFileFormat::load(Db db) {
 	db::Format fm;
-	auto fms = db->run(select(all_of(fm)).from(fm).where(fm.hashedHeader == str(hashedHeader)));
+	auto fms = (*db)(select(all_of(fm)).from(fm).where(fm.hashedHeader == str(hashedHeader)));
 	if (fms.empty()) {
 		return false;
 	}
@@ -56,7 +56,7 @@ int StatementFileFormat::save(Db db) {
 	db::Format fm;
 
 	if (id == -1) {
-		id = db->run(insert_into(fm).set(fm.name = str(name),
+		id = (*db)(insert_into(fm).set(fm.name = str(name),
 											fm.hashedHeader = str(hashedHeader),
 											fm.delimiter = str(delimiter),
 											fm.textQualifier = str(textQualifier),
@@ -67,7 +67,7 @@ int StatementFileFormat::save(Db db) {
 											));
 		assert_error(id >= 0);
 	} else {
-		db->run(sqlpp::update(fm).set(fm.name = str(name),
+		(*db)(sqlpp::update(fm).set(fm.name = str(name),
 									fm.hashedHeader = str(hashedHeader),
 									fm.delimiter = str(delimiter),
 									fm.textQualifier = str(textQualifier),

@@ -2,16 +2,22 @@
 #define STATEMENT_READER_H
 
 #include <mr/common>
+#include <QFile>
+#include <QFileSystemWatcher>
 #include "sql.h"
 #include "model/StatementFileFormat.h"
 #include "Account.h"
 #include "Transfer.h"
-#include <QFile>
 
-class StatementReader {
+class StatementReader : public QObject {
+	Q_OBJECT
 public:
 	StatementReader(Db db);
 
+	void setDb(Db db) { this->db = db; }
+
+public slots:
+	void startWatchingFiles();
 	void importStatementFile(cqstring path, const StatementFileFormat& format);
 
 protected:

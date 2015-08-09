@@ -84,7 +84,7 @@ bool AccountModel::setData(const QModelIndex& index, const QVariant& value, int 
 		assert_error(value.canConvert<bool>());
 		assert_error(value.toBool() != a.isOwn);
 		a.isOwn = value.toBool();
-		db->run(update(acc).set(acc.isOwn = a.isOwn).where(acc.id == a.id));
+		(*db)(update(acc).set(acc.isOwn = a.isOwn).where(acc.id == a.id));
 	} else {
 		switch (index.column()) {
 			case 1:
@@ -97,7 +97,7 @@ bool AccountModel::setData(const QModelIndex& index, const QVariant& value, int 
 		}
 	}
 
-	db->run(update(acc).set(acc.isOwn = a.isOwn,
+	(*db)(update(acc).set(acc.isOwn = a.isOwn,
 							acc.name = str(a.name),
 							acc.owner = str(a.owner),
 							acc.iban = str(a.iban),
@@ -139,12 +139,12 @@ void AccountModel::reloadCache() {
 	emit beginResetModel();
 
 	db::Account acc;
-	int rowCount = db->run(select(count(acc.id)).from(acc).where(true)).front().count;
+	int rowCount = (*db)(select(count(acc.id)).from(acc).where(true)).front().count;
 	cachedAccounts.clear();
 	cachedAccounts.reserve(rowCount);
 
 	int row = 0;
-	for (const auto& a : db->run(select(all_of(acc)).from(acc).where(true).order_by(acc.isOwn.desc(), acc.name))) {
+	for (const auto& a : (*db)(select(all_of(acc)).from(acc).where(true).order_by(acc.isOwn.desc(), acc.name.asc()))) {
 		id2Row[a.id] = row++;
 		cachedAccounts.push_back({(int)a.id, a.isOwn, qstr(a.name), qstr(a.owner), qstr(a.iban), qstr(a.bic), qstr(a.accountNumber), qstr(a.bankCode)});
 	}
@@ -178,7 +178,7 @@ void AccountModel::mergeAccounts(int firstId, int secondId) {
 	if (first.bic.isEmpty()) first.bic = second.bic;
 	if (first.accountNumber.isEmpty()) first.accountNumber = second.accountNumber;
 	if (first.bankCode.isEmpty()) first.bankCode = second.bankCode;
-	db->run(update(acc).set(acc.isOwn = first.isOwn,
+	(*db)(update(acc).set(acc.isOwn = first.isOwn,
 							acc.name = str(first.name),
 							acc.owner = str(first.owner),
 							acc.iban = str(first.iban),
@@ -189,21 +189,21 @@ void AccountModel::mergeAccounts(int firstId, int secondId) {
 
 	// combine tags
 	std::vector<int> firstTagsIds;
-	for (const auto& t: db->run(select(accTag.tagId).from(accTag).where(accTag.accountId == first.id))) {
+	for (const auto& t: (*db)(select(accTag.tagId).from(accTag).where(accTag.accountId == first.id))) {
 		firstTagsIds.push_back(t.tagId);
 	}
 	auto tagIds = value_list_t<std::vector<int>>(firstTagsIds);
-	for (const auto& t : db->run(select(accTag.tagId).from(accTag).where(accTag.accountId == second.id and accTag.tagId.not_in(tagIds)))) {
-		db->run(insert_into(accTag).set(accTag.tagId = t.tagId, accTag.accountId = first.id));
+	for (const auto& t : (*db)(select(accTag.tagId).from(accTag).where(accTag.accountId == second.id and accTag.tagId.not_in(tagIds)))) {
+		(*db)(insert_into(accTag).set(accTag.tagId = t.tagId, accTag.accountId = first.id));
 	}
-	db->run(remove_from(accTag).where(accTag.accountId == second.id));
+	(*db)(remove_from(accTag).where(accTag.accountId == second.id));
 
 	// update transfers to use the first account
-	db->run(update(tr).set(tr.fromId = first.id).where(tr.fromId == second.id));
-	db->run(update(tr).set(tr.toId = first.id).where(tr.toId == second.id));
+	(*db)(update(tr).set(tr.fromId = first.id).where(tr.fromId == second.id));
+	(*db)(update(tr).set(tr.toId = first.id).where(tr.toId == second.id));
 
 	// clean second account from db
-	db->run(remove_from(acc).where(acc.id == second.id));
+	(*db)(remove_from(acc).where(acc.id == second.id));
 
 	reloadCache(); // yes, too expensive, but I don't feel like writing code to update cachedAccounts and id2Row and view
 }

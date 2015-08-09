@@ -31,7 +31,7 @@ void AccountProxyModel::setFilterText(const QString& filterText) {
 		} else {
 			// search for tag
 			db::Tag tag;
-			auto t = db->run(select(tag.id).from(tag).where(tag.name == str(p)));
+			auto t = (*db)(select(tag.id).from(tag).where(tag.name == str(p)));
 			if (!t.empty()) {
 				txtTags.push_back(t.front().id);
 			} else {
@@ -63,7 +63,7 @@ bool AccountProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourc
 	} else if (!txtTags.empty()) {
 		db::AccountTag accTag;
 		for (int tagId : txtTags) {
-			bool hasTag = db->run(select(count(accTag.tagId)).from(accTag).where(accTag.tagId == tagId and accTag.accountId == account.id)).front().count > 0;
+			bool hasTag = (*db)(select(count(accTag.tagId)).from(accTag).where(accTag.tagId == tagId and accTag.accountId == account.id)).front().count > 0;
 			if (!hasTag) {
 				accepted = false;
 				break;

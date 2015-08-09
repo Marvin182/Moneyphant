@@ -27,7 +27,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	accountProxyModel(nullptr),
 	currentTransferId(-1),
 	transferModel(nullptr),
-	transferProxyModel(nullptr)
+	transferProxyModel(nullptr),
+	statementReader(nullptr)
 {
 	ui->setupUi(this);
 
@@ -50,6 +51,8 @@ MainWindow::~MainWindow() {
 void MainWindow::init() {
 	openDb();
 	Evolutions(db).run();
+
+	statementReader.setDb(db);
 	tagHelper = new TagHelper(db, this);
 
 	initMenu();
@@ -58,7 +61,7 @@ void MainWindow::init() {
 	setupTransferTab();
 	connect(ui->tabs, SIGNAL(currentChanged(int)), this, SLOT(tabChanged(int)));
 
-	// QTimer::singleShot(0, this, SLOT(importStatements()));
+//	QTimer::singleShot(0, &statementReader, SLOT(startWatchingFiles()));
 }
 
 void MainWindow::initMenu() {
@@ -77,22 +80,40 @@ void MainWindow::onShowPreferences() {
 }
 
 void MainWindow::onImportStatements() {
+	// ask user for the file to import
 	auto dir = settings.value("import/lastdir", QDir::home().absolutePath()).toString();
 	auto filePath = QFileDialog::getOpenFileName(this, tr("Select one ore more statement files"), dir, "CSV-Files (*.csv);;Text Files (*.txt);;All Files (*)");
 	if (filePath.isEmpty()) {
 		return;
 	}
 
+	// remember file path
 	QFileInfo info(filePath);
 	assert_error(info.exists(), "choosen file '%s' does not exists", cstr(filePath));
 	settings.setValue("import/lastdir", info.absolutePath());
 
+	// get file format
 	StatementImporterDialog dialog(db, filePath, this);
-	if (dialog.exec() == QDialog::Accepted) {
-		auto format = dialog.format();
-		StatementReader sr(db);
-		sr.importStatementFile(filePath, format);
+	if (dialog.exec() != QDialog::Accepted) {
+		return;
 	}
+
+	// remember file for auto import on startup
+	db::File f;
+	auto fs = (*db)(select(f.id).from(f).where(f.path == str(info.absolutePath())));
+	if (fs.empty()) {
+		(*db)(insert_into(f).set(f.path = str(info.absolutePath()),
+									f.formatId = dialog.format().id,
+									f.watch = (int)dialog.watchFile()));
+	} else {
+		(*db)(sqlpp::update(f).set(f.formatId = dialog.format().id,
+								f.watch = (int)dialog.watchFile()
+								).where(f.id == fs.front().id));
+	}
+
+	// do import
+	StatementReader sr(db);
+	sr.importStatementFile(filePath, dialog.format());
 }
 
 void MainWindow::onExportTransfers() {
@@ -104,8 +125,6 @@ void MainWindow::onShowAbout() {
 	dialog.exec();
 }
 
-
-
 void MainWindow::importStatements(QString folder) {
 	if (folder.isEmpty()) {
 		folder = settings.value("autoimport/folder", QDir::homePath()).toString();
@@ -116,8 +135,9 @@ void MainWindow::importStatements(QString folder) {
 		return;
 	}
 
-	StatementReader reader(db);
-	reader.importMissingStatementFiles(folder);
+	// TODO
+	// StatementReader reader(db);
+	// reader.importMissingStatementFiles(folder);
 }
 
 void MainWindow::loadSettings() {
@@ -497,7 +517,7 @@ void MainWindow::createTransferFilterMonthLinks() {
 	}
 
 	db::Transfer tr;
-	auto startEnd = db->run(select(min(tr.date), max(tr.date)).from(tr).where(true));
+	auto startEnd = (*db)(select(min(tr.date), max(tr.date)).from(tr).where(true));
 	auto start = QDateTime::fromMSecsSinceEpoch(startEnd.front().min).date();
 	auto end = QDateTime::fromMSecsSinceEpoch(startEnd.front().max).date();
 
@@ -548,12 +568,12 @@ void MainWindow::openDb() {
 	assert_fatal(dbConfig != nullptr);
 
 	QString dbPath = mr::qt::appLocalDataLocation() + "/db.sqlite";
-	std::cout << dbPath << std::endl;
+	qInfo() << "Opening database " << dbPath;
 	dbConfig->path_to_database = str(dbPath);
 	dbConfig->flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
 	dbConfig->debug = false;
 
-	db = std::make_shared<sqlpp::sqlite3::connection>(dbConfig);
+	db = std::make_shared<sqlpp::sqlite3::connection>(*dbConfig);
 }
 
 void MainWindow::backupDb() {

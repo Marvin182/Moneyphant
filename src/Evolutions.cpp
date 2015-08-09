@@ -121,10 +121,10 @@ std::pair<std::vector<Evolution>, std::vector<Evolution>> Evolutions::upAndDowns
 	std::vector<Evolution> upEvos, downEvos;
 	db::Evolution evo;
 	for (const auto& evolution : evolutions) {
-		auto result = db->run(select(all_of(evo)).from(evo).where(evo.id == evolution.id));
+		auto result = (*db)(select(all_of(evo)).from(evo).where(evo.id == evolution.id));
 		if (result.empty()) {
 			// Case 1: evolution missing, definitely needs a up
-			db->run(insert_into(evo).set(evo.id = evolution.id));
+			(*db)(insert_into(evo).set(evo.id = evolution.id));
 			upEvos.push_back(evolution);
 		} else {
 			// check if evolution has the same ups as expected
@@ -164,7 +164,7 @@ void Evolutions::executeUp(const Evolution& evolution) {
 
 	long long now = QDateTime::currentMSecsSinceEpoch();
 	db::Evolution evo;
-	db->run(update(evo).set(evo.upTs = now, evo.downTs = 0, evo.ups = ups, evo.downs = downs).where(evo.id == evolution.id));
+	(*db)(update(evo).set(evo.upTs = now, evo.downTs = 0, evo.ups = ups, evo.downs = downs).where(evo.id == evolution.id));
 }
 
 void Evolutions::executeDown(const Evolution& evolution) {
@@ -188,5 +188,5 @@ void Evolutions::executeDown(const Evolution& evolution) {
 
 	long long now = QDateTime::currentMSecsSinceEpoch();
 	db::Evolution evo;
-	db->run(update(evo).set(evo.upTs = 0, evo.downTs = now, evo.ups = ups, evo.downs = downs).where(evo.id == evolution.id));
+	(*db)(update(evo).set(evo.upTs = 0, evo.downTs = now, evo.ups = ups, evo.downs = downs).where(evo.id == evolution.id));
 }

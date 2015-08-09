@@ -3,6 +3,7 @@
 
 #include <sqlpp11/table.h>
 #include <sqlpp11/column_types.h>
+#include <sqlpp11/char_sequence.h>
 
 namespace db
 {
@@ -10,9 +11,10 @@ namespace db
   {
     struct Id
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "id"; }
+        static constexpr const char _literal[] =  "id";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -25,9 +27,10 @@ namespace db
     };
     struct UpTs
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "upTs"; }
+        static constexpr const char _literal[] =  "upTs";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -40,9 +43,10 @@ namespace db
     };
     struct DownTs
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "downTs"; }
+        static constexpr const char _literal[] =  "downTs";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -55,9 +59,10 @@ namespace db
     };
     struct Ups
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "ups"; }
+        static constexpr const char _literal[] =  "ups";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -70,9 +75,10 @@ namespace db
     };
     struct Downs
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "downs"; }
+        static constexpr const char _literal[] =  "downs";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -92,9 +98,10 @@ namespace db
                Evolution_::Ups,
                Evolution_::Downs>
   {
-    struct _name_t
+    struct _alias_t
     {
-      static constexpr const char* _get_name() { return "evolution"; }
+      static constexpr const char _literal[] =  "evolution";
+      using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
       template<typename T>
       struct _member_t
       {
@@ -108,9 +115,10 @@ namespace db
   {
     struct Id
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "id"; }
+        static constexpr const char _literal[] =  "id";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -123,9 +131,10 @@ namespace db
     };
     struct IsOwn
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "isOwn"; }
+        static constexpr const char _literal[] =  "isOwn";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -138,9 +147,10 @@ namespace db
     };
     struct Name
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "name"; }
+        static constexpr const char _literal[] =  "name";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -153,9 +163,10 @@ namespace db
     };
     struct Owner
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "owner"; }
+        static constexpr const char _literal[] =  "owner";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -168,9 +179,10 @@ namespace db
     };
     struct Iban
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "iban"; }
+        static constexpr const char _literal[] =  "iban";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -183,9 +195,10 @@ namespace db
     };
     struct Bic
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "bic"; }
+        static constexpr const char _literal[] =  "bic";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -198,9 +211,10 @@ namespace db
     };
     struct AccountNumber
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "accountNumber"; }
+        static constexpr const char _literal[] =  "accountNumber";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -213,9 +227,10 @@ namespace db
     };
     struct BankCode
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "bankCode"; }
+        static constexpr const char _literal[] =  "bankCode";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -238,9 +253,10 @@ namespace db
                Account_::AccountNumber,
                Account_::BankCode>
   {
-    struct _name_t
+    struct _alias_t
     {
-      static constexpr const char* _get_name() { return "account"; }
+      static constexpr const char _literal[] =  "account";
+      using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
       template<typename T>
       struct _member_t
       {
@@ -254,9 +270,10 @@ namespace db
   {
     struct Id
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "id"; }
+        static constexpr const char _literal[] =  "id";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -269,9 +286,10 @@ namespace db
     };
     struct Date
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "date"; }
+        static constexpr const char _literal[] =  "date";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -284,9 +302,10 @@ namespace db
     };
     struct FromId
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "fromId"; }
+        static constexpr const char _literal[] =  "fromId";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -299,9 +318,10 @@ namespace db
     };
     struct ToId
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "toId"; }
+        static constexpr const char _literal[] =  "toId";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -314,9 +334,10 @@ namespace db
     };
     struct Reference
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "reference"; }
+        static constexpr const char _literal[] =  "reference";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -329,9 +350,10 @@ namespace db
     };
     struct Amount
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "amount"; }
+        static constexpr const char _literal[] =  "amount";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -344,9 +366,10 @@ namespace db
     };
     struct Note
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "note"; }
+        static constexpr const char _literal[] =  "note";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -359,9 +382,10 @@ namespace db
     };
     struct Checked
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "checked"; }
+        static constexpr const char _literal[] =  "checked";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -374,9 +398,10 @@ namespace db
     };
     struct Internal
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "internal"; }
+        static constexpr const char _literal[] =  "internal";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -400,9 +425,10 @@ namespace db
                Transfer_::Checked,
                Transfer_::Internal>
   {
-    struct _name_t
+    struct _alias_t
     {
-      static constexpr const char* _get_name() { return "transfer"; }
+      static constexpr const char _literal[] =  "transfer";
+      using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
       template<typename T>
       struct _member_t
       {
@@ -416,9 +442,10 @@ namespace db
   {
     struct Id
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "id"; }
+        static constexpr const char _literal[] =  "id";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -431,9 +458,10 @@ namespace db
     };
     struct Name
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "name"; }
+        static constexpr const char _literal[] =  "name";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -450,9 +478,10 @@ namespace db
                Tag_::Id,
                Tag_::Name>
   {
-    struct _name_t
+    struct _alias_t
     {
-      static constexpr const char* _get_name() { return "tag"; }
+      static constexpr const char _literal[] =  "tag";
+      using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
       template<typename T>
       struct _member_t
       {
@@ -466,9 +495,10 @@ namespace db
   {
     struct TagId
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "tagId"; }
+        static constexpr const char _literal[] =  "tagId";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -481,9 +511,10 @@ namespace db
     };
     struct AccountId
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "accountId"; }
+        static constexpr const char _literal[] =  "accountId";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -500,9 +531,10 @@ namespace db
                AccountTag_::TagId,
                AccountTag_::AccountId>
   {
-    struct _name_t
+    struct _alias_t
     {
-      static constexpr const char* _get_name() { return "accountTag"; }
+      static constexpr const char _literal[] =  "accountTag";
+      using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
       template<typename T>
       struct _member_t
       {
@@ -516,9 +548,10 @@ namespace db
   {
     struct TagId
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "tagId"; }
+        static constexpr const char _literal[] =  "tagId";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -531,9 +564,10 @@ namespace db
     };
     struct TransferId
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "transferId"; }
+        static constexpr const char _literal[] =  "transferId";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -550,9 +584,10 @@ namespace db
                TransferTag_::TagId,
                TransferTag_::TransferId>
   {
-    struct _name_t
+    struct _alias_t
     {
-      static constexpr const char* _get_name() { return "transferTag"; }
+      static constexpr const char _literal[] =  "transferTag";
+      using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
       template<typename T>
       struct _member_t
       {
@@ -566,9 +601,10 @@ namespace db
   {
     struct Id
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "id"; }
+        static constexpr const char _literal[] =  "id";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -581,9 +617,10 @@ namespace db
     };
     struct Name
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "name"; }
+        static constexpr const char _literal[] =  "name";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -596,9 +633,10 @@ namespace db
     };
     struct HashedHeader
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "hashedHeader"; }
+        static constexpr const char _literal[] =  "hashedHeader";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -611,9 +649,10 @@ namespace db
     };
     struct Delimiter
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "delimiter"; }
+        static constexpr const char _literal[] =  "delimiter";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -626,9 +665,10 @@ namespace db
     };
     struct TextQualifier
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "textQualifier"; }
+        static constexpr const char _literal[] =  "textQualifier";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -641,9 +681,10 @@ namespace db
     };
     struct SkipFirstLine
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "skipFirstLine"; }
+        static constexpr const char _literal[] =  "skipFirstLine";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -656,9 +697,10 @@ namespace db
     };
     struct DateFormat
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "dateFormat"; }
+        static constexpr const char _literal[] =  "dateFormat";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -671,9 +713,10 @@ namespace db
     };
     struct ColumnPositions
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "columnPositions"; }
+        static constexpr const char _literal[] =  "columnPositions";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -686,9 +729,10 @@ namespace db
     };
     struct LineSuffix
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "lineSuffix"; }
+        static constexpr const char _literal[] =  "lineSuffix";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -712,9 +756,10 @@ namespace db
                Format_::ColumnPositions,
                Format_::LineSuffix>
   {
-    struct _name_t
+    struct _alias_t
     {
-      static constexpr const char* _get_name() { return "format"; }
+      static constexpr const char _literal[] =  "format";
+      using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
       template<typename T>
       struct _member_t
       {
@@ -728,9 +773,10 @@ namespace db
   {
     struct Id
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "id"; }
+        static constexpr const char _literal[] =  "id";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -743,9 +789,10 @@ namespace db
     };
     struct Path
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "path"; }
+        static constexpr const char _literal[] =  "path";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -758,9 +805,10 @@ namespace db
     };
     struct FormatId
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "formatId"; }
+        static constexpr const char _literal[] =  "formatId";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -773,9 +821,10 @@ namespace db
     };
     struct Watch
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "watch"; }
+        static constexpr const char _literal[] =  "watch";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -788,9 +837,10 @@ namespace db
     };
     struct LastImport
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "lastImport"; }
+        static constexpr const char _literal[] =  "lastImport";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -803,9 +853,10 @@ namespace db
     };
     struct LastImportHash
     {
-      struct _name_t
+      struct _alias_t
       {
-        static constexpr const char* _get_name() { return "lastImportHash"; }
+        static constexpr const char _literal[] =  "lastImportHash";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
@@ -826,9 +877,10 @@ namespace db
                File_::LastImport,
                File_::LastImportHash>
   {
-    struct _name_t
+    struct _alias_t
     {
-      static constexpr const char* _get_name() { return "file"; }
+      static constexpr const char _literal[] =  "file";
+      using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
       template<typename T>
       struct _member_t
       {

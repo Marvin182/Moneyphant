@@ -73,6 +73,10 @@ StatementImporterDialog::~StatementImporterDialog() {
 	delete ui;
 }
 
+bool StatementImporterDialog::watchFile() const {
+	return ui->watchFile->isChecked();
+}
+
 
 //
 // Private Slots

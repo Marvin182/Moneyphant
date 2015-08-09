@@ -28,42 +28,14 @@ AssertAction::AssertAction customAssertHandler(const char* file,
 	return AssertAction::AssertAction::Abort;
 }
 
-QString messageTypeToStr(QtMsgType type) {
-	switch (type) {
-		case QtDebugMsg: return "Debug";
-		case QtInfoMsg: return "Info";
-		case QtWarningMsg: return "Warning";
-		case QtCriticalMsg: return "Critical";
-		case QtFatalMsg: return "Fatal";
-		case QtSystemMsg: return "System";
-	}
-	assert_unreachable();
-	return "";
-}
-
-void customMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
-	// print to standard output
-	std::cout << QString(" %1: %2\n").arg(messageTypeToStr(type)).arg(msg) << std::endl;
-
-	// write message into log file
-	QFile messageLog(messageLogFileName);
-	if (messageLog.open(QIODevice::Append | QIODevice::Text)) {
-		auto dt = QString(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss")).toUtf8();
-		messageLog.write(dt);
-		messageLog.write(QString(" %1: %2\n").arg(messageTypeToStr(type)).arg(msg).toUtf8());
-		messageLog.close();
-	}
-}
- 
 int main(int argc, char *argv[]) {
 	QApplication::setOrganizationName("Moneyphant");
 	QApplication::setOrganizationDomain("moneyphant");
 	QApplication::setApplicationName("Moneyphant");
 
-	mr::assert::setCustomAssertHandler(customAssertHandler);
-	mr::assert::initAssertHandler();
-
-	qInstallMessageHandler(customMessageHandler);
+	mr::assert::addAssertHandler(customAssertHandler);
+	mr::assert::init();
+	mr::log::init();
 
 	QApplication a(argc, argv);
 	MainWindow w;

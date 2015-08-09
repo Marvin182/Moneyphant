@@ -7,6 +7,10 @@ StatementReader::StatementReader(Db db) :
 	db(db)
 {}
 
+void StatementReader::startWatchingFiles() {
+	
+}
+
 void StatementReader::importStatementFile(cqstring filename, const StatementFileFormat& format) {
 	qInfo() << "importing " << filename;
 	mr::io::parseCsvFile(filename, format.delimiter, format.textQualifier, format.skipFirstLine, [&](int lineNumber, QStringList& fields) {
@@ -42,11 +46,11 @@ void StatementReader::importStatementFile(cqstring filename, const StatementFile
 }
 
 QStringList& StatementReader::addFieldsFromLineSuffix(QStringList& fields, const StatementFileFormat& format) {
-	if (format.lineSuffix.isEmpty()) return fields;
 	auto suffix = format.lineSuffix;
 	if (suffix.startsWith(format.delimiter)) {
 		suffix = suffix.right(suffix.length() - format.delimiter.length());
 	}
+	if (suffix.isEmpty()) return fields;
 	if (format.textQualifier.isEmpty()) return fields << suffix.split(format.delimiter);
 	return fields << mr::string::splitAndTrim(suffix, format.delimiter, format.textQualifier);
 }
@@ -78,7 +82,7 @@ int StatementReader::find(Account& account) {
 		accsSql.where.add(acc.bankCode == str(account.bankCode));
 	}
 
-	auto accs = db->run(accsSql);
+	auto accs = (*db)(accsSql);
 
 	if (!accs.empty()) {
 		assert_error(accs.begin() != accs.end());
@@ -93,7 +97,7 @@ int StatementReader::find(Account& account) {
 
 int StatementReader::find(Transfer& transfer) {
 	db::Transfer tr;
-	auto trs = db->run(select(tr.id).from(tr).where(tr.date == transfer.dateMs() and
+	auto trs = (*db)(select(tr.id).from(tr).where(tr.date == transfer.dateMs() and
 											tr.fromId == transfer.from.id and
 											tr.toId == transfer.to.id and
 											tr.reference == str(transfer.reference) and
@@ -130,7 +134,7 @@ int StatementReader::add(Account& account) {
 	assert_error(account.id == -1, "cannot add account that has already an id (id: %d, name: %s)", account.id, cstr(account.name));
 
 	db::Account acc;
-	int id = db->run(insert_into(acc).set(acc.isOwn = account.isOwn,
+	int id = (*db)(insert_into(acc).set(acc.isOwn = account.isOwn,
 										acc.name = str(account.name),
 										acc.owner = str(account.owner),
 										acc.iban = str(account.iban),
@@ -145,7 +149,7 @@ int StatementReader::add(Account& account) {
 
 int StatementReader::add(Transfer& transfer) {
 	db::Transfer tr;
-	int id = db->run(insert_into(tr).set(tr.date = transfer.dateMs(),
+	int id = (*db)(insert_into(tr).set(tr.date = transfer.dateMs(),
 										tr.fromId = transfer.from.id,
 										tr.toId = transfer.to.id,
 										tr.reference = str(transfer.reference),
@@ -159,9 +163,9 @@ int StatementReader::add(Transfer& transfer) {
 void StatementReader::insert(const Account& account) {
 	db::Account acc;
 	assert_error(account.id >= 0);
-	assert_error(db->run(select(count(acc.id)).from(acc).where(acc.id == account.id)).front().count == 0, "there exists already an account with id %d", account.id);
+	assert_error((*db)(select(count(acc.id)).from(acc).where(acc.id == account.id)).front().count == 0, "there exists already an account with id %d", account.id);
 	
-	db->run(insert_into(acc).set(acc.id = account.id,
+	(*db)(insert_into(acc).set(acc.id = account.id,
 								acc.isOwn = account.isOwn,
 								acc.name = str(account.name),
 								acc.owner = str(account.owner),
@@ -176,9 +180,9 @@ void StatementReader::insert(const Account& account) {
 void StatementReader::insert(const Transfer& transfer) {
 	db::Transfer tr;
 	assert_error(transfer.id >= 0);
-	assert_error(db->run(select(count(tr.id)).from(tr).where(tr.id == transfer.id)).front().count == 0, "there exists already a transfer with id %d", transfer.id);
+	assert_error((*db)(select(count(tr.id)).from(tr).where(tr.id == transfer.id)).front().count == 0, "there exists already a transfer with id %d", transfer.id);
 
-	db->run(insert_into(tr).set(tr.id = transfer.id,
+	(*db)(insert_into(tr).set(tr.id = transfer.id,
 										tr.date = transfer.dateMs(),
 										tr.fromId = transfer.from.id,
 										tr.toId = transfer.to.id,

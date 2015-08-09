@@ -9,6 +9,7 @@
 #include "TransferProxyModel.h"
 #include "TransferStats.h"
 #include "TagHelper.h"
+#include "StatementReader.h"
 #include <QMainWindow>
 #include <QSettings>
 #include <QSortFilterProxyModel>
@@ -17,10 +18,8 @@ namespace Ui {
 	class MainWindow;
 }
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
 	Q_OBJECT
-
 public:
 	explicit MainWindow(QWidget *parent = 0);
 	~MainWindow();
@@ -79,6 +78,7 @@ private:
 	TransferProxyModel* transferProxyModel;
 
 	TransferStats transferStats;
+	StatementReader statementReader;
 
 	void openDb();
 	void loadSettings();
