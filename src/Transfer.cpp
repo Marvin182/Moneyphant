@@ -7,13 +7,13 @@ Transfer::Transfer() :
 	id(-1)
 {}
 
-Transfer::Transfer(QDateTime dateTime, const Acc& from, const Acc& to, cqstring reference, cqstring amountStr) :
+Transfer::Transfer(QDateTime dateTime, const Acc& from, const Acc& to, cqstring reference, int amount) :
 	id(-1),
 	date(dateTime),
 	from(from),
 	to(to),
 	reference(reference),
-	amount(0),
+	amount(amount),
 	note(""),
 	checked(false),
 	internal(false)
@@ -23,30 +23,7 @@ Transfer::Transfer(QDateTime dateTime, const Acc& from, const Acc& to, cqstring 
 	}
 	assert_warning(date.date().year() >= 1970 && date.date().year() < 2070, "year is %d", date.date().year());
 
-	amount = QString(amountStr).replace(',', '.').toDouble() * 100;
 	assert_warning(amount != 0);
-}
-
-// deprecated
-// TODO: remove
-Transfer::Transfer(cqstring dateStr, const Acc& from, const Acc& to, cqstring reference, cqstring amountStr) :
-	id(-1),
-	date(QDateTime::fromString(dateStr, "dd.MM.yy")),
-	from(from),
-	to(to),
-	reference(reference),
-	amount(0),
-	note(""),
-	checked(false),
-	internal(false)
-{
-	if (date.date().year() < 1970) {
-		date = date.addYears(100);
-	}
-	assert(date.date().year() >= 1970 && date.date().year() < 2070);
-
-	amount = QString(amountStr).replace(',', '.').toDouble() * 100;
-	assert(amount != 0);
 }
 
 Transfer::Transfer(int id, const QDateTime& date, const Acc& from, const Acc& to, cqstring reference, int amount, cqstring note, bool checked, bool internal) :

@@ -14,51 +14,23 @@ public:
 
 	void importStatementFile(cqstring path, const StatementFileFormat& format);
 
-	void importMissingStatementFiles(cqstring folder);
-	void importMissingStatementsCsv(cqstring path);
-
 protected:
 	Db db;
 
-	void parseMBSStatements(QFile& file);
-	void parseAccountFile(QFile& file);
-	void parseMastercardStatements(QFile& file);
-	void parsePayPalStatements(QFile& file);
-
-	template <typename F>
-	void parseCsvFile(QFile& file, cqstring delimiter, cqstring textQualifier, F lineFunc) {
-		auto separator = '"' + delimiter + '"';
-		int lineNumber = 1;
-		while (!file.atEnd()) {
-			lineNumber++;
-			auto line = QString(file.readLine());
-			auto fields = line.split(separator);
-			if (fields.isEmpty()) {
-				continue;
-			}
-			auto& firstField = fields[0];
-			auto& lastField = fields[fields.length() - 1];
-			PPK_ASSERT_ERROR(firstField[0] == '"' && lastField[lastField.length() - 1] == '"', "bad formatted line '%s' in file %s line %d", cstr(line), cstr(file.fileName()), lineNumber);
-			firstField = firstField.right(firstField.length() - 1);
-			lastField = lastField.left(firstField.length() - 1);
-			lineFunc(fields, lineNumber);
-		}
-	}
-
-	static QStringList& addFieldsFromLineSuffix(QStringList& fields, const StatementFileFormat& format);
-
+	QStringList& addFieldsFromLineSuffix(QStringList& fields, const StatementFileFormat& format);
 
 	Transfer::Acc acc(cqstring owner, cqstring iban, cqstring bic);
 
 	int find(Account& account);
 	int find(Transfer& transfer);
-
-	int add(Account& account);
-	void insert(Account& account);
-	int add(Transfer& transfer);
-
 	int findOrAdd(Account& account);
 	int findOrAdd(Transfer& transfer);
+
+	int add(Account& account);
+	int add(Transfer& transfer);
+	void insert(const Account& account);
+	void insert(const Transfer& account);
+
 };
 
 #endif // STATEMENT_READER_H
