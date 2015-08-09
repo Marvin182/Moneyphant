@@ -724,5 +724,119 @@ namespace db
       };
     };
   };
+  namespace File_
+  {
+    struct Id
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "id"; }
+        template<typename T>
+        struct _member_t
+          {
+            T id;
+            T& operator()() { return id; }
+            const T& operator()() const { return id; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::integer, sqlpp::tag::can_be_null>;
+    };
+    struct Path
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "path"; }
+        template<typename T>
+        struct _member_t
+          {
+            T path;
+            T& operator()() { return path; }
+            const T& operator()() const { return path; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::text, sqlpp::tag::require_insert>;
+    };
+    struct FormatId
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "formatId"; }
+        template<typename T>
+        struct _member_t
+          {
+            T formatId;
+            T& operator()() { return formatId; }
+            const T& operator()() const { return formatId; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::integer, sqlpp::tag::require_insert>;
+    };
+    struct Watch
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "watch"; }
+        template<typename T>
+        struct _member_t
+          {
+            T watch;
+            T& operator()() { return watch; }
+            const T& operator()() const { return watch; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::integer>;
+    };
+    struct LastImport
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "lastImport"; }
+        template<typename T>
+        struct _member_t
+          {
+            T lastImport;
+            T& operator()() { return lastImport; }
+            const T& operator()() const { return lastImport; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::integer>;
+    };
+    struct LastImportHash
+    {
+      struct _name_t
+      {
+        static constexpr const char* _get_name() { return "lastImportHash"; }
+        template<typename T>
+        struct _member_t
+          {
+            T lastImportHash;
+            T& operator()() { return lastImportHash; }
+            const T& operator()() const { return lastImportHash; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::text>;
+    };
+  }
+
+  struct File: sqlpp::table_t<File,
+               File_::Id,
+               File_::Path,
+               File_::FormatId,
+               File_::Watch,
+               File_::LastImport,
+               File_::LastImportHash>
+  {
+    struct _name_t
+    {
+      static constexpr const char* _get_name() { return "file"; }
+      template<typename T>
+      struct _member_t
+      {
+        T file;
+        T& operator()() { return file; }
+        const T& operator()() const { return file; }
+      };
+    };
+  };
 }
 #endif
