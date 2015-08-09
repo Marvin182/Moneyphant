@@ -31,9 +31,11 @@ AssertAction::AssertAction customAssertHandler(const char* file,
 QString messageTypeToStr(QtMsgType type) {
 	switch (type) {
 		case QtDebugMsg: return "Debug";
+		case QtInfoMsg: return "Info";
 		case QtWarningMsg: return "Warning";
 		case QtCriticalMsg: return "Critical";
 		case QtFatalMsg: return "Fatal";
+		case QtSystemMsg: return "System";
 	}
 	assert_unreachable();
 	return "";

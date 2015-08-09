@@ -8,6 +8,7 @@ StatementReader::StatementReader(Db db) :
 {}
 
 void StatementReader::importStatementFile(cqstring filename, const StatementFileFormat& format) {
+	qInfo() << "importing " << filename;
 	mr::io::parseCsvFile(filename, format.delimiter, format.textQualifier, format.skipFirstLine, [&](int lineNumber, QStringList& fields) {
 		// add suffix with additional fields (e.g. for default values)
 		fields = addFieldsFromLineSuffix(fields, format);
@@ -138,7 +139,7 @@ int StatementReader::add(Account& account) {
 										acc.bankCode = str(account.bankCode)));
 	assert_error(id >= 0);
 	account.id = id;
-	qDebug() << "added " << account;
+	qInfo() << "added " << account;
 	return id;
 }
 
@@ -151,7 +152,7 @@ int StatementReader::add(Transfer& transfer) {
 										tr.amount = transfer.amount));
 	assert_error(id >= 0);
 	transfer.id = id;
-	qDebug() << "added " << transfer;
+	qInfo() << "added " << transfer;
 	return id;
 }
 
@@ -169,7 +170,7 @@ void StatementReader::insert(const Account& account) {
 								acc.accountNumber = str(account.accountNumber),
 								acc.bankCode = str(account.bankCode)
 								));
-	qDebug() << "inserted " << account;
+	qInfo() << "inserted " << account;
 }
 
 void StatementReader::insert(const Transfer& transfer) {
@@ -187,5 +188,5 @@ void StatementReader::insert(const Transfer& transfer) {
 										tr.checked = transfer.checked
 										));
 
-	qDebug() << "inserted " << transfer;
+	qInfo() << "inserted " << transfer;
 }

@@ -154,7 +154,7 @@ std::pair<std::vector<Evolution>, std::vector<Evolution>> Evolutions::upAndDowns
 }
 
 void Evolutions::executeUp(const Evolution& evolution) {
-	qDebug("Applying evolution %d", evolution.id);
+	qInfo("Applying evolution %d", evolution.id);
 	auto ups = str(evolution.ups.join('\n'));
 	auto downs = str(evolution.downs.join('\n'));
 	for (auto& up : evolution.ups) {
@@ -168,7 +168,7 @@ void Evolutions::executeUp(const Evolution& evolution) {
 }
 
 void Evolutions::executeDown(const Evolution& evolution) {
-	qDebug("Undoing evolution %d", evolution.id);
+	qInfo("Undoing evolution %d", evolution.id);
 	auto ups = str(evolution.ups.join('\n'));
 	auto downs = str(evolution.downs.join('\n'));
 	for (auto& down : evolution.downs) {
