@@ -216,7 +216,7 @@ std::vector<QString> StatementImporterDialog::readFile(cqstring filename) {
 	ui->filename->setText(QFileInfo(filename).fileName());
 
 	auto exampleLines = lines.front();
-	for (int i = 1; i < std::min(5ul, lines.size()); i++) {
+    for (int i = 1; i < std::min(5, (int)lines.size()); i++) {
 		exampleLines += "\n" + lines[i];
 	}
 	ui->exampleLines->setPlainText(exampleLines);

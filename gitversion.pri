@@ -40,18 +40,19 @@ GIT_VERSION ~= s/-/"."
 GIT_VERSION ~= s/g/""
 GIT_VERSION ~= s/v/""
 
+# Adding C preprocessor #DEFINE so we can use it in C++ code
+# also here we want full version on every system so using GIT_VERSION
+DEFINES += GIT_VERSION=\\\"$$GIT_VERSION\\\"
+
 # Now we are ready to pass parsed version to Qt
 VERSION = $$GIT_VERSION
 
 # shorten the version
 VERSION ~= s/\.[a-f0-9]{6,}//
 VERSION ~= s/[a-z][a-z0-9]+\.//
- 
-# Adding C preprocessor #DEFINE so we can use it in C++ code
-# also here we want full version on every system so using GIT_VERSION
-DEFINES += GIT_VERSION=\\\"$$GIT_VERSION\\\"
 
 win32 { # On windows version can only be numerical so remove commit hash
+    VERSION ~= s/\.[a-zA-Z]+/""
 }
 
 # By default Qt only uses major and minor version for Info.plist on Mac.

@@ -1,6 +1,5 @@
 #include "PreferenceDialog.h"
 #include "ui_PreferenceDialog.h"
-#include "../globals/all.h"
 #include <QUrl>
 #include <QDesktopServices>
 
