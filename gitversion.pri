@@ -17,10 +17,13 @@ win32 {
  
 # Need to call git with manually specified paths to repository
 BASE_GIT_COMMAND = git --git-dir $$PWD/.git --work-tree $$PWD
- 
+
 # Trying to get version from git tag / revision
 GIT_VERSION = $$system($$BASE_GIT_COMMAND describe --long --always --tags 2> $$NULL_DEVICE)
-# DEFINES += GIT_DESCRIBE=\\\"$$GIT_VERSION\\\"
+GIT_BUILD_NUMBER = $$system($$BASE_GIT_COMMAND rev-list HEAD --count 2> $$NULL_DEVICE)
+isEmpty(GIT_BUILD_NUMBER) {
+    GIT_BUILD_NUMBER = 0
+}
 
 # Check if we only have hash without version number
 !contains(GIT_VERSION,v\d+\.\d+\.?\d*-?\w*-\d+-\w+) {
@@ -28,14 +31,17 @@ GIT_VERSION = $$system($$BASE_GIT_COMMAND describe --long --always --tags 2> $$N
     isEmpty(GIT_VERSION) {
         GIT_VERSION = $$VERSION
     } else { # otherwise construct proper git describe string
-        GIT_COMMIT_COUNT = $$system($$BASE_GIT_COMMAND rev-list HEAD --count 2> $$NULL_DEVICE)
-        isEmpty(GIT_COMMIT_COUNT) {
-            GIT_COMMIT_COUNT = 0
-        }
-        GIT_VERSION = $$VERSION-$$GIT_COMMIT_COUNT-g$$GIT_VERSION
+        GIT_VERSION = $$VERSION-$$GIT_BUILD_NUMBER-g$$GIT_VERSION
     }
 }
- 
+
+# insert build number after revision
+LEFT = $$GIT_VERSION
+LEFT ~= s/-.*//
+RIGHT = $$GIT_VERSION
+RIGHT ~= s/v\d+\.\d+\.?\d*//
+GIT_VERSION = $$LEFT-$$GIT_BUILD_NUMBER$$RIGHT
+
 # Turns describe output like v0.1.5-42-g652c397 into "0.1.5.42.652c397"
 GIT_VERSION ~= s/-/"."
 GIT_VERSION ~= s/g/""
@@ -46,15 +52,9 @@ GIT_VERSION ~= s/v/""
 DEFINES += GIT_VERSION=\\\"$$GIT_VERSION\\\"
 
 # Now we are ready to pass parsed version to Qt
-VERSION = $$GIT_VERSION
-
-# shorten the version
-VERSION ~= s/\.[a-f0-9]{6,}//
-VERSION ~= s/[a-z][a-z0-9]+\.//
-
-win32 { # On windows version can only be numerical so remove commit hash
-    VERSION ~= s/\.[a-zA-Z]+/""
-}
+VERSION = $$LEFT-$$GIT_BUILD_NUMBER
+VERSION ~= s/-/"."
+VERSION ~= s/v/""
 
 # By default Qt only uses major and minor version for Info.plist on Mac.
 # This will rewrite Info.plist with full version

@@ -58,7 +58,7 @@
         <pixmap resource="../../graphics/graphics.qrc">:/icon200.png</pixmap>
        </property>
        <property name="scaledContents">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
        <property name="wordWrap">
         <bool>true</bool>
@@ -93,6 +93,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QLabel" name="libversion">
+       <property name="text">
+        <string>mr-lib version: 0.1.7-zyxwvu</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QLabel" name="copyright">
        <property name="text">
         <string>Copyright © 2015 Marvin Ritter</string>
@@ -109,13 +116,6 @@
        </property>
        <property name="textInteractionFlags">
         <set>Qt::TextBrowserInteraction</set>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="libversion">
-       <property name="text">
-        <string>mr-lib version: 0.1.7-zyxwvu</string>
        </property>
       </widget>
      </item>

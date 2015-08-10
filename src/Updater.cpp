@@ -11,24 +11,26 @@ Updater::Updater(Db db, QSettings& settings) :
 {}
 
 void Updater::run() {
-	int version = settings.value("updater/version", mr::Version::app().asNumber()).toInt();
+	int newBuild = mr::Version::app().build;
+	int build = settings.value("update/build", newBuild).toInt();
+	assert_error(build <= newBuild, "build from settings: %d, new build: %d", build, newBuild);
 
-	beforeEvolutions(version);
+	beforeEvolutions(build);
 	Evolutions(db).run();
-	afterEvolatuons(version);
+	afterEvolatuons(build);
 
-	settings.setValue("updater/version", mr::Version::app().asNumber());
+	settings.setValue("updater/version", newBuild);
 }
 
-void Updater::beforeEvolutions(int version) {
+void Updater::beforeEvolutions(int build) {
 
 }
 
-void Updater::afterEvolatuons(int version) {
+void Updater::afterEvolatuons(int build) {
 	db::Account acc;
 
-	if (version < 9964) {
-		qLog() << "Updating to version 9964";
+	if (build < 50) {
+		qLog() << "Running update for build 50";
 		// preprocessing for iban, bic, accountNumber and bankCode changed
 		// remove white spaces
 		std::vector<Account> accounts;

@@ -15,8 +15,8 @@ private:
 	Db db;
 	QSettings& settings;
 
-	void beforeEvolutions(int version);
-	void afterEvolatuons(int version);
+	void beforeEvolutions(int build);
+	void afterEvolatuons(int build);
 };
 
 #endif // UPDATER_H
