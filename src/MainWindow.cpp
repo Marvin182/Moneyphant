@@ -37,11 +37,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow() {
 	saveSettings();
-
 	backupDb();
 
 	delete accountModel;
-
 	delete ui;
 }
 
@@ -56,8 +54,8 @@ void MainWindow::init() {
 	initAccountTab();
 	ui->transferTab->init(db, accountModel);
 
-	connect(ui->tabs, SIGNAL(currentChanged(int)), this, SLOT(tabChanged(int)));
-	
+	connect(ui->tabs, &QTabWidget::currentChanged, [&](int index) { if (index == 0) ui->transferTab->reloadCache(); });
+	connect(&statementReader, &StatementReader::newStatementsImported, [&]() { accountModel->reloadCache(); ui->transferTab->reloadCache(); });
 
 	QTimer::singleShot(0, &statementReader, SLOT(startWatchingFiles()));
 }
@@ -131,8 +129,7 @@ void MainWindow::onImportStatements() {
 	}
 
 	// do import
-	StatementReader sr(db);
-	sr.addFile(filePath, dialog.format(), dialog.watchFile());
+	statementReader.addFile(filePath, dialog.format(), dialog.watchFile());
 }
 
 void MainWindow::onExportTransfers() {
@@ -163,15 +160,6 @@ void MainWindow::saveSettings() {
 	settings.setValue("mainwindow/geometry", geometry());
 	settings.setValue("mainwindow/fullScreen", isFullScreen());
 	settings.setValue("mainwindow/tab", ui->tabs->currentIndex());
-}
-
-void MainWindow::tabChanged(int index) {
-	// TODO
-	switch (index) {
-		case 0:
-			// transferModel->reloadCache();
-			break;
-	}
 }
 
 void MainWindow::setCurrentAccount(const QModelIndex& idx) {

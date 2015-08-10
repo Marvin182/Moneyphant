@@ -21,14 +21,12 @@ TransferTab::TransferTab(QWidget *parent) :
 TransferTab::~TransferTab()
 {
 	delete ui;
-
-	assert_fatal(model != nullptr);
-	assert_fatal(proxyModel != nullptr);
-	delete model;
-	delete proxyModel;
+	if (model != nullptr) delete model;
+	if (proxyModel != nullptr) delete proxyModel;
 }
 
 void TransferTab::init(Db db, AccountModel* accountModel) {
+	this->db = db;
 	tagHelper.setDb(db);
 	this->accountModel = accountModel;
 
@@ -74,14 +72,20 @@ void TransferTab::init(Db db, AccountModel* accountModel) {
 	connect(ui->transfers->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), SLOT(showSelected(const QItemSelection&, const QItemSelection&)));
 
 	// auto save changes to tags
-	connect(ui->detailsTags, SIGNAL(tagsAdded(QStringList, const std::vector<int>&)), &tagHelper, SLOT(addTags(QStringList, const std::vector<int>&)));
-	connect(ui->detailsTags, SIGNAL(tagsRemoved(QStringList, const std::vector<int>&)), &tagHelper, SLOT(removeTags(QStringList, const std::vector<int>&)));
+	connect(ui->detailsTags, SIGNAL(tagsAdded(QStringList, const std::vector<int>&)), &tagHelper, SLOT(addTransferTags(QStringList, const std::vector<int>&)));
+	connect(ui->detailsTags, SIGNAL(tagsRemoved(QStringList, const std::vector<int>&)), &tagHelper, SLOT(removeTransferTags(QStringList, const std::vector<int>&)));
 
 	// details edit
 	connect(ui->detailsNote, SIGNAL(textChanged()), SLOT(saveNote()));
 
 	// actions
 	connect(ui->checkSelected, SIGNAL(clicked()), SLOT(checkSelected()));
+}
+
+void TransferTab::reloadCache() {
+	assert_error(model != nullptr);
+
+	model->reloadCache();
 }
 
 // TODO: reimplement export transfers
@@ -131,6 +135,7 @@ void TransferTab::createFilterMonthLinks() {
 
 	db::Transfer tr;
 	auto startEnd = (*db)(select(min(tr.date), max(tr.date)).from(tr).where(true));
+	assert_error(!startEnd.empty());
 	auto start = QDateTime::fromMSecsSinceEpoch(startEnd.front().min).date();
 	auto end = QDateTime::fromMSecsSinceEpoch(startEnd.front().max).date();
 
@@ -228,6 +233,8 @@ void TransferTab::checkSelected() {
 }
 	
 void TransferTab::updateTags() {
+if (model->empty()) { return ; } // no transfers yet
+	
 	assert_error(currentTransferId >= 0);
 
 	const auto& selectedIds = tagHelper.transferIds();
@@ -241,10 +248,11 @@ void TransferTab::updateTags() {
 }
 
 void TransferTab::updateDetails() {
-	const auto& selectedIds = tagHelper.transferIds();
-	bool editEnabled = selectedIds.size() == 1;
+	if (model->empty()) { return ; } // no transfers yet
 
-	const auto& transfer = model->getById(editEnabled ? selectedIds[0] : currentTransferId);
+	int id = tagHelper.transferIds().size() == 1 ? tagHelper.transferIds()[0] : currentTransferId;
+	assert_error(id >= 0);
+	const auto& transfer = model->getById(id);
 
 	ui->detailsFrom->setText(transfer.from.name);
 	ui->detailsReference->setText(transfer.reference);
@@ -253,6 +261,8 @@ void TransferTab::updateDetails() {
 }
 
 void TransferTab::saveNote() {
+	if (model->empty()) { return ; } // no transfers yet
+	
 	const auto& selectedIds = tagHelper.transferIds();
 	const auto& id = selectedIds.size() == 1 ? selectedIds[0] : currentTransferId;
 	auto note = ui->detailsNote->toPlainText();

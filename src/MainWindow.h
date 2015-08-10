@@ -33,8 +33,6 @@ public slots:
 	void onExportTransfers();
 	void onShowAbout();
 
-	void tabChanged(int index);
-
 	void setCurrentAccount(const QModelIndex& index);
 	void showSelectedAccounts(const QItemSelection& selected, const QItemSelection& deseceted);
 	void updateAccountInfo();

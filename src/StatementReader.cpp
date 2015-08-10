@@ -5,14 +5,66 @@
 
 StatementReader::StatementReader(Db db) :
 	db(db)
-{}
-
-void StatementReader::startWatchingFiles() {
-	
+{
+	connect(&fileWatcher, SIGNAL(fileChanged(const QString&)), SLOT(importStatementFile(const QString&)));
 }
 
-void StatementReader::importStatementFile(cqstring filename, const StatementFileFormat& format) {
-	qInfo() << "importing " << filename;
+void StatementReader::startWatchingFiles() {
+	db::File f;
+	for (const auto& file : (*db)(select(all_of(f)).from(f).where(f.watch))) {
+		importStatementFile(qstr(file.path), StatementFileFormat::loadFromDb(db, file.formatId), false);
+		fileWatcher.addPath(qstr(file.path));
+	}
+
+	emit newStatementsImported();
+}
+
+void StatementReader::stopWatchingFiles() {
+	fileWatcher.removePaths(fileWatcher.files());
+}
+
+void StatementReader::addFile(cqstring filename, const StatementFileFormat& format, bool watch) {
+	db::File f;
+
+	// remember file for auto import on startup (and watching)
+	auto fs = (*db)(select(f.id, f.watch).from(f).where(f.path == str(filename)));
+	if (fs.empty()) {
+		(*db)(insert_into(f).set(f.path = str(filename),
+									f.formatId = format.id,
+									f.watch = (int)watch));
+		if (watch) {
+			// new file that should be watched
+			qLog() << "watching file " << filename;
+			fileWatcher.addPath(filename);
+		}
+	} else {
+		(*db)(sqlpp::update(f).set(f.formatId = format.id,
+								f.watch = (int)watch
+								).where(f.id == fs.front().id));
+		if (watch && !fs.front().watch) {
+			// file should be watched, but isn't so far
+			qLog() << "watching file " << filename;
+			fileWatcher.addPath(filename);
+		} else if (!watch && fs.front().watch) {
+			// file shouldn't be watched, but is currently
+			fileWatcher.removePath(filename);
+		}
+	}
+
+	importStatementFile(filename, format);
+}
+
+void StatementReader::importStatementFile(cqstring filename) {
+	qLog() << "change in " << filename << " detected";
+	db::File f;
+	auto files = (*db)(select(all_of(f)).from(f).where(f.path == str(filename)));
+	assert_error(!files.empty(), "Could not auto import watched file %s (reason: file not found in db)", cstr(filename));
+	importStatementFile(qstr(files.front().path), StatementFileFormat::loadFromDb(db, files.front().formatId));
+}
+
+void StatementReader::importStatementFile(cqstring filename, const StatementFileFormat& format, bool emitSignal) {
+	qLog() << "importing " << filename << " with format " << format;
+
 	mr::io::parseCsvFile(filename, format.delimiter, format.textQualifier, format.skipFirstLine, [&](int lineNumber, QStringList& fields) {
 		// add suffix with additional fields (e.g. for default values)
 		fields = addFieldsFromLineSuffix(fields, format);
@@ -43,6 +95,10 @@ void StatementReader::importStatementFile(cqstring filename, const StatementFile
 			assert_error(t.id >= 0);
 		}
 	});
+
+	if (emitSignal) { 
+		emit newStatementsImported();
+	}
 }
 
 QStringList& StatementReader::addFieldsFromLineSuffix(QStringList& fields, const StatementFileFormat& format) {
@@ -85,7 +141,6 @@ int StatementReader::find(Account& account) {
 	auto accs = (*db)(accsSql);
 
 	if (!accs.empty()) {
-		assert_error(accs.begin() != accs.end());
 		int id = accs.front().id;
 		assert_error(id >= 0);
 		account.id = id;
@@ -103,7 +158,6 @@ int StatementReader::find(Transfer& transfer) {
 											tr.reference == str(transfer.reference) and
 											tr.amount == transfer.amount));
 	if (!trs.empty()) {
-		assert_error(trs.begin() != trs.end());
 		int id = trs.front().id;
 		assert_error(id >= 0);
 		transfer.id = id;
@@ -143,7 +197,7 @@ int StatementReader::add(Account& account) {
 										acc.bankCode = str(account.bankCode)));
 	assert_error(id >= 0);
 	account.id = id;
-	qInfo() << "added " << account;
+	qLog() << "added " << account;
 	return id;
 }
 
@@ -156,7 +210,7 @@ int StatementReader::add(Transfer& transfer) {
 										tr.amount = transfer.amount));
 	assert_error(id >= 0);
 	transfer.id = id;
-	qInfo() << "added " << transfer;
+	qLog() << "added " << transfer;
 	return id;
 }
 
@@ -174,7 +228,7 @@ void StatementReader::insert(const Account& account) {
 								acc.accountNumber = str(account.accountNumber),
 								acc.bankCode = str(account.bankCode)
 								));
-	qInfo() << "inserted " << account;
+	qLog() << "inserted " << account;
 }
 
 void StatementReader::insert(const Transfer& transfer) {
@@ -192,5 +246,5 @@ void StatementReader::insert(const Transfer& transfer) {
 										tr.checked = transfer.checked
 										));
 
-	qInfo() << "inserted " << transfer;
+	qLog() << "inserted " << transfer;
 }

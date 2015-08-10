@@ -12,17 +12,24 @@
 class StatementReader : public QObject {
 	Q_OBJECT
 public:
-	StatementReader(Db db);
+	StatementReader(Db db = nullptr);
 
 	void setDb(Db db) { this->db = db; }
 
 public slots:
 	void startWatchingFiles();
-	void importStatementFile(cqstring path, const StatementFileFormat& format);
+	void stopWatchingFiles();
+	void addFile(cqstring filename, const StatementFileFormat& format, bool watch);
+	void importStatementFile(cqstring path);
+
+signals:
+	void newStatementsImported();
 
 protected:
 	Db db;
+	QFileSystemWatcher fileWatcher;
 
+	void importStatementFile(cqstring path, const StatementFileFormat& format, bool emitSignal = true);
 	QStringList& addFieldsFromLineSuffix(QStringList& fields, const StatementFileFormat& format);
 
 	Transfer::Acc acc(cqstring owner, cqstring iban, cqstring bic);
@@ -36,7 +43,6 @@ protected:
 	int add(Transfer& transfer);
 	void insert(const Account& account);
 	void insert(const Transfer& account);
-
 };
 
 #endif // STATEMENT_READER_H

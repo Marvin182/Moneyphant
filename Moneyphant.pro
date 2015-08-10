@@ -53,7 +53,8 @@ HEADERS  += src/MainWindow.h \
     src/ui/ColumnChooser.h \
     src/sql.h \
     src/model/StatementFileFormat.h \
-    src/ui/TransferTab.h
+    src/ui/TransferTab.h \
+    src/Iban.h
 
 FORMS    += src/ui/MainWindow.ui \
     src/ui/AboutDialog.ui \

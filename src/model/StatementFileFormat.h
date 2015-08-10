@@ -18,12 +18,14 @@ struct StatementFileFormat {
 
 	StatementFileFormat();
 
+	bool isValid() const;
 	void setHeader(cqstring header);
 
-	bool isValid() const;
-
+	static StatementFileFormat loadFromDb(Db db, int id);
 	bool load(Db db);
 	int save(Db db);
+
+	operator QString() const;
 };
 
 std::ostream& operator<<(std::ostream& os, const StatementFileFormat& f);

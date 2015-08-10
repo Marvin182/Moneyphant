@@ -9,7 +9,8 @@ VERSION = v0.1-alpha
  
 # Need to discard STDERR so get path to NULL device
 win32 {
-    NULL_DEVICE = NUL # Windows doesn't have /dev/null but has NUL
+    # Windows doesn't have /dev/null but has NUL
+    NULL_DEVICE = NUL
 } else {
     NULL_DEVICE = /dev/null
 }
@@ -58,7 +59,9 @@ win32 { # On windows version can only be numerical so remove commit hash
 # By default Qt only uses major and minor version for Info.plist on Mac.
 # This will rewrite Info.plist with full version
 macx {
-    INFO_PLIST_PATH = $$shell_quote($${OUT_PWD}/$${TARGET}.app/Contents/Info.plist)
-    QMAKE_POST_LINK += /usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $${VERSION}\" $${INFO_PLIST_PATH}
+    app {
+        INFO_PLIST_PATH = $$shell_quote($${OUT_PWD}/$${TARGET}.app/Contents/Info.plist)
+        QMAKE_POST_LINK += /usr/libexec/PlistBuddy -c \"Set :CFBundleShortVersionString $${VERSION}\" $${INFO_PLIST_PATH}
+    }
 }
 

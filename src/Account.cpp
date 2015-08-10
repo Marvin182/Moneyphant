@@ -6,27 +6,39 @@ Account::Account() :
 	id(-1)
 {}
 
-Account::Account(cqstring owner, cqstring iban, cqstring bic) :
-	id(-1), isOwn(false), name(owner), owner(owner), iban(iban), bic(bic), accountNumber(""), bankCode("")
+Account::Account(cqstring owner, cqstring ibanOrAccountNumber, cqstring bicOrBankCode) :
+	id(-1),
+	isOwn(false),
+	name(owner),
+	owner(owner),
+	iban(ibanOrAccountNumber),
+	bic(bicOrBankCode),
+	accountNumber(""),
+	bankCode("")
 {
-	if (!isSpecial()) {
-		if (isValidIban(iban)) {
-			assert_debug(iban.length() >= 8);
-			assert_debug(iban.length() <= 30);
-		} else {
-			accountNumber = iban;
-			this->iban = "";
-		}
+	// remove whitespaces
+	iban = iban.remove(QRegExp("\\s"));
+	bic = bic.remove(QRegExp("\\s"));
 
-		if (!isValidBic(bic)) {
-			bankCode = bic;
-			this->bic = "";
-		}
+	if (isSpecial()) {
+		// iban field is used for special identifier (e-mail address or dummy account)
+	} else if (isIban(iban)) {
+		iban = iban.toUpper();
+		assert_debug(iban.length() >= 8);
+		assert_debug(iban.length() <= 30);
+	} else {
+		// iban field was used for accountNumber
+		assert_error(accountNumber.isEmpty());
+		accountNumber = iban;
+		iban = "";
 	}
 
-	if (accountNumber.isEmpty() && !bankCode.isEmpty()) {
-		accountNumber = bankCode;
-		name = "Bank";
+	if (isBic(bic)) {
+		bic = bic.toUpper();
+	} else {
+		assert_error(bankCode.isEmpty());
+		bankCode = bic;
+		bic = "";
 	}
 }
 
@@ -42,7 +54,7 @@ Account::Account(int id, bool isOwn, cqstring name, cqstring owner, cqstring iba
 {}
 
 bool Account::isSpecial() const {
-	return iban.length() > 1 && iban[0] == QChar('#');
+	return isDummyAccount(iban) || isEmailAddress(iban);
 }
 
 Account::operator QString() const {
@@ -75,30 +87,34 @@ bool Account::operator==(const Account& acc) const {
 			return false;
 		}
 	}
-	// if (!otherIdentifier.isEmpty() && !acc.otherIdentifier.isEmpty()) {
-	// 	x = true;
-	// 	if (otherIdentifier != acc.otherIdentifier) {
-	// 		return false;
-	// 	}
-	// }
 	return x;
 }
 
-bool Account::isValidIban(cqstring iban) {
-	return iban.length() >= 4 && iban[0].isLetter() && iban[1].isLetter() && iban[2].isNumber() && iban[3].isNumber();
+bool Account::isDummyAccount(cqstring s) {
+	return QRegExp("#\\d+").exactMatch(s);
 }
 
-bool Account::isValidBic(cqstring bic) {
-	if (bic.length() < 8 || bic.length() > 11) {
-		return false;
+bool Account::isEmailAddress(cqstring s) {
+	return QRegExp(".+@.+\\..+").exactMatch(s);
+}
+
+bool Account::isIban(cqstring s) {
+	return s.length() >= 4 && s[0].isLetter() && s[1].isLetter() && s[2].isNumber() && s[3].isNumber();
+}
+
+bool Account::isBic(cqstring s) {
+	/* BIC, as defined in ISO 9362.
+	 * Format is BBBBCCLLbbb with
+	 * BBBB: 4 letters, Institution Code or bank code.
+	 * CC: 2 letters, ISO 3166-1 alpha-2 country code
+	 * LL: 2 letters or digits, location code
+	 * bbb: 3 letters or digits, optional branch code
+	 */
+	switch (s.length()) {
+		case 8: return QRegExp("[a-zA-Z]{6}[a-zA-Z0-9]{2}").exactMatch(s);
+		case 11: return QRegExp("[a-zA-Z]{6}[a-zA-Z0-9]{5}").exactMatch(s);
+		default: return false;
 	}
-	assert_error(bic.length() >= 6);
-	for (int i = 0; i < 6; i++) {
-		if (!bic[i].isLetter()) {
-			return false;
-		}
-	}
-	return true;
 }
 
 std::ostream& operator<<(std::ostream& os, const Account& a) {

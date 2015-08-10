@@ -15,10 +15,6 @@ StatementFileFormat::StatementFileFormat() :
 	lineSuffix("")
 {}
 
-void StatementFileFormat::setHeader(cqstring header) {
-	hashedHeader = QCryptographicHash::hash(header.toUtf8(), QCryptographicHash::Sha256);
-}
-
 bool StatementFileFormat::isValid() const {
 	if (!columnPositions.contains("date")) {
 		return false;
@@ -32,6 +28,29 @@ bool StatementFileFormat::isValid() const {
 
 	return true;
 }
+
+void StatementFileFormat::setHeader(cqstring header) {
+	hashedHeader = QCryptographicHash::hash(header.toUtf8(), QCryptographicHash::Sha256);
+}
+
+StatementFileFormat StatementFileFormat::loadFromDb(Db db, int id) {
+	db::Format fm;
+	auto fms = (*db)(select(all_of(fm)).from(fm).where(fm.id == id));
+	assert_error(!fms.empty(), "could not load StatementFileFormat %d", id);
+
+	StatementFileFormat f;
+	f.id = fms.front().id;
+	f.name = qstr(fms.front().name);
+	f.delimiter = qstr(fms.front().delimiter);
+	f.textQualifier = qstr(fms.front().textQualifier);
+	f.skipFirstLine = fms.front().skipFirstLine;
+	f.dateFormat = qstr(fms.front().dateFormat);
+	mr::qt::deserialize(qstr(fms.front().columnPositions), f.columnPositions);
+	f.lineSuffix = qstr(fms.front().lineSuffix);
+
+	return f;
+}
+
 
 bool StatementFileFormat::load(Db db) {
 	db::Format fm;
@@ -81,10 +100,17 @@ int StatementFileFormat::save(Db db) {
 	return id;
 }
 
+StatementFileFormat::operator QString() const {
+	auto s = QString("StatementFileFormat %1 (delimiter: %3, text qualifier: %4, date format: %5)").arg(name).arg(delimiter).arg(textQualifier).arg(dateFormat);
+	for (auto k : columnPositions.keys()) {
+		s += QString("\n\t\t%1 => %2").arg(k).arg(columnPositions[k]);
+	}
+	return s;
+}
+
 std::ostream& operator<<(std::ostream& os, const StatementFileFormat& f) {
 	os << "StatementFileFormat " << f.name
-		<< " (#" << f.hashedHeader
-		<< ", delimiter: " << f.delimiter
+		<< "(delimiter: " << f.delimiter
 		<< ", text qualifier: " << f.textQualifier
 		<< ", date format: " << f.dateFormat << ")";
 	for (auto k : f.columnPositions.keys()) {

@@ -242,7 +242,11 @@
          </widget>
         </item>
         <item>
-         <widget class="QPlainTextEdit" name="detailsNote"/>
+         <widget class="QPlainTextEdit" name="detailsNote">
+          <property name="tabChangesFocus">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QLabel" name="lblTags">
@@ -252,7 +256,11 @@
          </widget>
         </item>
         <item>
-         <widget class="TagEdit" name="detailsTags"/>
+         <widget class="TagEdit" name="detailsTags">
+          <property name="tabChangesFocus">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
         <item>
          <spacer name="verticalSpacer2">
@@ -288,6 +296,15 @@
    <header>src/TagEdit.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>filterStartDate</tabstop>
+  <tabstop>filterEndDate</tabstop>
+  <tabstop>filterText</tabstop>
+  <tabstop>transfers</tabstop>
+  <tabstop>detailsNote</tabstop>
+  <tabstop>detailsTags</tabstop>
+  <tabstop>checkSelected</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

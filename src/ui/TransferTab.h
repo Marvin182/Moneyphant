@@ -22,6 +22,9 @@ public:
 
 	void init(Db db, AccountModel* accountModel);
 
+public slots:
+	void reloadCache();
+
 private:
 	Ui::TransferTab *ui;
 	
