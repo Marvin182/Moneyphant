@@ -2,14 +2,15 @@
 #define MAINWINDOW_H
 
 #include <mr/common>
+#include <QMainWindow>
+#include <QSettings>
+#include <QSortFilterProxyModel>
+
 #include "sql.h"
 #include "AccountModel.h"
 #include "AccountProxyModel.h"
 #include "TagHelper.h"
 #include "StatementReader.h"
-#include <QMainWindow>
-#include <QSettings>
-#include <QSortFilterProxyModel>
 
 namespace Ui {
 	class MainWindow;

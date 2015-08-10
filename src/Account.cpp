@@ -90,19 +90,19 @@ bool Account::operator==(const Account& acc) const {
 	return x;
 }
 
-bool Account::isDummyAccount(cqstring s) {
-	return QRegExp("#\\d+").exactMatch(s);
+bool Account::isDummyAccount(cqstring iban) {
+	return QRegExp("#\\d+").exactMatch(iban);
 }
 
-bool Account::isEmailAddress(cqstring s) {
-	return QRegExp(".+@.+\\..+").exactMatch(s);
+bool Account::isEmailAddress(cqstring iban) {
+	return QRegExp(".+@.+\\..+").exactMatch(iban);
 }
 
-bool Account::isIban(cqstring s) {
-	return s.length() >= 4 && s[0].isLetter() && s[1].isLetter() && s[2].isNumber() && s[3].isNumber();
+bool Account::isIban(cqstring iban) {
+	return QRegExp("^[a-zA-Z]{2}\\d{2}.+").exactMatch(iban);
 }
 
-bool Account::isBic(cqstring s) {
+bool Account::isBic(cqstring bic) {
 	/* BIC, as defined in ISO 9362.
 	 * Format is BBBBCCLLbbb with
 	 * BBBB: 4 letters, Institution Code or bank code.
@@ -110,9 +110,9 @@ bool Account::isBic(cqstring s) {
 	 * LL: 2 letters or digits, location code
 	 * bbb: 3 letters or digits, optional branch code
 	 */
-	switch (s.length()) {
-		case 8: return QRegExp("[a-zA-Z]{6}[a-zA-Z0-9]{2}").exactMatch(s);
-		case 11: return QRegExp("[a-zA-Z]{6}[a-zA-Z0-9]{5}").exactMatch(s);
+	switch (bic.length()) {
+		case 8: return QRegExp("[a-zA-Z]{6}[a-zA-Z0-9]{2}").exactMatch(bic);
+		case 11: return QRegExp("[a-zA-Z]{6}[a-zA-Z0-9]{5}").exactMatch(bic);
 		default: return false;
 	}
 }

@@ -84,7 +84,7 @@ void StatementReader::importStatementFile(cqstring filename, const StatementFile
 		int amount = val("amount").replace(',', '.').toDouble() * 100;
 		
 		assert_error(from.id >= 0 && to.id >= 0, "from %d, to: %d", from.id, to.id);
-		assert_debug(from.id != to.id, "accounts are not allowed to match");
+		assert_debug(from.id != to.id, "accounts are not allowed to match (lineNumber: %d, from: %s, to: %s)", lineNumber, cstr(from), cstr(to));
 
 		if (hasVal("id")) {
 			Transfer t(val("id").toInt(), date, from, to, val("reference"), amount, val("reference"), val("checked") == "1", val("internal") == "1");
@@ -125,7 +125,7 @@ int StatementReader::find(Account& account) {
 
 	assert_error(!account.iban.isEmpty() || !account.bic.isEmpty() || !account.accountNumber.isEmpty() || !account.bankCode.isEmpty());
 
-	if (!account.iban.isEmpty()) {
+	if (!account.iban.isEmpty() || account.accountNumber.isEmpty()) {
 		accsSql.where.add(acc.iban == str(account.iban));
 	}
 	if (!account.bic.isEmpty()) {

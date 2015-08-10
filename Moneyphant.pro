@@ -32,7 +32,8 @@ SOURCES += src/main.cpp\
     src/ui/StatementImporterDialog.cpp \
     src/ui/ColumnChooser.cpp \
     src/model/StatementFileFormat.cpp \
-    src/ui/TransferTab.cpp
+    src/ui/TransferTab.cpp \
+    src/Updater.cpp
 
 HEADERS  += src/MainWindow.h \
     src/Account.h \
@@ -54,7 +55,8 @@ HEADERS  += src/MainWindow.h \
     src/sql.h \
     src/model/StatementFileFormat.h \
     src/ui/TransferTab.h \
-    src/Iban.h
+    src/Iban.h \
+    src/Updater.h
 
 FORMS    += src/ui/MainWindow.ui \
     src/ui/AboutDialog.ui \

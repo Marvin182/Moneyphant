@@ -38,10 +38,15 @@ void TransferTab::init(Db db, AccountModel* accountModel) {
 	// filter edits
 	// TODO: add filter for from own Account
 	// connect(ui->trFilterFromAccount, SIGNAL(currentIndexChanged(int)), this, SLOT(changeTransferFilter(int)));
+	createFilterMonthLinks();
 	connect(ui->filterStartDate, SIGNAL(dateTimeChanged(const QDateTime&)), proxyModel, SLOT(setStartDate(const QDateTime&)));
 	connect(ui->filterEndDate, SIGNAL(dateTimeChanged(const QDateTime&)), proxyModel, SLOT(setEndDate(const QDateTime&)));
 	connect(ui->filterText, SIGNAL(textChanged(const QString&)), proxyModel, SLOT(setFilterText(const QString&)));
-	createFilterMonthLinks();
+
+	// set initial values
+	ui->filterStartDate->setDateTime(QDateTime::fromMSecsSinceEpoch(0));
+	ui->filterEndDate->setDateTime(QDateTime::fromMSecsSinceEpoch(4398046511104l));
+	ui->filterText->setText("unchecked");
 
 	// stats
 	connect(proxyModel, SIGNAL(resetStats()), SLOT(resetStats()));
@@ -124,7 +129,7 @@ void TransferTab::clickedFilterMonthLink() {
 		}
 		end = start.addMonths(1).addSecs(-1);
 	}
-	ui->filterStartDate->setDateTime(start);	
+	ui->filterStartDate->setDateTime(start);
 	ui->filterEndDate->setDateTime(end);
 }
 

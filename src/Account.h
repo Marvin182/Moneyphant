@@ -3,7 +3,6 @@
 
 #include <mr/common>
 #include <QStringList>
-#include "Iban.h"
 
 struct Account {
 public:
@@ -28,10 +27,10 @@ public:
 	bool operator!=(const Account& acc) const { return !(*this == acc); }
 
 private:
-	static bool isDummyAccount(cqstring s);
-	static bool isEmailAddress(cqstring s);
-	static bool isIban(cqstring s);
-	static bool isBic(cqstring s);
+	static bool isDummyAccount(cqstring iban);
+	static bool isEmailAddress(cqstring iban);
+	static bool isIban(cqstring iban);
+	static bool isBic(cqstring bic);
 
 };
 

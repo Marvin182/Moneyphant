@@ -1,12 +1,6 @@
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
-#include "Evolutions.h"
-#include "sql.h"
-#include "Transfer.h"
-#include "StatementReader.h"
-#include "ui/AboutDialog.h"
-#include "ui/StatementImporterDialog.h"
-#include <iostream>
+
 #include <QDir>
 #include <QStringList>
 #include <QDateTime>
@@ -16,10 +10,14 @@
 #include <QMessageBox>
 #include <QFileInfo>
 #include <QRegExp>
+#include "Updater.h"
+#include "ui/AboutDialog.h"
+#include "ui/StatementImporterDialog.h"
 
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
 	ui(new Ui::MainWindow),
+	settings(mr::qt::appLocalDataLocation() + "/settings.ini", QSettings::IniFormat),
 	dbConfig(nullptr),
 	db(nullptr),
 	tagHelper(nullptr, this),
@@ -29,9 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	statementReader(nullptr)
 {
 	ui->setupUi(this);
-
 	loadSettings();
-
 	QTimer::singleShot(0, this, SLOT(init()));
 }
 
@@ -45,7 +41,7 @@ MainWindow::~MainWindow() {
 
 void MainWindow::init() {
 	openDb();
-	Evolutions(db).run();
+	Updater(db, settings).run();
 
 	statementReader.setDb(db);
 	tagHelper.setDb(db);
