@@ -7,13 +7,14 @@
 #include <vector>
 #include <QStringList>
 
+// TODO: rewrite as Template class
 class TagHelper : public QObject {
 	Q_OBJECT
 
 public:
 	using IdList = const std::vector<int>;
 
-	TagHelper(Db db, QObject* parent = 0);
+	TagHelper(Db db = nullptr, QObject* parent = 0);
 
 	IdList& accountIds() const { return _accountIds; }
 	IdList& transferIds() const { return _transferIds; }
@@ -21,6 +22,8 @@ public:
 	int tagId(cqstring name);
 
 	QStringList tagsFromAccounts(int fromId, int toId);
+
+	void setDb(Db db) { this->db = db; }
 
 public slots:
 	void setAccountIds(IdList& accIds) { _accountIds = accIds; }

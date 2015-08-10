@@ -18,279 +18,12 @@
     <item>
      <widget class="QTabWidget" name="tabs">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
-      <widget class="QWidget" name="transferTab">
+      <widget class="TransferTab" name="transferTab">
        <attribute name="title">
         <string>Transfers</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout">
-        <item>
-         <widget class="QWidget" name="widget_3" native="true">
-          <layout class="QGridLayout" name="gridLayout">
-           <item row="1" column="4">
-            <widget class="QLabel" name="label_15">
-             <property name="text">
-              <string>Reference &amp; Tags:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="3">
-            <widget class="QLabel" name="label_17">
-             <property name="text">
-              <string>End Date:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="3">
-            <widget class="QDateEdit" name="trFilterEndDate">
-             <property name="dateTime">
-              <datetime>
-               <hour>0</hour>
-               <minute>0</minute>
-               <second>0</second>
-               <year>2038</year>
-               <month>12</month>
-               <day>31</day>
-              </datetime>
-             </property>
-             <property name="displayFormat">
-              <string>d. MMMM yyyy</string>
-             </property>
-             <property name="date">
-              <date>
-               <year>2038</year>
-               <month>12</month>
-               <day>31</day>
-              </date>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="4">
-            <widget class="QLineEdit" name="trFilterText">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QDateEdit" name="trFilterStartDate">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="dateTime">
-              <datetime>
-               <hour>0</hour>
-               <minute>0</minute>
-               <second>0</second>
-               <year>1970</year>
-               <month>1</month>
-               <day>1</day>
-              </datetime>
-             </property>
-             <property name="displayFormat">
-              <string>d. MMMM yyyy</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_18">
-             <property name="text">
-              <string>Start Date:</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="trFilterMonthLinks"/>
-        </item>
-        <item>
-         <widget class="QWidget" name="widget_4" native="true">
-          <layout class="QGridLayout" name="gridLayout_2">
-           <item row="1" column="0">
-            <widget class="QLabel" name="trStatsRevenues">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_19">
-             <property name="text">
-              <string>Income:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLabel" name="label_20">
-             <property name="text">
-              <string>Expenses:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="3">
-            <widget class="QLabel" name="trStatsProfit">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="3">
-            <widget class="QLabel" name="label_16">
-             <property name="text">
-              <string>Profit:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QLabel" name="trStatsExpenses">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="2">
-            <widget class="QLabel" name="label_21">
-             <property name="text">
-              <string>Internal:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="2">
-            <widget class="QLabel" name="trStatsInternal">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_4">
-          <item>
-           <widget class="QTableView" name="transferView"/>
-          </item>
-          <item>
-           <widget class="QWidget" name="widget" native="true">
-            <property name="minimumSize">
-             <size>
-              <width>100</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>200</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_3">
-             <item>
-              <widget class="QLabel" name="label_8">
-               <property name="text">
-                <string>From:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="transferFrom">
-               <property name="text">
-                <string/>
-               </property>
-               <property name="wordWrap">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_23">
-               <property name="text">
-                <string>Reference:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="transferReference">
-               <property name="text">
-                <string/>
-               </property>
-               <property name="wordWrap">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="tagsFromAccountsLabel">
-               <property name="text">
-                <string>Account Tags:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="tagsFromAccounts">
-               <property name="text">
-                <string/>
-               </property>
-               <property name="wordWrap">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_22">
-               <property name="text">
-                <string>Note:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPlainTextEdit" name="transferNote"/>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_6">
-               <property name="text">
-                <string>Tags:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="TagEdit" name="transferTags"/>
-             </item>
-             <item>
-              <spacer name="verticalSpacer_2">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>40</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QPushButton" name="checkSelectedTransfers">
-               <property name="text">
-                <string>Check Selected</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
       </widget>
       <widget class="QWidget" name="accountTab">
        <attribute name="title">
@@ -577,18 +310,17 @@
    <extends>QPlainTextEdit</extends>
    <header>src/TagEdit.h</header>
   </customwidget>
+  <customwidget>
+   <class>TransferTab</class>
+   <extends>QWidget</extends>
+   <header>src/ui/TransferTab.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>trFilterText</tabstop>
-  <tabstop>trFilterStartDate</tabstop>
-  <tabstop>trFilterEndDate</tabstop>
-  <tabstop>transferNote</tabstop>
-  <tabstop>transferTags</tabstop>
   <tabstop>accountName</tabstop>
-  <tabstop>transferView</tabstop>
   <tabstop>tabs</tabstop>
   <tabstop>accFilterText</tabstop>
-  <tabstop>checkSelectedTransfers</tabstop>
   <tabstop>accountView</tabstop>
   <tabstop>accountOwner</tabstop>
   <tabstop>accountIban</tabstop>

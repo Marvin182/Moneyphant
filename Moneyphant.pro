@@ -31,7 +31,8 @@ SOURCES += src/main.cpp\
     src/ui/PreferenceDialog.cpp \
     src/ui/StatementImporterDialog.cpp \
     src/ui/ColumnChooser.cpp \
-    src/model/StatementFileFormat.cpp
+    src/model/StatementFileFormat.cpp \
+    src/ui/TransferTab.cpp
 
 HEADERS  += src/MainWindow.h \
     src/Account.h \
@@ -51,12 +52,14 @@ HEADERS  += src/MainWindow.h \
     src/ui/StatementImporterDialog.h \
     src/ui/ColumnChooser.h \
     src/sql.h \
-    src/model/StatementFileFormat.h
+    src/model/StatementFileFormat.h \
+    src/ui/TransferTab.h
 
 FORMS    += src/ui/MainWindow.ui \
     src/ui/AboutDialog.ui \
     src/ui/PreferenceDialog.ui \
-    src/ui/StatementImporterDialog.ui
+    src/ui/StatementImporterDialog.ui \
+    src/ui/TransferTab.ui
 
 RESOURCES += sql/evolutions.qrc \
     graphics/graphics.qrc
