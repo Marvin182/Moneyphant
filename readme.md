@@ -5,23 +5,25 @@ Small programm that helps you combining bank statements from different sources (
 
 The program doesn't need an internet connection and will not send any data. All your data is saved on your computer (unencrypted for now).
 
-Roadmap for Version 0.1
------------------------
-- [x] About Dialog
-- [x] Menu
-- [x] CSV Importer
-- [x] Account Search & Filter
-- [x] Watch Statement Files
-- [ ] Expenses Overview (needs _main_ tags?)
+v0.1.x ToDo List
+----------------
+- Menu Entries
+- Tooltips
+- transfers between own accounts are internal
+- show account balance
+- fix delayed version updates
 
-Roadmap for Version 0.2
-------------------------
-- better export (improve statement backups)
-- improve tags
+Idea List for Version 0.2
+--------------------------
+- Expense overview with bar charts
+- better export
+- database switching
+- improved tags
 	- auto completion in various places
 	- list of tags
 	- auto delete unused tags (db maintenance?)
-- Charts for Expenses Overview
+- Windows Binaries
+- Documentation
 
 
 Build

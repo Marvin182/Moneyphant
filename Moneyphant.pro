@@ -1,4 +1,4 @@
-QT       += core gui widgets
+QT       += core gui widgets printsupport
 
 CONFIG   += c++11
 
@@ -16,8 +16,9 @@ include(gitversion.pri)
 
 SOURCES += src/main.cpp\
     src/MainWindow.cpp \
-    src/Account.cpp \
+    src/Updater.cpp \
     src/Evolutions.cpp \
+    src/Account.cpp \
     src/StatementReader.cpp \
     src/Transfer.cpp \
     src/AccountModel.cpp \
@@ -31,14 +32,16 @@ SOURCES += src/main.cpp\
     src/ui/PreferenceDialog.cpp \
     src/ui/StatementImporterDialog.cpp \
     src/ui/ColumnChooser.cpp \
-    src/model/StatementFileFormat.cpp \
     src/ui/TransferTab.cpp \
-    src/Updater.cpp
+    src/model/StatementFileFormat.cpp \
+    lib/qcustomplot.cpp
 
-HEADERS  += src/MainWindow.h \
-    src/Account.h \
-    src/Evolutions.h \
+HEADERS += src/MainWindow.h \
     src/db.h \
+    src/sql.h \
+    src/Updater.h \
+    src/Evolutions.h \
+    src/Account.h \
     src/StatementReader.h \
     src/Transfer.h \
     src/AccountModel.h \
@@ -52,13 +55,12 @@ HEADERS  += src/MainWindow.h \
     src/ui/PreferenceDialog.h \
     src/ui/StatementImporterDialog.h \
     src/ui/ColumnChooser.h \
-    src/sql.h \
-    src/model/StatementFileFormat.h \
     src/ui/TransferTab.h \
+    src/model/StatementFileFormat.h \
     src/Iban.h \
-    src/Updater.h
+    lib/qcustomplot.h
 
-FORMS    += src/ui/MainWindow.ui \
+FORMS += src/ui/MainWindow.ui \
     src/ui/AboutDialog.ui \
     src/ui/PreferenceDialog.ui \
     src/ui/StatementImporterDialog.ui \
