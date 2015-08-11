@@ -20,7 +20,7 @@ public:
 	Account(int id, bool isOwn, cqstring name, cqstring owner, cqstring iban, cqstring bic, cqstring accountNumber, cqstring bankCode);
 
 	bool isSpecial() const;
-	QString formattedIban() const { return mr::string::separateGroups(iban, 4, ' '); }
+	QString formattedIban() const { return mr::separateGroups(iban, 4, ' '); }
 
 	operator QString() const;
 	bool operator==(const Account& acc) const;

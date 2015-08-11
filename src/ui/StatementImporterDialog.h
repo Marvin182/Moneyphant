@@ -41,14 +41,14 @@ private:
 	std::vector<QString> lines;
 	std::vector<ColumnChooser*> columnChoosers;
 
-	bool hasTextQualifier() const;
-	const QString& delimiter() const;
-	const QString& textQualifier() const;
+	bool hasTextQualifier() const { return _format.textQualifier != ""; }
+	const QString& delimiter() const { return _format.delimiter; }
+	const QString& textQualifier() const { return _format.textQualifier; }
 	int delimiterIndex(cqstring del) const;
 	int textQualifierIndex(cqstring tq) const;
 
 	std::vector<QString> readFile(cqstring filePath);
-	QStringList lineAsStringList(cqstring line) const;
+	QStringList lineAsStringList(cqstring line) const { return mr::split(line, _format.delimiter, _format.textQualifier); }
 
 	QString guessDelimiter();
 	QString guessTextQualifier();

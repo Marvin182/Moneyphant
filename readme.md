@@ -30,7 +30,7 @@ Build
 - Qt 5.5
 - [sqlpp11](https://github.com/rbock/sqlpp11) 0.34
 - [sqlpp11-connector-sqlite](https://github.com/rbock/sqlpp11-connector-sqlite3) 0.15
-- [mr-lib](https://github.com/Marvin182/mr) most recent version
+- [mr](https://github.com/Marvin182/mr) v0.0.2
 
 ### Steps
 TODO

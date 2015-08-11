@@ -35,7 +35,7 @@ QVariant AccountModel::data(const QModelIndex& index, int role) const {
 				case 1: return a.name;
 				case 2: return a.owner;
 				case 3: return a.iban.isEmpty() ? a.accountNumber : a.formattedIban();
-				case 4: return a.bic.isEmpty() ? mr::string::separateGroups(a.bankCode, 3, ' ') : a.bic;
+				case 4: return a.bic.isEmpty() ? mr::separateGroups(a.bankCode, 3, ' ') : a.bic;
 				case 5: return a.accountNumber;
 				case 6: return a.bankCode;
 			}

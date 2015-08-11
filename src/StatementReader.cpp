@@ -102,13 +102,17 @@ void StatementReader::importStatementFile(cqstring filename, const StatementFile
 }
 
 QStringList& StatementReader::addFieldsFromLineSuffix(QStringList& fields, const StatementFileFormat& format) {
+	// normally the suffix will start a new column, which would cause the split() function to output an empty string as first part, which we don't want to have
 	auto suffix = format.lineSuffix;
 	if (suffix.startsWith(format.delimiter)) {
 		suffix = suffix.right(suffix.length() - format.delimiter.length());
 	}
+
+	// special cases
 	if (suffix.isEmpty()) return fields;
 	if (format.textQualifier.isEmpty()) return fields << suffix.split(format.delimiter);
-	return fields << mr::string::splitAndTrim(suffix, format.delimiter, format.textQualifier);
+
+	return fields << mr::split(suffix, format.delimiter, format.textQualifier);
 }
 
 Transfer::Acc StatementReader::acc(cqstring owner, cqstring iban, cqstring bic) {

@@ -101,9 +101,9 @@ int StatementFileFormat::save(Db db) {
 }
 
 StatementFileFormat::operator QString() const {
-	auto s = QString("StatementFileFormat %1 (delimiter: %3, text qualifier: %4, date format: %5, ").arg(name).arg(delimiter).arg(textQualifier).arg(dateFormat);
+	auto s = QString("StatementFileFormat %1 (delimiter: %3, text qualifier: %4, date format: %5,").arg(name).arg(delimiter).arg(textQualifier).arg(dateFormat);
 	for (auto k : columnPositions.keys()) {
-		s += QString("%1 => %2;").arg(k).arg(columnPositions[k]);
+		s += QString(" %1 => %2;").arg(k).arg(columnPositions[k]);
 	}
 	s += ")";
 	return s;

@@ -20,8 +20,6 @@ void TransferProxyModel::setEndDate(const QDateTime& endDate) {
 }
 
 void TransferProxyModel::setFilterText(const QString& filterText) {
-	auto parts = filterText.split(' ', QString::SkipEmptyParts);
-
 	txtFrom = "";
 	txtTo = "";
 	txtRef = "";
@@ -31,22 +29,34 @@ void TransferProxyModel::setFilterText(const QString& filterText) {
 	txtTags.clear();
 	txtRest = "";
 
-	for (const auto& p : parts) {
+	QStringList parts;
+	QString filters = QString(filterText).replace(":", ": ");
+	try {
+		parts = mr::split(filters, " ", "\"", QString::SkipEmptyParts);
+	} catch (std::invalid_argument &e) {
+		// user has not finished typing
+		return;
+	}
+
+	int i = 0;
+	auto nextPart = [&]() { return i < parts.length() ? parts[i++] : ""; };
+	while (i < parts.length()) {
+		auto p = nextPart();
 		assert_error(!p.isEmpty());
-		if (p.startsWith("from:")) {
-			txtFrom = p.right(p.length() - 5);
-		} else if (p.startsWith("to:")) {
-			txtTo = p.right(p.length() - 3);
+		if (p == "from:") {
+			txtFrom = nextPart();
+		} else if (p == "to:") {
+			txtTo = nextPart();
 		} else if (p[0] == '-' || p[0].isNumber()) {
 			txtAmount = p;
 		} else if (p == "checked") {
 			trChecked = 1;
 		} else if (p == "unchecked") {
 			trChecked = -1;
-		} else if (p.startsWith("ref:")) {
-			txtRef = p.right(p.length() - 4);
-		} else if (p.startsWith("note:")) {
-			txtNote = p.right(p.length() - 5);
+		} else if (p == "ref:" || p == "reference:") {
+			txtRef = nextPart();
+		} else if (p == "note:") {
+			txtNote = nextPart();
 		} else {
 			// search for tag
 			db::Tag tag;

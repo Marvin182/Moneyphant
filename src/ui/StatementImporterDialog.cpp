@@ -173,10 +173,6 @@ void StatementImporterDialog::onLineSuffixChanged(const QString& newSuffix) {
 // Private Methods
 //
 
-bool StatementImporterDialog::hasTextQualifier() const {
-	return _format.textQualifier != "";
-}
-
 int StatementImporterDialog::delimiterIndex(cqstring del) const {
 	auto it = std::find(Delimiters.begin(), Delimiters.end(), del);
 	assert_debug(it != Delimiters.end());
@@ -186,14 +182,6 @@ int StatementImporterDialog::delimiterIndex(cqstring del) const {
 int StatementImporterDialog::textQualifierIndex(cqstring tq) const {
 	auto it = std::find(TextQualifiers.begin(), TextQualifiers.end(), tq);
 	return it == TextQualifiers.end() ? -1 : std::distance(TextQualifiers.begin(), it);
-}
-
-const QString& StatementImporterDialog::delimiter() const {
-	return _format.delimiter;
-}
-
-const QString& StatementImporterDialog::textQualifier() const {
-	return _format.textQualifier;
 }
 
 std::vector<QString> StatementImporterDialog::readFile(cqstring filename) {
@@ -222,10 +210,6 @@ std::vector<QString> StatementImporterDialog::readFile(cqstring filename) {
 	ui->exampleLines->setPlainText(exampleLines);
 
 	return lines;
-}
-
-QStringList StatementImporterDialog::lineAsStringList(cqstring line) const {
-	return mr::string::splitAndTrim(line, _format.delimiter, _format.textQualifier);	
 }
 
 QString StatementImporterDialog::guessDelimiter() {
