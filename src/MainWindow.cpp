@@ -27,6 +27,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	statementReader(nullptr)
 {
 	ui->setupUi(this);
+	tabs = {ui->transferTab, ui->accountTab};
+
 	loadSettings();
 	QTimer::singleShot(0, this, SLOT(init()));
 }
@@ -63,6 +65,14 @@ void MainWindow::initMenu() {
 	connect(ui->actionImport_Statement_File, SIGNAL(triggered()), this, SLOT(onImportStatements()));
 	connect(ui->actionPreferences, SIGNAL(triggered()), this, SLOT(onShowPreferences()));
 	connect(ui->actionQuit, SIGNAL(triggered()), QApplication::instance(), SLOT(quit()));
+	connect(ui->actionFind, &QAction::triggered, [&]() {
+		switch (ui->tabs->currentIndex()) {
+			case 0: return static_cast<TransferTab*>(tabs[0])->focuseSearchField();
+			case 1: return ui->accFilterText->setFocus();
+		}
+	});
+	connect(ui->actionTransfers, &QAction::triggered, [&]() { ui->tabs->setCurrentIndex(0); });
+	connect(ui->actionAccounts, &QAction::triggered, [&]() { ui->tabs->setCurrentIndex(1); });
 }
 
 void MainWindow::initAccountTab() {

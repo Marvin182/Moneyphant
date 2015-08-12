@@ -24,6 +24,7 @@ public:
 
 public slots:
 	void reloadCache();
+	void focuseSearchField();
 
 private:
 	Ui::TransferTab *ui;

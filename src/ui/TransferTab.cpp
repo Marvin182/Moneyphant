@@ -93,6 +93,10 @@ void TransferTab::reloadCache() {
 	model->reloadCache();
 }
 
+void TransferTab::focuseSearchField() {
+	ui->filterText->setFocus();
+}
+
 // TODO: reimplement export transfers
 // void TransferTab::exportTransfers() {
 // 	auto filename = QFileDialog::getSaveFileName(this, tr("Export Transfers"), QString(), tr("CSV (*.csv)"));

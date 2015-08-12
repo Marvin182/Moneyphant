@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <vector>
 #include <mr/common>
 #include <QMainWindow>
 #include <QSettings>
@@ -46,6 +47,7 @@ public slots:
 private:
 	Ui::MainWindow *ui;
 	QSettings settings;
+	std::vector<QWidget*> tabs;
 
 	std::shared_ptr<sqlpp::sqlite3::connection_config> dbConfig;
 	Db db;
