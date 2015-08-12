@@ -171,12 +171,12 @@ QStringList TagHelper::getTransferTags(TagHelper::IdList& customTrId) {
 void TagHelper::addTransferTags(QStringList tags, const std::vector<int>& customTrId) {
 	auto trIds = customTrId.empty() ? transferIds() : customTrId;
 
-	for (int trId : trIds) {
-		assert_error(trId >= 0, "invalid transfer id %d", trId);
-		for (const auto& t : tags) {
-			assert_error(!t.isEmpty(), "empty tag name");
-			int tid = tagId(t);
-			assert_error(tid >= 0, "invalid tag id %d for '%s'", tid, cstr(t));
+	for (const auto& t : tags) {
+		assert_error(!t.isEmpty(), "empty tag name");
+		int tid = tagId(t);
+		assert_error(tid >= 0, "invalid tag id %d for '%s'", tid, cstr(t));
+		for (int trId : trIds) {
+			assert_error(trId >= 0, "invalid transfer id %d", trId);
 			bool exists = (*db)(select(count(trTag.tagId)).from(trTag).where(trTag.tagId == tid and trTag.transferId == trId)).front().count == 1;
 			if (!exists) {
 				(*db)(insert_into(trTag).set(trTag.tagId = tid, trTag.transferId = trId));

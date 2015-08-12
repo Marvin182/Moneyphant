@@ -7,22 +7,22 @@ The program doesn't need an internet connection and will not send any data. All 
 
 v0.1.x ToDo List
 ----------------
-- Menu Entries
-- Tooltips
-- transfers between own accounts are internal
-- show account balance
+- start balance for account, balance overview
+- tooltips
+- transfers between own accounts are internal automatically
 
 Idea List for Version 0.2
 --------------------------
-- Expense overview with bar charts
-- better export
-- database switching
-- improved tags
-	- auto completion in various places
-	- list of tags
-	- auto delete unused tags (db maintenance?)
-- Windows Binaries
-- Documentation
+- [ ] good menu & tooltips
+- [ ] better export
+- [ ] improved tags
+	- [ ] auto completion in various places
+	- [ ] list of tags
+	- [ ] auto delete unused tags (db maintenance?)
+	- [ ] hierachies?
+- [ ] expense overview with bar charts
+- [ ] binaries for Windows
+- [ ] database switching
 
 
 Build

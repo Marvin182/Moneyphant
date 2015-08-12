@@ -1,7 +1,10 @@
 #include "StatementReader.h"
-#include "sql.h"
 #include <QDir>
 #include <QtDebug>
+#include <QStringList>
+#include "sql.h"
+#include "TagHelper.h"
+
 
 StatementReader::StatementReader(Db db) :
 	db(db)
@@ -86,13 +89,19 @@ void StatementReader::importStatementFile(cqstring filename, const StatementFile
 		assert_error(from.id >= 0 && to.id >= 0, "from %d, to: %d", from.id, to.id);
 		assert_debug(from.id != to.id, "accounts are not allowed to match (lineNumber: %d, from: %s, to: %s)", lineNumber, cstr(from), cstr(to));
 
+		Transfer t;
 		if (hasVal("id")) {
-			Transfer t(val("id").toInt(), date, from, to, val("reference"), amount, val("reference"), val("checked") == "1", val("internal") == "1");
+			t = Transfer(val("id").toInt(), date, from, to, val("reference"), amount, val("reference"), val("checked") == "1", val("internal") == "1");
 			insert(t);
 		} else {
-			Transfer t(date, from, to, val("reference"), amount);
+			t = Transfer(date, from, to, val("reference"), amount);
 			findOrAdd(t);
-			assert_error(t.id >= 0);
+		}
+		assert_error(t.id >= 0);
+
+		if (hasVal("tags")) {
+			TagHelper th(db);
+			th.addTransferTags(TagHelper::splitTags(val("tags")), {t.id});
 		}
 	});
 

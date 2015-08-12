@@ -6,6 +6,7 @@
 #include "db.h"
 #include <vector>
 #include <QStringList>
+#include <QRegExp>
 
 // TODO: rewrite as Template class
 class TagHelper : public QObject {
@@ -24,6 +25,8 @@ public:
 	QStringList tagsFromAccounts(int fromId, int toId);
 
 	void setDb(Db db) { this->db = db; }
+
+	static QStringList splitTags(cqstring tags) { return tags.split(QRegExp("[\\s,;]+"), QString::SkipEmptyParts); }
 
 public slots:
 	void setAccountIds(IdList& accIds) { _accountIds = accIds; }

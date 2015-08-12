@@ -1,6 +1,7 @@
 #include "TagEdit.h"
 
 #include <QRegExp>
+#include "TagHelper.h"
 
 TagEdit::TagEdit(QWidget* parent) : 
 	QPlainTextEdit(parent),
@@ -9,7 +10,7 @@ TagEdit::TagEdit(QWidget* parent) :
 {}
 
 std::pair<QStringList, QStringList> TagEdit::tagChanges() {
-	auto tags = document()->toPlainText().split(QRegExp("\\s*[;,]\\s*"));
+	auto tags = TagHelper::splitTags(document()->toPlainText());
 	auto changes = std::make_pair(QStringList(), QStringList());
 	return changes;
 	for (const auto& t : tags) {
@@ -31,7 +32,7 @@ std::pair<QStringList, QStringList> TagEdit::tagChanges() {
 
 void TagEdit::focusOutEvent(QFocusEvent* event) {
 	QStringList tags;
-	for (const auto& t : document()->toPlainText().split(QRegExp("[;,]"))) {
+	for (const auto& t : TagHelper::splitTags(document()->toPlainText())) {
 		auto tag = t.trimmed();
 		if (!tag.isEmpty()) {
 			tags << tag;
@@ -59,7 +60,7 @@ void TagEdit::focusOutEvent(QFocusEvent* event) {
 	}
 
 	oldTags = tags;
-	document()->setPlainText(tags.join("; "));
+	document()->setPlainText(tags.join(" "));
 }
 
 void TagEdit::setTags(const QStringList& tags, const std::vector<int>& accountIds) {
@@ -67,5 +68,5 @@ void TagEdit::setTags(const QStringList& tags, const std::vector<int>& accountId
 	this->accountIds = accountIds;
 
 	oldTags = tags;
-	document()->setPlainText(tags.join("; "));
+	document()->setPlainText(tags.join(" "));
 }

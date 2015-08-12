@@ -37,6 +37,7 @@ protected:
 	QString txtAmount;
 	QString txtNote;
 	int trChecked;
+	int trTagged;
 	std::vector<int> txtTags;
 	QString txtRest;
 

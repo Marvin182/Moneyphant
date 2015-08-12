@@ -2,7 +2,7 @@
 
 #include <QGridLayout>
 
-QStringList InputTypes = QStringList{"", "id", "date", "amount", "reference", "senderOwnerName", "senderIban", "senderBic", "senderId", "receiverOwnerName", "receiverIban", "receiverBic", "receiverId", "note", "checked", "internal"};
+QStringList InputTypes = QStringList{"", "id", "date", "amount", "reference", "senderOwnerName", "senderIban", "senderBic", "senderId", "receiverOwnerName", "receiverIban", "receiverBic", "receiverId", "note", "checked", "internal", "tags"};
 
 ColumnChooser::ColumnChooser(int columnIndex, cqstring headerLine, cqstring exampleLine, QWidget* parent) :
 	QObject(parent),

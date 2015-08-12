@@ -26,6 +26,7 @@ void TransferProxyModel::setFilterText(const QString& filterText) {
 	txtAmount = "";
 	txtNote = "";
 	trChecked = 0;
+	trTagged = 0;
 	txtTags.clear();
 	txtRest = "";
 
@@ -53,6 +54,10 @@ void TransferProxyModel::setFilterText(const QString& filterText) {
 			trChecked = 1;
 		} else if (p == "unchecked") {
 			trChecked = -1;
+		} else if (p == "tagged") {
+			trTagged = 1;
+		} else if (p == "untagged") {
+			trTagged = -1;
 		} else if (p == "ref:" || p == "reference:") {
 			txtRef = nextPart();
 		} else if (p == "note:") {
@@ -90,26 +95,35 @@ bool TransferProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sour
 		return needle.contains(' ') ? text.contains(needle) : fuzzyMatch(text, needle);
 	};
 
+	db::TransferTag trTag;
+	db::AccountTag accTag;
+
+	// TODO: cache tag stuff until next user change
+
 	bool accepted = true;
 	if (startDate.isValid() && transfer.date < startDate) {
 		accepted = false;
 	} else if (endDate.isValid() && transfer.date > endDate) {
 		accepted = false;
-	} else if (!txtFrom.isEmpty() && !fuzzyMatch(transfer.from.name, txtFrom)) {
+	} else if (!txtFrom.isEmpty() && !contains(transfer.from.name, txtFrom)) {
 		accepted = false;
-	} else if (!txtTo.isEmpty() && !fuzzyMatch(transfer.to.name, txtTo)) {
+	} else if (!txtTo.isEmpty() && !contains(transfer.to.name, txtTo)) {
 		accepted = false;
 	} else if (!txtRef.isEmpty() && !contains(transfer.reference, txtRef)) {
 		accepted = false;
 	} else if (!txtAmount.isEmpty() && !fuzzyMatch(currency(transfer.amount), txtAmount)) {
 		accepted = false;
-	} else if (!txtNote.isEmpty() && !fuzzyMatch(transfer.note, txtNote)) {
+	} else if (!txtNote.isEmpty() && !contains(transfer.note, txtNote)) {
 		accepted = false;
 	} else if ((trChecked == 1 && !transfer.checked) || (trChecked == -1 && transfer.checked)) {
 		accepted = false;
+	} else if (trTagged != 0) {
+			bool tagged = (*db)(select(count(trTag.tagId)).from(trTag).where(trTag.transferId == transfer.id)).front().count > 0;
+			tagged = tagged || (*db)(select(count(accTag.tagId)).from(accTag).where(accTag.accountId == transfer.from.id or accTag.accountId == transfer.to.id)).front().count > 0;
+			if ((trTagged == 1 && !tagged) || (trTagged == -1 && tagged)) {
+				accepted = false;
+			}
 	} else if (!txtTags.empty()) {
-		db::TransferTag trTag;
-		db::AccountTag accTag;
 		for (int tagId : txtTags) {
 			bool hasTag = (*db)(select(count(trTag.tagId)).from(trTag).where(trTag.tagId == tagId and trTag.transferId == transfer.id)).front().count > 0;
 			if (!hasTag) {
