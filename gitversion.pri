@@ -3,7 +3,7 @@
 # http://everythingfrontend.com/posts/app-version-from-git-tag-in-qt-qml.html
 
 # If there is no version tag in git this one will be used
-VERSION = v0.1-alpha
+DEFAULT_VERSION = v0.1-alpha
 # a version tag can be anything that matches v\d+\.\d+\.?\d*-?\w*
 # so you have major.minor.revision-state where revision and state can be left out and state can be any word (e.g. alpha, beta, rc1)
  
@@ -19,27 +19,27 @@ win32 {
 BASE_GIT_COMMAND = git --git-dir $$PWD/.git --work-tree $$PWD
 
 # Trying to get version from git tag / revision
-GIT_VERSION = $$system($$BASE_GIT_COMMAND describe --long --always --tags 2> $$NULL_DEVICE)
+GIT_DESCRIBE = $$system($$BASE_GIT_COMMAND describe --long --always --tags 2> $$NULL_DEVICE)
 GIT_BUILD_NUMBER = $$system($$BASE_GIT_COMMAND rev-list HEAD --count 2> $$NULL_DEVICE)
 isEmpty(GIT_BUILD_NUMBER) {
     GIT_BUILD_NUMBER = 0
 }
 
 # Check if we only have hash without version number
-!contains(GIT_VERSION,v\d+\.\d+\.?\d*-?\w*-\d+-\w+) {
+!contains(GIT_DESCRIBE,v?\d+\.\d+\.?\d*-?\w*-\d+-\w+) {
     # If there is nothing we simply use version defined manually
-    isEmpty(GIT_VERSION) {
-        GIT_VERSION = $$VERSION
+    isEmpty(GIT_DESCRIBE) {
+        GIT_DESCRIBE = $$DEFAULT_VERSION
     } else { # otherwise construct proper git describe string
-        GIT_VERSION = $$VERSION-$$GIT_BUILD_NUMBER-g$$GIT_VERSION
+        GIT_DESCRIBE = $$DEFAULT_VERSION-$$GIT_BUILD_NUMBER-g$$GIT_DESCRIBE
     }
 }
 
 # insert build number after revision
-LEFT = $$GIT_VERSION
+LEFT = $$GIT_DESCRIBE
 LEFT ~= s/-.*//
-RIGHT = $$GIT_VERSION
-RIGHT ~= s/v\d+\.\d+\.?\d*//
+RIGHT = $$GIT_DESCRIBE
+RIGHT ~= s/v?\d+\.\d+\.?\d*//
 GIT_VERSION = $$LEFT-$$GIT_BUILD_NUMBER$$RIGHT
 
 # Turns describe output like v0.1.5-42-g652c397 into "0.1.5.42.652c397"

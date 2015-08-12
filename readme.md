@@ -11,7 +11,6 @@ v0.1.x ToDo List
 - Tooltips
 - transfers between own accounts are internal
 - show account balance
-- fix delayed version updates
 
 Idea List for Version 0.2
 --------------------------

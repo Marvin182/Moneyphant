@@ -1,7 +1,7 @@
 #include "Updater.h"
 
 #include <vector>
-#include <mr/Version>
+#include "version.h"
 #include "Evolutions.h"
 #include "Account.h"
 
@@ -11,7 +11,7 @@ Updater::Updater(Db db, QSettings& settings) :
 {}
 
 void Updater::run() {
-	int newBuild = mr::Version::app().build;
+	int newBuild = appVersion().build;
 	int build = settings.value("update/build", newBuild).toInt();
 	assert_error(build <= newBuild, "build from settings: %d, new build: %d", build, newBuild);
 

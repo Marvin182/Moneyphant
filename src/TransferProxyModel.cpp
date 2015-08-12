@@ -86,6 +86,10 @@ bool TransferProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sour
 	Q_UNUSED(sourceParent);
 	const auto& transfer = get(sourceRow);
 
+	auto contains = [&](cqstring text, cqstring needle) {
+		return needle.contains(' ') ? text.contains(needle) : fuzzyMatch(text, needle);
+	};
+
 	bool accepted = true;
 	if (startDate.isValid() && transfer.date < startDate) {
 		accepted = false;
@@ -95,7 +99,7 @@ bool TransferProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sour
 		accepted = false;
 	} else if (!txtTo.isEmpty() && !fuzzyMatch(transfer.to.name, txtTo)) {
 		accepted = false;
-	} else if (!txtRef.isEmpty() && !fuzzyMatch(transfer.reference, txtRef)) {
+	} else if (!txtRef.isEmpty() && !contains(transfer.reference, txtRef)) {
 		accepted = false;
 	} else if (!txtAmount.isEmpty() && !fuzzyMatch(currency(transfer.amount), txtAmount)) {
 		accepted = false;

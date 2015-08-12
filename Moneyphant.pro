@@ -16,6 +16,7 @@ include(gitversion.pri)
 
 SOURCES += src/main.cpp\
     src/MainWindow.cpp \
+    src/version.cpp \
     src/Updater.cpp \
     src/Evolutions.cpp \
     src/Account.cpp \
@@ -37,6 +38,7 @@ SOURCES += src/main.cpp\
     lib/qcustomplot.cpp
 
 HEADERS += src/MainWindow.h \
+    src/version.h \
     src/db.h \
     src/sql.h \
     src/Updater.h \
