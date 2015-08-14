@@ -24,7 +24,7 @@ ColumnChooser::ColumnChooser(int columnIndex, cqstring headerLine, cqstring exam
 	for (auto inputType : InputTypes) {
 		cbInputType->addItem(inputType);
 	}
-	connect(cbInputType, SIGNAL(currentIndexChanged(int)), this, SLOT(onCurrentInputTypeChanged(int)));
+	connect(cbInputType, static_cast<void (QComboBox::*)(int)>(&QComboBox::activated), [&](int idx) { emit inputTypeChanged(_columnIndex, InputTypes[idx]); });
 
 	layout->addWidget(cbInputType, _columnIndex, 2);
 }
@@ -60,8 +60,4 @@ void ColumnChooser::setInputType(cqstring inputType) {
 	int inputTypeIdx = InputTypes.indexOf(inputType);
 	assert_warning(inputTypeIdx >= 0, "invalid input format with input type %s form column %d, resulting in input index %d", cstr(inputType), _columnIndex, inputTypeIdx);
 	cbInputType->setCurrentIndex(inputTypeIdx);
-}
-
-void ColumnChooser::onCurrentInputTypeChanged(int inputTypeIndex) {
-	emit inputTypeChanged(_columnIndex, InputTypes[inputTypeIndex]);
 }

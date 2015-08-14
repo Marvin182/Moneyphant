@@ -26,9 +26,6 @@ public:
 signals:
 	void inputTypeChanged(int columnIndex, const QString& inputType);
 
-private slots:
-	void onCurrentInputTypeChanged(int inputTypeIndex);
-
 private:
 	const int _columnIndex;
 
