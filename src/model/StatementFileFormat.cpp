@@ -12,7 +12,8 @@ StatementFileFormat::StatementFileFormat() :
 	skipFirstLine(true),
 	dateFormat("dd.MM.yy"),
 	columnPositions(),
-	lineSuffix("")
+	lineSuffix(""),
+	invertAmount(false)
 {}
 
 bool StatementFileFormat::isValid() const {
@@ -39,14 +40,7 @@ StatementFileFormat StatementFileFormat::loadFromDb(Db db, int id) {
 	assert_error(!fms.empty(), "could not load StatementFileFormat %d", id);
 
 	StatementFileFormat f;
-	f.id = fms.front().id;
-	f.name = qstr(fms.front().name);
-	f.delimiter = qstr(fms.front().delimiter);
-	f.textQualifier = qstr(fms.front().textQualifier);
-	f.skipFirstLine = fms.front().skipFirstLine;
-	f.dateFormat = qstr(fms.front().dateFormat);
-	mr::qt::deserialize(qstr(fms.front().columnPositions), f.columnPositions);
-	f.lineSuffix = qstr(fms.front().lineSuffix);
+	copyFromSql(fms.front(), f);
 
 	return f;
 }
@@ -59,14 +53,7 @@ bool StatementFileFormat::load(Db db) {
 		return false;
 	}
 
-	id = fms.front().id;
-	name = qstr(fms.front().name);
-	delimiter = qstr(fms.front().delimiter);
-	textQualifier = qstr(fms.front().textQualifier);
-	skipFirstLine = fms.front().skipFirstLine;
-	dateFormat = qstr(fms.front().dateFormat);
-	mr::qt::deserialize(qstr(fms.front().columnPositions), columnPositions);
-	lineSuffix = qstr(fms.front().lineSuffix);
+	copyFromSql(fms.front(), *this);
 
 	return true;
 }
@@ -82,7 +69,8 @@ int StatementFileFormat::save(Db db) {
 											fm.skipFirstLine = skipFirstLine,
 											fm.dateFormat = str(dateFormat),
 											fm.columnPositions = str(mr::qt::serialize(columnPositions)),
-											fm.lineSuffix = str(lineSuffix)
+											fm.lineSuffix = str(lineSuffix),
+											fm.invertAmount = invertAmount
 											));
 		assert_error(id >= 0);
 	} else {
@@ -93,7 +81,8 @@ int StatementFileFormat::save(Db db) {
 									fm.skipFirstLine = skipFirstLine,
 									fm.dateFormat = str(dateFormat),
 									fm.columnPositions = str(mr::qt::serialize(columnPositions)),
-									fm.lineSuffix = str(lineSuffix)
+									fm.lineSuffix = str(lineSuffix),
+									fm.invertAmount = invertAmount
 									).where(fm.id == id));
 	}
 
@@ -113,7 +102,8 @@ std::ostream& operator<<(std::ostream& os, const StatementFileFormat& f) {
 	os << "StatementFileFormat " << f.name
 		<< "(delimiter: " << f.delimiter
 		<< ", text qualifier: " << f.textQualifier
-		<< ", date format: " << f.dateFormat << ")";
+		<< ", date format: " << f.dateFormat
+		<< ")";
 	for (auto k : f.columnPositions.keys()) {
 		os << "\n\t" << cstr(k) << " => " << f.columnPositions[k];
 	}

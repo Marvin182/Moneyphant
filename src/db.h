@@ -241,6 +241,22 @@ namespace db
       };
       using _traits = sqlpp::make_traits<sqlpp::text>;
     };
+    struct StartBalance
+    {
+      struct _alias_t
+      {
+        static constexpr const char _literal[] =  "startBalance";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+        template<typename T>
+        struct _member_t
+          {
+            T startBalance;
+            T& operator()() { return startBalance; }
+            const T& operator()() const { return startBalance; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::integer>;
+    };
   }
 
   struct Account: sqlpp::table_t<Account,
@@ -251,7 +267,8 @@ namespace db
                Account_::Iban,
                Account_::Bic,
                Account_::AccountNumber,
-               Account_::BankCode>
+               Account_::BankCode,
+               Account_::StartBalance>
   {
     struct _alias_t
     {
@@ -743,6 +760,22 @@ namespace db
       };
       using _traits = sqlpp::make_traits<sqlpp::text, sqlpp::tag::require_insert>;
     };
+    struct InvertAmount
+    {
+      struct _alias_t
+      {
+        static constexpr const char _literal[] =  "invertAmount";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+        template<typename T>
+        struct _member_t
+          {
+            T invertAmount;
+            T& operator()() { return invertAmount; }
+            const T& operator()() const { return invertAmount; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::boolean>;
+    };
   }
 
   struct Format: sqlpp::table_t<Format,
@@ -754,7 +787,8 @@ namespace db
                Format_::SkipFirstLine,
                Format_::DateFormat,
                Format_::ColumnPositions,
-               Format_::LineSuffix>
+               Format_::LineSuffix,
+               Format_::InvertAmount>
   {
     struct _alias_t
     {
@@ -833,7 +867,7 @@ namespace db
             const T& operator()() const { return watch; }
           };
       };
-      using _traits = sqlpp::make_traits<sqlpp::integer>;
+      using _traits = sqlpp::make_traits<sqlpp::boolean>;
     };
     struct LastImport
     {

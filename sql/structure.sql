@@ -15,7 +15,8 @@ create table account (
 	iban text not null default '',
 	bic text not null default '',
 	accountNumber text not null default '',
-	bankCode text not null default ''
+	bankCode text not null default '',
+	startBalance integer not null default 0
 );
 
 create table transfer (
@@ -56,14 +57,15 @@ create table format (
 	skipFirstLine bool not null default 0,
 	dateFormat text not null default "dd.MM.yy",
 	columnPositions text not null,
-	lineSuffix text not null
+	lineSuffix text not null,
+	invertAmount bool not null default 0
 );
 
 create table file (
 	id integer primary key autoincrement,
 	path text not null,
 	formatId integer not null,
-	watch integer not null default 1,
+	watch bool not null default 1,
 	lastImport integer not null default 0,
 	lastImportHash text not null default ''
 );
