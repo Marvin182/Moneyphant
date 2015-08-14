@@ -19,6 +19,7 @@ public:
 public slots:
 	void startWatchingFiles();
 	void stopWatchingFiles();
+	void stopWatchingFile(cqstring filename);
 	void addFile(cqstring filename, const StatementFileFormat& format, bool watch);
 	void importStatementFile(cqstring path);
 

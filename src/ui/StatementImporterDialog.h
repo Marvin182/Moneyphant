@@ -28,7 +28,6 @@ private slots:
 	void onColumnChooserChanged(int columnIndex, const QString& inputType);
 	void onDelimiterChanged(int);
 	void onTextQualifierChanged(int);
-	void onSkipFirstLineChanged(int);
 	void onLineSuffixChanged(const QString& newSuffix);
 
 private:

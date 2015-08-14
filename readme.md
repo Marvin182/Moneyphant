@@ -5,11 +5,11 @@ Small programm that helps you combining bank statements from different sources (
 
 The program doesn't need an internet connection and will not send any data. All your data is saved on your computer (unencrypted for now).
 
-v0.1.x ToDo List
-----------------
+ToDos for 0.1.0
+---------------
 - start balance for account, balance overview
-- tooltips
 - transfers between own accounts are internal automatically
+- warn on different number of fields per line in file
 
 Idea List for Version 0.2
 --------------------------

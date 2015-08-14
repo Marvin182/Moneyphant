@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>466</width>
-    <height>428</height>
+    <width>484</width>
+    <height>462</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -29,7 +29,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="lblFilename">
        <property name="text">
         <string>Filename:</string>
        </property>
@@ -94,7 +94,7 @@
       <enum>QFormLayout::FieldsStayAtSizeHint</enum>
      </property>
      <item row="1" column="0">
-      <widget class="QLabel" name="label_3">
+      <widget class="QLabel" name="lblDelimiter">
        <property name="text">
         <string>Delimiter:</string>
        </property>
@@ -120,7 +120,7 @@
       </widget>
      </item>
      <item row="2" column="0">
-      <widget class="QLabel" name="label_4">
+      <widget class="QLabel" name="lblTextQualifier">
        <property name="text">
         <string>Text Qualifier:</string>
        </property>
@@ -146,20 +146,6 @@
       </widget>
      </item>
      <item row="4" column="1">
-      <widget class="QLineEdit" name="dateFormat">
-       <property name="text">
-        <string>dd.MM.yy</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Date Format</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
       <widget class="QCheckBox" name="skipFirstLine">
        <property name="text">
         <string>Skip first line</string>
@@ -169,10 +155,31 @@
        </property>
       </widget>
      </item>
+     <item row="5" column="1">
+      <widget class="QCheckBox" name="invertAmount">
+       <property name="text">
+        <string>Invert Amount</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLineEdit" name="dateFormat">
+       <property name="text">
+        <string>dd.MM.yy</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="lblDateFormat">
+       <property name="text">
+        <string>Date Format</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
-    <widget class="QLabel" name="label_5">
+    <widget class="QLabel" name="lblLineSuffix">
      <property name="text">
       <string>Line Suffix:</string>
      </property>

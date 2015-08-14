@@ -18,11 +18,7 @@ Transfer::Transfer(QDateTime dateTime, const Acc& from, const Acc& to, cqstring 
 	checked(false),
 	internal(false)
 {
-	if (date.date().year() < 1970) {
-		date = date.addYears(100);
-	}
-	assert_warning(date.date().year() >= 1970 && date.date().year() < 2070, "year is %d", date.date().year());
-
+	assert_error(date.date().year() >= 1970 && date.date().year() < 2070, "year is %d", date.date().year());
 	assert_warning(amount != 0);
 }
 

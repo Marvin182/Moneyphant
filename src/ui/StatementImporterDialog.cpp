@@ -40,8 +40,9 @@ StatementImporterDialog::StatementImporterDialog(Db db, cqstring filePath, QWidg
 	// sync ui with format
 	ui->delimiter->setCurrentIndex(delimiterIndex(_format.delimiter));
 	ui->textQualifier->setCurrentIndex(textQualifierIndex(_format.textQualifier));
-	ui->skipFirstLine->setEnabled(_format.skipFirstLine);
 	ui->dateFormat->setText(_format.dateFormat);
+	ui->skipFirstLine->setChecked(_format.skipFirstLine);
+	ui->invertAmount->setChecked(_format.invertAmount);
 	ui->lineSuffix->setText(_format.lineSuffix);
 	if (!_format.lineSuffix.isEmpty()) {
 		for (auto& line : lines) {
@@ -59,8 +60,9 @@ StatementImporterDialog::StatementImporterDialog(Db db, cqstring filePath, QWidg
 	// listen for changes to format options
 	connect(ui->delimiter, SIGNAL(currentIndexChanged(int)), SLOT(onDelimiterChanged(int)));
 	connect(ui->textQualifier, SIGNAL(currentIndexChanged(int)), SLOT(onTextQualifierChanged(int)));
-	connect(ui->skipFirstLine, SIGNAL(stateChanged(int)), SLOT(onSkipFirstLineChanged(int)));
 	connect(ui->dateFormat, &QLineEdit::textEdited, [&](cqstring text) { _format.dateFormat = text; });
+	connect(ui->skipFirstLine, &QCheckBox::toggled, [&](bool checked) { _format.skipFirstLine = checked; });
+	connect(ui->invertAmount, &QCheckBox::toggled, [&](bool checked) { _format.invertAmount = checked; });
 	connect(ui->lineSuffix, SIGNAL(textEdited(const QString&)), SLOT(onLineSuffixChanged(const QString&)));
 
 	connect(ui->cancel, SIGNAL(clicked()), this, SLOT(reject()));
@@ -150,10 +152,6 @@ void StatementImporterDialog::onDelimiterChanged(int index) {
 void StatementImporterDialog::onTextQualifierChanged(int index) {
 	_format.textQualifier = TextQualifiers[index];
 	createColumnChoosers();
-}
-
-void StatementImporterDialog::onSkipFirstLineChanged(int state) {
-	_format.skipFirstLine = state == Qt::Checked; 
 }
 
 void StatementImporterDialog::onLineSuffixChanged(const QString& newSuffix) {

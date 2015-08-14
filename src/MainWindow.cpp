@@ -274,7 +274,7 @@ void MainWindow::openDb() {
 	assert_fatal(dbConfig != nullptr);
 
 	QString dbPath = mr::qt::appLocalDataLocation() + "/db.sqlite";
-	qDebug() << "Opening database " << dbPath;
+	qLog() << "Opening database " << dbPath;
 	dbConfig->path_to_database = str(dbPath);
 	dbConfig->flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
 	dbConfig->debug = false;

@@ -147,6 +147,9 @@ void TransferTab::createFilterMonthLinks() {
 	assert_error(!startEnd.empty());
 	auto start = QDateTime::fromMSecsSinceEpoch(startEnd.front().min).date();
 	auto end = QDateTime::fromMSecsSinceEpoch(startEnd.front().max).date();
+	assert_error(start <= end, "start: %ld, end: %ld", (long)startEnd.front().min, (long)startEnd.front().max);
+	assert_error(start.year() >= 1970, "start: %ld, start year: %d", (long)startEnd.front().min, start.year());
+	assert_error(end.year() < 2070, "end: %ld, end year: %d", (long)startEnd.front().min, end.year());
 
 	auto addButton = [&](const QString& text) {
 		assert_error(!text.isEmpty());
@@ -162,7 +165,10 @@ void TransferTab::createFilterMonthLinks() {
 		addButton(QString::number(y));
 	}
 
-	// quarters
+	// quarters for this and last year
+	while (start.year() < end.year() - 1) {
+		start = start.addMonths(3);
+	}
 	while (start <= end) {
 		if (start.month() <= 3) {
 			addButton(start.toString("yyyy Q1"));
@@ -176,7 +182,7 @@ void TransferTab::createFilterMonthLinks() {
 		start = start.addMonths(3);
 	}
 
-	// months (last 3)
+	// months for last 3 months
 	start = end.addMonths(-2);
 	while (start <= end) {
 		addButton(start.toString("MMM yy"));

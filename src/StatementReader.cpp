@@ -26,6 +26,14 @@ void StatementReader::stopWatchingFiles() {
 	fileWatcher.removePaths(fileWatcher.files());
 }
 
+void StatementReader::stopWatchingFile(cqstring filename) {
+	qLog() << "stop watching file " << filename;
+	fileWatcher.removePath(filename);
+
+	db::File f;
+	(*db)(sqlpp::update(f).set(f.watch = false).where(f.path == str(filename)));
+}
+
 void StatementReader::addFile(cqstring filename, const StatementFileFormat& format, bool watch) {
 	db::File f;
 
@@ -34,7 +42,7 @@ void StatementReader::addFile(cqstring filename, const StatementFileFormat& form
 	if (fs.empty()) {
 		(*db)(insert_into(f).set(f.path = str(filename),
 									f.formatId = format.id,
-									f.watch = (int)watch));
+									f.watch = watch));
 		if (watch) {
 			// new file that should be watched
 			qLog() << "watching file " << filename;
@@ -42,7 +50,7 @@ void StatementReader::addFile(cqstring filename, const StatementFileFormat& form
 		}
 	} else {
 		(*db)(sqlpp::update(f).set(f.formatId = format.id,
-								f.watch = (int)watch
+								f.watch = watch
 								).where(f.id == fs.front().id));
 		if (watch && !fs.front().watch) {
 			// file should be watched, but isn't so far
@@ -82,9 +90,17 @@ void StatementReader::importStatementFile(cqstring filename, const StatementFile
 		// "id", "date", "amount", "reference", "senderOwnerName", "senderIban", "senderBic", "senderId", "receiverOwnerName", "receiverIban", "receiverBic", "receiverId", "note", "checked", "internal"
 
 		auto date = QDateTime::fromString(val("date"), format.dateFormat);
+		if (date.date().year() < 1970) date = date.addYears(100); // QDateTime::fromString will read 06.07.15 as 06.07.1915
+		if (!date.isValid() || date.date().year() < 1970 || date.date().year() > 2070) {
+			stopWatchingFile(filename);
+			assert_error(false, "invalid transfer date detected (%s), year must be between 1970 and 2070, possibly wrong date format for %s", cstr(date.toString("dd.MM.yyyy")), cstr(val("date")));
+		}
+
 		auto from = hasVal("senderId") ? Transfer::Acc(val("senderId").toInt(), "") : acc(val("senderOwnerName"), val("senderIban"), val("senderBic"));
 		auto to = hasVal("receiverId") ? Transfer::Acc(val("receiverId").toInt(), "") : acc(val("receiverOwnerName"), val("receiverIban"), val("receiverBic"));
+	
 		int amount = val("amount").replace(',', '.').toDouble() * 100;
+		if (format.invertAmount) amount = -amount;
 		
 		assert_error(from.id >= 0 && to.id >= 0, "from %d, to: %d", from.id, to.id);
 		assert_debug(from.id != to.id, "accounts are not allowed to match (lineNumber: %d, from: %s, to: %s)", lineNumber, cstr(from), cstr(to));
@@ -210,7 +226,7 @@ int StatementReader::add(Account& account) {
 										acc.bankCode = str(account.bankCode)));
 	assert_error(id >= 0);
 	account.id = id;
-	qLog() << "added " << account;
+	qDebug() << "added " << account;
 	return id;
 }
 
@@ -223,7 +239,7 @@ int StatementReader::add(Transfer& transfer) {
 										tr.amount = transfer.amount));
 	assert_error(id >= 0);
 	transfer.id = id;
-	qLog() << "added " << transfer;
+	qDebug() << "added " << transfer;
 	return id;
 }
 
@@ -241,7 +257,7 @@ void StatementReader::insert(const Account& account) {
 								acc.accountNumber = str(account.accountNumber),
 								acc.bankCode = str(account.bankCode)
 								));
-	qLog() << "inserted " << account;
+	qDebug() << "inserted " << account;
 }
 
 void StatementReader::insert(const Transfer& transfer) {
@@ -259,5 +275,5 @@ void StatementReader::insert(const Transfer& transfer) {
 										tr.checked = transfer.checked
 										));
 
-	qLog() << "inserted " << transfer;
+	qDebug() << "inserted " << transfer;
 }
