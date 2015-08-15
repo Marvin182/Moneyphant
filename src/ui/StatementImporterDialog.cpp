@@ -17,9 +17,11 @@ const std::vector<QString> TextQualifiers{"\"", "\'", ""};
 StatementImporterDialog::StatementImporterDialog(Db db, cqstring filePath, QWidget *parent) :
 	QDialog(parent),
 	ui(new Ui::StatementImporterDialog),
+	db(db),
+	lines(0),
+	columnChoosers(0),
 	_success(false),
-	_format(),
-	db(db)
+	_format()
 {
 	ui->setupUi(this);
 
@@ -89,6 +91,11 @@ void StatementImporterDialog::createColumnChoosers() {
 	auto header = lineAsStringList(lines.front());
 	bool hasExampleLine = lines.size() > 1;
 	auto exampleLine = hasExampleLine ? lineAsStringList(lines[1]) : QStringList();
+	assert_error(
+		(!hasExampleLine && exampleLine.isEmpty())
+		|| header.length() == exampleLine.length(),
+		"header: %s (fields: %d), example line = %s (fields: %d)", cstr(lines.front()), header.length(), hasExampleLine ? cstr(lines[1]) : "", exampleLine.length()
+	);
 
 	// create a ColumnChooser for each header field (= column)
 	for (int i = 0; i < header.size(); i++) {
@@ -97,7 +104,7 @@ void StatementImporterDialog::createColumnChoosers() {
 			columnChoosers[i]->set(header[i], hasExampleLine ? exampleLine[i] : "");
 		} else {
 			columnChoosers.push_back(new ColumnChooser(i, header[i], hasExampleLine ? exampleLine[i] : "", ui->columnChoosers));
-			connect(columnChoosers.back(), SIGNAL(inputTypeChanged(int, const QString&)), this, SLOT(onColumnChooserChanged(int, const QString&)));
+			connect(columnChoosers.back(), SIGNAL(inputTypeChanged(int, const QString&)), SLOT(onColumnChooserChanged(int, const QString&)));
 		}
 	}
 

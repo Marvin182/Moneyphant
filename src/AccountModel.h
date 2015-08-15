@@ -1,12 +1,13 @@
 #ifndef ACCOUNT_MODEL_H
 #define ACCOUNT_MODEL_H
 
+#include <vector>
+#include <unordered_map>
+#include <QSet>
+#include <QAbstractTableModel>
 #include <mr/common>
 #include "sql.h"
 #include "Account.h"
-#include <vector>
-#include <unordered_map>
-#include <QAbstractTableModel>
 
 class AccountModel : public QAbstractTableModel {
 	Q_OBJECT
@@ -25,6 +26,8 @@ public:
 
 	const Account& get(int row) const;
 	const Account& getById(int id) const;
+
+	static QSet<int> ownAccountIds(Db db);
 
 public slots:
 	void reloadCache();

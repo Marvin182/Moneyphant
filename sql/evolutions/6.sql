@@ -1,14 +1,14 @@
 # --- !Ups
 
 # add start balance for accounts
-alter table account add column startBalance integer not null default 0;
+alter table account add column initialBalance integer not null default 0;
 
 # add invert amount option for formats
 alter table format add column invertAmount integer not null default 0;
 
 # --- !Downs
 
-# drop column startBalance
+# drop column initialBalance
 alter table account rename to tmp_account;
 create table account (
 	id integer primary key autoincrement,

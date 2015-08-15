@@ -38,6 +38,8 @@ QVariant AccountModel::data(const QModelIndex& index, int role) const {
 				case 4: return a.bic.isEmpty() ? mr::separateGroups(a.bankCode, 3, ' ') : a.bic;
 				case 5: return a.accountNumber;
 				case 6: return a.bankCode;
+				// case 7: // tags
+				case 8: return currency(a.initialBalance);
 			}
 			break;
 		case Qt::CheckStateRole:
@@ -68,6 +70,7 @@ QVariant AccountModel::headerData(int section, Qt::Orientation orientation, int 
 			case 5: return tr("Account Number");
 			case 6: return tr("Bank Code");
 			case 7: return tr("Tags");
+			case 8: return tr("Initial Balance");
 			default: assert_unreachable();
 		}
 	}
@@ -91,20 +94,25 @@ bool AccountModel::setData(const QModelIndex& index, const QVariant& value, int 
 				assert_error(value.canConvert<QString>());
 				a.name = value.toString();
 				break;
+			case 2:
+				assert_error(value.canConvert<QString>());
+				a.owner = value.toString();
+				break;
 			default:
 				assert_error(false);
 				return false;
 		}
-	}
 
-	(*db)(update(acc).set(acc.isOwn = a.isOwn,
-							acc.name = str(a.name),
-							acc.owner = str(a.owner),
-							acc.iban = str(a.iban),
-							acc.bic = str(a.bic),
-							acc.accountNumber = str(a.accountNumber),
-							acc.bankCode = str(a.bankCode)
-						).where(acc.id == a.id));
+		(*db)(update(acc).set(acc.isOwn = a.isOwn,
+								acc.name = str(a.name),
+								acc.owner = str(a.owner),
+								acc.iban = str(a.iban),
+								acc.bic = str(a.bic),
+								acc.accountNumber = str(a.accountNumber),
+								acc.bankCode = str(a.bankCode),
+								acc.initialBalance = a.initialBalance
+								).where(acc.id == a.id));
+	}
 
 	emit dataChanged(index, index);
 	return true;
@@ -118,6 +126,7 @@ Qt::ItemFlags AccountModel::flags(const QModelIndex& index) const {
 		case 0:
 			return commonFlags | Qt::ItemIsUserCheckable;
 		case 1:
+		case 2:
 			return commonFlags | Qt::ItemIsEditable;
 		default:
 			return commonFlags;
@@ -135,6 +144,16 @@ const Account& AccountModel::getById(int id) const {
 	return get(row);
 }
 
+QSet<int> AccountModel::ownAccountIds(Db db) {
+	db::Account acc;
+	QSet<int> ids;
+	for (const auto& a : (*db)(select(acc.id).from(acc).where(acc.isOwn))) {
+		ids += a.id;
+	}
+	return ids;
+}
+
+
 void AccountModel::reloadCache() {
 	emit beginResetModel();
 
@@ -146,7 +165,7 @@ void AccountModel::reloadCache() {
 	int row = 0;
 	for (const auto& a : (*db)(select(all_of(acc)).from(acc).where(true).order_by(acc.isOwn.desc(), acc.name.asc()))) {
 		id2Row[a.id] = row++;
-		cachedAccounts.push_back({(int)a.id, a.isOwn, qstr(a.name), qstr(a.owner), qstr(a.iban), qstr(a.bic), qstr(a.accountNumber), qstr(a.bankCode)});
+		cachedAccounts.push_back({(int)a.id, a.isOwn, qstr(a.name), qstr(a.owner), qstr(a.iban), qstr(a.bic), qstr(a.accountNumber), qstr(a.bankCode), (int)a.initialBalance});
 	}
 
 	emit endResetModel();
@@ -178,6 +197,7 @@ void AccountModel::mergeAccounts(int firstId, int secondId) {
 	if (first.bic.isEmpty()) first.bic = second.bic;
 	if (first.accountNumber.isEmpty()) first.accountNumber = second.accountNumber;
 	if (first.bankCode.isEmpty()) first.bankCode = second.bankCode;
+	first.initialBalance += second.initialBalance;
 	(*db)(update(acc).set(acc.isOwn = first.isOwn,
 							acc.name = str(first.name),
 							acc.owner = str(first.owner),
@@ -218,7 +238,6 @@ Account& AccountModel::_getById(int id) {
 	int row = id2Row.at(id);
 	return _get(row);
 }
-
 
 void AccountModel::assertValidIndex(const QModelIndex& index) const {
 	assert_error(index.column() >= 0 || index.column() < COLUMNS_COUNT, "invalid index column %d (row :%d)", index.column(), index.row());

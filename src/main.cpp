@@ -2,6 +2,7 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <mr/common>
+#include <iostream>
 
 const char* messageLogFileName = "log.txt";
 

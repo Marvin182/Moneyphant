@@ -241,18 +241,18 @@ namespace db
       };
       using _traits = sqlpp::make_traits<sqlpp::text>;
     };
-    struct StartBalance
+    struct InitialBalance
     {
       struct _alias_t
       {
-        static constexpr const char _literal[] =  "startBalance";
+        static constexpr const char _literal[] =  "initialBalance";
         using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
         template<typename T>
         struct _member_t
           {
-            T startBalance;
-            T& operator()() { return startBalance; }
-            const T& operator()() const { return startBalance; }
+            T initialBalance;
+            T& operator()() { return initialBalance; }
+            const T& operator()() const { return initialBalance; }
           };
       };
       using _traits = sqlpp::make_traits<sqlpp::integer>;
@@ -268,7 +268,7 @@ namespace db
                Account_::Bic,
                Account_::AccountNumber,
                Account_::BankCode,
-               Account_::StartBalance>
+               Account_::InitialBalance>
   {
     struct _alias_t
     {

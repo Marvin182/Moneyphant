@@ -16,7 +16,7 @@ create table account (
 	bic text not null default '',
 	accountNumber text not null default '',
 	bankCode text not null default '',
-	startBalance integer not null default 0
+	initialBalance integer not null default 0
 );
 
 create table transfer (

@@ -27,7 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	statementReader(nullptr)
 {
 	ui->setupUi(this);
-	tabs = {ui->transferTab, ui->accountTab};
+	tabs = {ui->transferTab, ui->accountTab, ui->balanceTab};
 
 	loadSettings();
 	QTimer::singleShot(0, this, SLOT(init()));
@@ -51,9 +51,13 @@ void MainWindow::init() {
 	initMenu();
 	initAccountTab();
 	ui->transferTab->init(db, accountModel);
+	ui->balanceTab->init(db);
 
-	connect(ui->tabs, &QTabWidget::currentChanged, [&](int index) { if (index == 0) ui->transferTab->reloadCache(); });
-	connect(&statementReader, &StatementReader::newStatementsImported, [&]() { accountModel->reloadCache(); ui->transferTab->reloadCache(); });
+	connect(ui->tabs, &QTabWidget::currentChanged, [&](int index) { switch (index) {
+		case 0: ui->transferTab->reloadCache(); break;
+		case 2: ui->balanceTab->reloadCache(); break;
+	}});
+	connect(&statementReader, &StatementReader::newStatementsImported, [&]() { accountModel->reloadCache(); ui->transferTab->reloadCache(); ui->balanceTab->reloadCache(); });
 
 	QTimer::singleShot(0, &statementReader, SLOT(startWatchingFiles()));
 }
@@ -73,6 +77,7 @@ void MainWindow::initMenu() {
 	});
 	connect(ui->actionTransfers, &QAction::triggered, [&]() { ui->tabs->setCurrentIndex(0); });
 	connect(ui->actionAccounts, &QAction::triggered, [&]() { ui->tabs->setCurrentIndex(1); });
+	connect(ui->actionBalance, &QAction::triggered, [&]() { ui->tabs->setCurrentIndex(2); });
 }
 
 void MainWindow::initAccountTab() {
@@ -92,12 +97,12 @@ void MainWindow::initAccountTab() {
 	ui->accountView->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
 	ui->accountView->setMouseTracking(true);
-	connect(ui->accountView, SIGNAL(entered(const QModelIndex&)), this, SLOT(setCurrentAccount(const QModelIndex&)));
-	connect(ui->accountView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this, SLOT(showSelectedAccounts(const QItemSelection&, const QItemSelection&)));
+	connect(ui->accountView, SIGNAL(entered(const QModelIndex&)), SLOT(setCurrentAccount(const QModelIndex&)));
+	connect(ui->accountView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), SLOT(showSelectedAccounts(const QItemSelection&, const QItemSelection&)));
 	connect(ui->accountTags, SIGNAL(tagsAdded(QStringList, const std::vector<int>&)), &tagHelper, SLOT(addAccountTags(QStringList, const std::vector<int>&)));
 	connect(ui->accountTags, SIGNAL(tagsRemoved(QStringList, const std::vector<int>&)), &tagHelper, SLOT(removeAccountTags(QStringList, const std::vector<int>&)));
-	connect(ui->actionMerge_Selected_Accounts, SIGNAL(triggered()), this, SLOT(mergeAccounts()));
-	connect(ui->mergeAccounts, SIGNAL(clicked()), this, SLOT(mergeAccounts()));
+	connect(ui->actionMerge_Selected_Accounts, SIGNAL(triggered()), SLOT(mergeAccounts()));
+	connect(ui->mergeAccounts, SIGNAL(clicked()), SLOT(mergeAccounts()));
 
 	ui->mergeAccounts->setVisible(false);
 
@@ -150,7 +155,7 @@ void MainWindow::onShowAbout() {
 void MainWindow::loadSettings() {
 	settings.setFallbacksEnabled(false);
 
-	QLocale::setDefault(QLocale(QLocale::German, QLocale::Germany));
+	QLocale::setDefault(QLocale(settings.value("global/language", "de").toString()));
 
 	if (settings.value("mainwindow/fullscreen").toBool()) {
 		showFullScreen();

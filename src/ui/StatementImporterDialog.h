@@ -33,12 +33,12 @@ private slots:
 private:
 	Ui::StatementImporterDialog *ui;
 
-	bool _success;
-	StatementFileFormat _format;
-
 	Db db;
 	std::vector<QString> lines;
 	std::vector<ColumnChooser*> columnChoosers;
+	
+	bool _success;
+	StatementFileFormat _format;
 
 	bool hasTextQualifier() const { return _format.textQualifier != ""; }
 	const QString& delimiter() const { return _format.delimiter; }

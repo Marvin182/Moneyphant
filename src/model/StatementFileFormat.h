@@ -13,7 +13,7 @@ struct StatementFileFormat {
 	QString textQualifier;
 	bool skipFirstLine;
 	QString dateFormat;
-	QMap<QString, int> columnPositions;
+	QMap<QString, int> columnPositions; // actually we should use a QHash which is more like std::unordered_map, but we less than 20 elements QMap is actually faster
 	QString lineSuffix;
 	bool invertAmount;
 

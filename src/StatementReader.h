@@ -33,13 +33,15 @@ protected:
 	void importStatementFile(cqstring path, const StatementFileFormat& format, bool emitSignal = true);
 	QStringList& addFieldsFromLineSuffix(QStringList& fields, const StatementFileFormat& format);
 
-	Transfer::Acc acc(cqstring owner, cqstring iban, cqstring bic);
+	Transfer::Acc makeAccount(cqstring owner, cqstring iban, cqstring bic);
 
 	int find(Account& account);
 	int find(Transfer& transfer);
 	int findOrAdd(Account& account);
-	int findOrAdd(Transfer& transfer);
 
+	int updateOrAdd(Transfer& transfer);
+	void update(const Transfer& transfer);
+	
 	int add(Account& account);
 	int add(Transfer& transfer);
 	void insert(const Account& account);

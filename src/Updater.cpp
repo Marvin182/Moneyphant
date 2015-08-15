@@ -35,7 +35,7 @@ void Updater::afterEvolatuons(int build) {
 		// remove white spaces
 		std::vector<Account> accounts;
 		for (const auto& a : (*db)(select(all_of(acc)).from(acc).where(true))) {
-			accounts.push_back({(int)a.id, a.isOwn, qstr(a.name), qstr(a.owner), qstr(a.iban), qstr(a.bic), qstr(a.accountNumber), qstr(a.bankCode)});
+			accounts.push_back({(int)a.id, a.isOwn, qstr(a.name), qstr(a.owner), qstr(a.iban), qstr(a.bic), qstr(a.accountNumber), qstr(a.bankCode), (int)a.initialBalance});
 		}
 
 		QRegExp rgx("\\s");

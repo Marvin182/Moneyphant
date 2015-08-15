@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabs">
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="TransferTab" name="transferTab">
        <attribute name="title">
@@ -218,6 +218,11 @@
         </item>
        </layout>
       </widget>
+      <widget class="BalanceTab" name="balanceTab">
+       <attribute name="title">
+        <string>Balance</string>
+       </attribute>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -269,6 +274,7 @@
     </property>
     <addaction name="actionTransfers"/>
     <addaction name="actionAccounts"/>
+    <addaction name="actionBalance"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -346,6 +352,14 @@
     <string>Ctrl+2</string>
    </property>
   </action>
+  <action name="actionBalance">
+   <property name="text">
+    <string>Balance</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+3</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -358,6 +372,12 @@
    <class>TransferTab</class>
    <extends>QWidget</extends>
    <header>src/ui/TransferTab.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>BalanceTab</class>
+   <extends>QWidget</extends>
+   <header>src/ui/BalanceTab.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

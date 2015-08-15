@@ -35,7 +35,8 @@ SOURCES += src/main.cpp\
     src/ui/ColumnChooser.cpp \
     src/ui/TransferTab.cpp \
     src/model/StatementFileFormat.cpp \
-    lib/qcustomplot.cpp
+    lib/qcustomplot.cpp \
+    src/ui/BalanceTab.cpp
 
 HEADERS += src/MainWindow.h \
     src/version.h \
@@ -60,13 +61,15 @@ HEADERS += src/MainWindow.h \
     src/ui/TransferTab.h \
     src/model/StatementFileFormat.h \
     src/Iban.h \
-    lib/qcustomplot.h
+    lib/qcustomplot.h \
+    src/ui/BalanceTab.h
 
 FORMS += src/ui/MainWindow.ui \
     src/ui/AboutDialog.ui \
     src/ui/PreferenceDialog.ui \
     src/ui/StatementImporterDialog.ui \
-    src/ui/TransferTab.ui
+    src/ui/TransferTab.ui \
+    src/ui/BalanceTab.ui
 
 RESOURCES += sql/evolutions.qrc \
     graphics/graphics.qrc

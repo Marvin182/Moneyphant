@@ -1,7 +1,5 @@
 #include "Account.h"
 
-#include <iostream>
-
 Account::Account() :
 	id(-1)
 {}
@@ -14,7 +12,8 @@ Account::Account(cqstring owner, cqstring ibanOrAccountNumber, cqstring bicOrBan
 	iban(ibanOrAccountNumber),
 	bic(bicOrBankCode),
 	accountNumber(""),
-	bankCode("")
+	bankCode(""),
+	initialBalance(0)
 {
 	// remove whitespaces
 	iban = iban.remove(QRegExp("\\s"));
@@ -42,7 +41,7 @@ Account::Account(cqstring owner, cqstring ibanOrAccountNumber, cqstring bicOrBan
 	}
 }
 
-Account::Account(int id, bool isOwn, cqstring name, cqstring owner, cqstring iban, cqstring bic, cqstring accountNumber, cqstring branchCode) :
+Account::Account(int id, bool isOwn, cqstring name, cqstring owner, cqstring iban, cqstring bic, cqstring accountNumber, cqstring branchCode, int initialBalance) :
 	id(id),
 	isOwn(isOwn),
 	name(name),
@@ -50,7 +49,8 @@ Account::Account(int id, bool isOwn, cqstring name, cqstring owner, cqstring iba
 	iban(iban),
 	bic(bic),
 	accountNumber(accountNumber),
-	bankCode(branchCode)
+	bankCode(branchCode),
+	initialBalance(initialBalance)
 {}
 
 bool Account::isSpecial() const {

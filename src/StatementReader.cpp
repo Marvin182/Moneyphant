@@ -1,10 +1,12 @@
 #include "StatementReader.h"
+
+#include <QSet>
 #include <QDir>
 #include <QtDebug>
 #include <QStringList>
 #include "sql.h"
 #include "TagHelper.h"
-
+#include "AccountModel.h"
 
 StatementReader::StatementReader(Db db) :
 	db(db)
@@ -76,6 +78,12 @@ void StatementReader::importStatementFile(cqstring filename) {
 void StatementReader::importStatementFile(cqstring filename, const StatementFileFormat& format, bool emitSignal) {
 	qLog() << "importing " << filename << " with format " << format;
 
+	// if both accounts of a transfer are own accounts the transfer is internal
+	const auto ownAccountIds = AccountModel::ownAccountIds(db);
+	auto isInternalTransfer = [&](int fromId, int toId) {
+		return ownAccountIds.contains(fromId) && ownAccountIds.contains(toId);
+	};
+
 	mr::io::parseCsvFile(filename, format.delimiter, format.textQualifier, format.skipFirstLine, [&](int lineNumber, QStringList& fields) {
 		// add suffix with additional fields (e.g. for default values)
 		fields = addFieldsFromLineSuffix(fields, format);
@@ -96,8 +104,8 @@ void StatementReader::importStatementFile(cqstring filename, const StatementFile
 			assert_error(false, "invalid transfer date detected (%s), year must be between 1970 and 2070, possibly wrong date format for %s", cstr(date.toString("dd.MM.yyyy")), cstr(val("date")));
 		}
 
-		auto from = hasVal("senderId") ? Transfer::Acc(val("senderId").toInt(), "") : acc(val("senderOwnerName"), val("senderIban"), val("senderBic"));
-		auto to = hasVal("receiverId") ? Transfer::Acc(val("receiverId").toInt(), "") : acc(val("receiverOwnerName"), val("receiverIban"), val("receiverBic"));
+		auto from = hasVal("senderId") ? Transfer::Acc(val("senderId").toInt(), "") : makeAccount(val("senderOwnerName"), val("senderIban"), val("senderBic"));
+		auto to = hasVal("receiverId") ? Transfer::Acc(val("receiverId").toInt(), "") : makeAccount(val("receiverOwnerName"), val("receiverIban"), val("receiverBic"));
 	
 		int amount = val("amount").replace(',', '.').toDouble() * 100;
 		if (format.invertAmount) amount = -amount;
@@ -108,10 +116,14 @@ void StatementReader::importStatementFile(cqstring filename, const StatementFile
 		Transfer t;
 		if (hasVal("id")) {
 			t = Transfer(val("id").toInt(), date, from, to, val("reference"), amount, val("reference"), val("checked") == "1", val("internal") == "1");
+			t.note = val("note");
 			insert(t);
 		} else {
 			t = Transfer(date, from, to, val("reference"), amount);
-			findOrAdd(t);
+			t.note = val("note");
+			t.checked = val("checked") == "1";
+			t.internal = hasVal("internal") ? val("internal") == "1" : isInternalTransfer(from.id, to.id);
+			updateOrAdd(t);
 		}
 		assert_error(t.id >= 0);
 
@@ -140,7 +152,7 @@ QStringList& StatementReader::addFieldsFromLineSuffix(QStringList& fields, const
 	return fields << mr::split(suffix, format.delimiter, format.textQualifier);
 }
 
-Transfer::Acc StatementReader::acc(cqstring owner, cqstring iban, cqstring bic) {
+Transfer::Acc StatementReader::makeAccount(cqstring owner, cqstring iban, cqstring bic) {
 	Account a(owner, iban, bic);
 	findOrAdd(a);
 	assert_error(a.id >= 0);
@@ -204,10 +216,12 @@ int StatementReader::findOrAdd(Account& account) {
 	return id;
 }
 
-int StatementReader::findOrAdd(Transfer& transfer) {
+int StatementReader::updateOrAdd(Transfer& transfer) {
 	int id = find(transfer);
 	if (id == -1) {
 		id = add(transfer);
+	} else {
+		update(transfer);
 	}
 	assert_error(id >= 0);
 	return id;
@@ -243,6 +257,20 @@ int StatementReader::add(Transfer& transfer) {
 	return id;
 }
 
+void StatementReader::update(const Transfer& transfer) {
+	db::Transfer tr;
+	assert_error(transfer.id > 0);
+	(*db)(sqlpp::update(tr).set(tr.date = transfer.dateMs(),
+								tr.fromId = transfer.from.id,
+								tr.toId = transfer.to.id,
+								tr.reference = str(transfer.reference),
+								tr.amount = transfer.amount,
+								tr.note = str(transfer.note),
+								tr.checked = transfer.checked,
+								tr.internal = transfer.internal
+							).where(tr.id == transfer.id));
+}
+
 void StatementReader::insert(const Account& account) {
 	db::Account acc;
 	assert_error(account.id >= 0);
@@ -272,7 +300,8 @@ void StatementReader::insert(const Transfer& transfer) {
 										tr.reference = str(transfer.reference),
 										tr.amount = transfer.amount,
 										tr.note = str(transfer.note),
-										tr.checked = transfer.checked
+										tr.checked = transfer.checked,
+										tr.internal = transfer.internal
 										));
 
 	qDebug() << "inserted " << transfer;
