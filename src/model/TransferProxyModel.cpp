@@ -1,12 +1,13 @@
 #include "TransferProxyModel.h"
+
+#include <mr/common>
 #include "TransferModel.h"
 
 TransferProxyModel::TransferProxyModel(Db db, QObject* parent) :
 	QSortFilterProxyModel(parent),
 	db(db),
 	startDate(QDate(2014, 1, 1)),
-	endDate(QDate(2014, 12, 31)),
-	trChecked(0)
+	endDate(QDate(2014, 12, 31))
 {}
 
 void TransferProxyModel::setStartDate(const QDateTime& startDate) {
@@ -27,6 +28,7 @@ void TransferProxyModel::setFilterText(const QString& filterText) {
 	txtNote = "";
 	trChecked = 0;
 	trTagged = 0;
+	trInternal = 0;
 	txtTags.clear();
 	txtRest = "";
 
@@ -58,6 +60,8 @@ void TransferProxyModel::setFilterText(const QString& filterText) {
 			trTagged = 1;
 		} else if (p == "untagged") {
 			trTagged = -1;
+		} else if (p == "internal") {
+			trInternal = 1;
 		} else if (p == "ref:" || p == "reference:") {
 			txtRef = nextPart();
 		} else if (p == "note:") {
@@ -123,6 +127,8 @@ bool TransferProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sour
 			if ((trTagged == 1 && !tagged) || (trTagged == -1 && tagged)) {
 				accepted = false;
 			}
+	} else if (trInternal == 1 && !transfer.internal) {
+		accepted = false;
 	} else if (!txtTags.empty()) {
 		for (int tagId : txtTags) {
 			bool hasTag = (*db)(select(count(trTag.tagId)).from(trTag).where(trTag.tagId == tagId and trTag.transferId == transfer.id)).front().count > 0;

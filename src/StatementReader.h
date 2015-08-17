@@ -1,13 +1,13 @@
 #ifndef STATEMENT_READER_H
 #define STATEMENT_READER_H
 
-#include <mr/common>
 #include <QFile>
 #include <QFileSystemWatcher>
+#include <mr/common>
 #include "sql.h"
+#include "model/Account.h"
 #include "model/StatementFileFormat.h"
-#include "Account.h"
-#include "Transfer.h"
+#include "model/Transfer.h"
 
 class StatementReader : public QObject {
 	Q_OBJECT
@@ -15,6 +15,8 @@ public:
 	StatementReader(Db db = nullptr);
 
 	void setDb(Db db) { this->db = db; }
+	
+	static void recalculateBalances(Db db);
 
 public slots:
 	void startWatchingFiles();
@@ -32,6 +34,7 @@ protected:
 
 	void importStatementFile(cqstring path, const StatementFileFormat& format, bool emitSignal = true);
 	QStringList& addFieldsFromLineSuffix(QStringList& fields, const StatementFileFormat& format);
+
 
 	Transfer::Acc makeAccount(cqstring owner, cqstring iban, cqstring bic);
 

@@ -7,6 +7,7 @@ Account::Account() :
 Account::Account(cqstring owner, cqstring ibanOrAccountNumber, cqstring bicOrBankCode) :
 	id(-1),
 	isOwn(false),
+	balance(0),
 	name(owner),
 	owner(owner),
 	iban(ibanOrAccountNumber),
@@ -41,9 +42,10 @@ Account::Account(cqstring owner, cqstring ibanOrAccountNumber, cqstring bicOrBan
 	}
 }
 
-Account::Account(int id, bool isOwn, cqstring name, cqstring owner, cqstring iban, cqstring bic, cqstring accountNumber, cqstring branchCode, int initialBalance) :
+Account::Account(int id, bool isOwn, int balance, cqstring name, cqstring owner, cqstring iban, cqstring bic, cqstring accountNumber, cqstring branchCode, int initialBalance) :
 	id(id),
 	isOwn(isOwn),
+	balance(balance),
 	name(name),
 	owner(owner),
 	iban(iban),

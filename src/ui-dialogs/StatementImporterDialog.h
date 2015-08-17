@@ -6,7 +6,7 @@
 #include <mr/common>
 #include "../sql.h"
 #include "../model/StatementFileFormat.h"
-#include "ColumnChooser.h"
+#include "../ui/ColumnChooser.h"
 
 namespace Ui {
 	class StatementImporterDialog;

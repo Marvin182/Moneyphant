@@ -25,198 +25,10 @@
         <string>Transfers</string>
        </attribute>
       </widget>
-      <widget class="QWidget" name="accountTab">
+      <widget class="AccountTab" name="accountTab">
        <attribute name="title">
         <string>Accounts</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item>
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QLabel" name="accountSearchLabel">
-            <property name="text">
-             <string>Search:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="accFilterText"/>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_3">
-          <item>
-           <widget class="QTableView" name="accountView"/>
-          </item>
-          <item>
-           <widget class="QWidget" name="accountDetails" native="true">
-            <property name="minimumSize">
-             <size>
-              <width>100</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>200</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_4">
-             <item>
-              <widget class="QLabel" name="accountNameL">
-               <property name="text">
-                <string>Name:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="accountName">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_5">
-               <property name="text">
-                <string>Owner:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="accountOwner">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="label">
-               <property name="text">
-                <string>IBAN:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="accountIban">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_2">
-               <property name="text">
-                <string>BIC:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="accountBic">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_3">
-               <property name="text">
-                <string>Account Number:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="accountAccountNumber">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_4">
-               <property name="text">
-                <string>Bank Code:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="accountBankCode">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="readOnly">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="accountTagsL">
-               <property name="text">
-                <string>Tags:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="TagEdit" name="accountTags">
-               <property name="focusPolicy">
-                <enum>Qt::StrongFocus</enum>
-               </property>
-               <property name="tabChangesFocus">
-                <bool>true</bool>
-               </property>
-               <property name="backgroundVisible">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="moreAccountTags">
-               <property name="text">
-                <string/>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="verticalSpacer">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>17</width>
-                 <height>501</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QPushButton" name="mergeAccounts">
-               <property name="text">
-                <string>Merge Accounts</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
       </widget>
       <widget class="BalanceTab" name="balanceTab">
        <attribute name="title">
@@ -364,35 +176,26 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>TagEdit</class>
-   <extends>QPlainTextEdit</extends>
-   <header>src/TagEdit.h</header>
-  </customwidget>
-  <customwidget>
    <class>TransferTab</class>
    <extends>QWidget</extends>
-   <header>src/ui/TransferTab.h</header>
+   <header>src/ui-tabs/TransferTab.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AccountTab</class>
+   <extends>QWidget</extends>
+   <header>src/ui-tabs/AccountTab.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>BalanceTab</class>
    <extends>QWidget</extends>
-   <header>src/ui/BalanceTab.h</header>
+   <header>src/ui-tabs/BalanceTab.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
  <tabstops>
-  <tabstop>accountName</tabstop>
   <tabstop>tabs</tabstop>
-  <tabstop>accFilterText</tabstop>
-  <tabstop>accountView</tabstop>
-  <tabstop>accountOwner</tabstop>
-  <tabstop>accountIban</tabstop>
-  <tabstop>accountBic</tabstop>
-  <tabstop>accountAccountNumber</tabstop>
-  <tabstop>accountBankCode</tabstop>
-  <tabstop>accountTags</tabstop>
-  <tabstop>mergeAccounts</tabstop>
  </tabstops>
  <resources/>
  <connections/>

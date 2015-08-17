@@ -1,4 +1,5 @@
 #include "TagHelper.h"
+
 #include <algorithm>
 
 TagHelper::TagHelper(Db db, QObject* parent) :

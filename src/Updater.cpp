@@ -1,9 +1,13 @@
 #include "Updater.h"
 
 #include <vector>
+#include <algorithm>
+#include <unordered_set>
+#include <mr/common>
 #include "version.h"
 #include "Evolutions.h"
-#include "Account.h"
+#include "StatementReader.h"
+#include "model/Account.h"
 
 Updater::Updater(Db db, QSettings& settings) :
 	db(db),
@@ -28,14 +32,15 @@ void Updater::beforeEvolutions(int build) {
 
 void Updater::afterEvolatuons(int build) {
 	db::Account acc;
+	db::Transfer tr;
 
 	if (build < 50) {
-		qLog() << "Running update for build 50";
+		qLog() << "DB update for build 50: normalize IBANs, BICs, account numbers and bank codes";
 		// preprocessing for iban, bic, accountNumber and bankCode changed
-		// remove white spaces
+		// apply changes to existing account => remove white spaces and transform to upper case
 		std::vector<Account> accounts;
 		for (const auto& a : (*db)(select(all_of(acc)).from(acc).where(true))) {
-			accounts.push_back({(int)a.id, a.isOwn, qstr(a.name), qstr(a.owner), qstr(a.iban), qstr(a.bic), qstr(a.accountNumber), qstr(a.bankCode), (int)a.initialBalance});
+			accounts.push_back({(int)a.id, a.isOwn, (int)a.balance, qstr(a.name), qstr(a.owner), qstr(a.iban), qstr(a.bic), qstr(a.accountNumber), qstr(a.bankCode), (int)a.initialBalance});
 		}
 
 		QRegExp rgx("\\s");
@@ -54,5 +59,16 @@ void Updater::afterEvolatuons(int build) {
 								acc.bankCode = str(a.bankCode)
 				).where(acc.id == a.id));
 		}
+	}
+
+	if (build <= 60) {
+		qLog() << "DB update for build 60: mark transfers between own accounts as internal";
+		std::unordered_set<int> ids;
+		for (const auto& a : (*db)(select(acc.id).from(acc).where(acc.isOwn))) {
+			ids.insert(a.id);
+		}
+		auto ownIds = value_list_t<std::unordered_set<int>>(ids);
+		(*db)(sqlpp::update(tr).set(tr.internal = true).where(tr.fromId.in(ownIds) and tr.toId.in(ownIds)));
+		StatementReader::recalculateBalances(db);
 	}
 }

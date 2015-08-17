@@ -1,13 +1,10 @@
 #ifndef COLUMN_CHOOSER_H
 #define COLUMN_CHOOSER_H
 
-#include <mr/common>
-#include <QMap>
-#include <QStringList>
 #include <QWidget>
 #include <QComboBox>
 #include <QLabel>
-
+#include <mr/common>
 
 class ColumnChooser : public QObject {
 	Q_OBJECT

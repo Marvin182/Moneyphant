@@ -6,8 +6,8 @@
 #include <QVector>
 #include <QDateTime>
 
-BalanceTab::BalanceTab(QWidget *parent) :
-	QWidget(parent),
+BalanceTab::BalanceTab(QWidget* parent) :
+	Tab(parent),
 	ui(new Ui::BalanceTab)
 {
 	ui->setupUi(this);
@@ -19,13 +19,11 @@ BalanceTab::~BalanceTab()
 }
 
 void BalanceTab::init(Db db) {
-	this->db = db;
-	reloadCache();
+	Tab::init(db);
+	refresh();
 }
 
-void BalanceTab::reloadCache() {
-	qLog() << "graph count: " << ui->balancePlot->graphCount();
-
+void BalanceTab::refresh() {
 	ui->balancePlot->clearGraphs();
 
 	db::Account acc;
@@ -38,6 +36,7 @@ void BalanceTab::reloadCache() {
 	auto startEnd = (*db)(select(min(tr.date), max(tr.date)).from(tr).where(true));
 	double startTime = startEnd.front().min / 1000.0;
 	double endTime = startEnd.front().max / 1000.0;
+	const double oneMonth = 30 * 86400;
 
 	for (auto const& a : (*db)(select(acc.id, acc.initialBalance).from(acc).where(acc.isOwn))) {
 		ownAccountIds += a.id;
@@ -48,7 +47,6 @@ void BalanceTab::reloadCache() {
 		if (ownAccountIds.contains(t.fromId)) {
 			balances[t.fromId] += (balances[t.fromId].last() - t.amount / 100.0);
 			times[t.fromId] += t.date / 1000.0;
-			// qLog() << times[t.fromId].last() << "|" << balances[t.fromId].last();
 		}
 		// internal?
 		if (ownAccountIds.contains(t.toId)) {
@@ -56,7 +54,7 @@ void BalanceTab::reloadCache() {
 			times[t.toId] += t.date / 1000.0;
 		}
 	}
-	QPen pen(QColor::fromHsv(mr::random::probability() * 360, 200, 240), 2);
+	QPen pen(QColor::fromHsv(25, 200, 240), 2);
 	for (auto const& a : (*db)(select(acc.id, acc.name).from(acc).where(acc.isOwn).order_by(acc.name.asc()))) {
 		assert_error(ownAccountIds.contains(a.id));
 		balances[a.id] += balances[a.id].last();
@@ -75,7 +73,7 @@ void BalanceTab::reloadCache() {
 	ui->balancePlot->xAxis->setDateTimeFormat("dd.MM.yy");
 
 	ui->balancePlot->xAxis->setAutoTickStep(false);
-	ui->balancePlot->xAxis->setTickStep(2628000); // one month in seconds
+	ui->balancePlot->xAxis->setTickStep(oneMonth);
 	ui->balancePlot->xAxis->setSubTickCount(3);
 
 	ui->balancePlot->xAxis->setLabel("Date");
@@ -92,8 +90,6 @@ void BalanceTab::reloadCache() {
 	ui->balancePlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
 
 	ui->balancePlot->replot();
-
-	qLog() << "graph count: " << ui->balancePlot->graphCount();
 }
 
 QVector<QColor> BalanceTab::randomColors(int n, int startHue, int saturation, int value, int alpha) {

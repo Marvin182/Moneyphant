@@ -1,12 +1,11 @@
 #ifndef TRANSFER_MODEL_H
 #define TRANSFER_MODEL_H
 
-#include <mr/common>
-#include "sql.h"
-#include "Transfer.h"
 #include <vector>
 #include <unordered_map>
 #include <QAbstractTableModel>
+#include "../sql.h"
+#include "Transfer.h"
 
 class TransferModel : public QAbstractTableModel {
 	Q_OBJECT
@@ -35,7 +34,8 @@ public:
 	void exportTransfers(cqstring path, const std::vector<int>& transferIds) const;
 
 public slots:
-	void reloadCache();
+	void invalidateCache();
+	void onAccountsMerged(const Account& merged, QSet<int> mergedIds);
 	void createBackup(const QString& path);
 
 private:

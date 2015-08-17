@@ -1,7 +1,6 @@
-#include <cassert>
-#include <sstream>
-#include <iostream>
 #include "Transfer.h"
+
+#include <iostream>
 
 Transfer::Transfer() :
 	id(-1)
@@ -50,8 +49,15 @@ bool Transfer::operator<(const Transfer& tr) const {
 	return date < tr.date;
 }
 
+bool Transfer::Acc::operator<(const Transfer::Acc& other) const {
+	if (isOwn) {
+		return !other.isOwn || name < other.name;
+	}
+	return name < other.name;
+}
+
 std::ostream& operator<<(std::ostream& os, const Transfer::Acc& a) {
-	os << "Acc(" << a.id << ", " << str(a.name) << ")";
+	os << (a.isOwn ? "OwnAcc" : "Acc") << "(" << a.id << ", " << str(a.name) << ")";
 	return os;
 }
 

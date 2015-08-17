@@ -5,8 +5,7 @@
 #include <unordered_map>
 #include <QSet>
 #include <QAbstractTableModel>
-#include <mr/common>
-#include "sql.h"
+#include "../sql.h"
 #include "Account.h"
 
 class AccountModel : public QAbstractTableModel {
@@ -30,9 +29,13 @@ public:
 	static QSet<int> ownAccountIds(Db db);
 
 public slots:
-	void reloadCache();
+	void invalidateCache();
 	void createBackup(const QString& path);
+	void setInitialBalance(int id, int value);
 	void mergeAccounts(int firstId, int secondId);
+
+signals:
+	void accountsMerged(const Account& merged, QSet<int> mergedIds);
 
 private:
 	Db db;
@@ -42,6 +45,7 @@ private:
 
 	Account& _get(int row);
 	Account& _getById(int id);
+	void save(const Account& a);
 
 	void assertValidIndex(const QModelIndex& index) const;
 };

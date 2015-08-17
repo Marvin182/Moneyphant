@@ -10,7 +10,6 @@
 #include <QTextCodec>
 #include <QCryptographicHash>
 
-
 const std::vector<QString> Delimiters{",", ";", "\t"};
 const std::vector<QString> TextQualifiers{"\"", "\'", ""};
 

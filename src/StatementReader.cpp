@@ -6,7 +6,7 @@
 #include <QStringList>
 #include "sql.h"
 #include "TagHelper.h"
-#include "AccountModel.h"
+#include "model/AccountModel.h"
 
 StatementReader::StatementReader(Db db) :
 	db(db)
@@ -134,6 +134,7 @@ void StatementReader::importStatementFile(cqstring filename, const StatementFile
 	});
 
 	if (emitSignal) { 
+		recalculateBalances(db);
 		emit newStatementsImported();
 	}
 }
@@ -152,17 +153,29 @@ QStringList& StatementReader::addFieldsFromLineSuffix(QStringList& fields, const
 	return fields << mr::split(suffix, format.delimiter, format.textQualifier);
 }
 
+void StatementReader::recalculateBalances(Db db) {
+	db::Account acc;
+	db::Transfer tr;
+	QHash<int, int> balances;
+	for (const auto& t : (*db)(select(tr.fromId, tr.toId, tr.amount, tr.internal).from(tr).where(true))) {
+		balances[t.fromId] += t.amount;
+		if (!t.internal) balances[t.toId] -= t.amount;
+	}
+	for (auto it = balances.begin(); it != balances.end(); it++) {
+		(*db)(sqlpp::update(acc).set(acc.balance = it.value()).where(acc.id == it.key()));
+	}
+}
+
 Transfer::Acc StatementReader::makeAccount(cqstring owner, cqstring iban, cqstring bic) {
 	Account a(owner, iban, bic);
 	findOrAdd(a);
 	assert_error(a.id >= 0);
-	return Transfer::Acc(a.id, a.name);
+	return Transfer::Acc(a.id, a.name, a.isOwn);
 }
-
 
 int StatementReader::find(Account& account) {
 	db::Account acc;
-	auto accsSql = dynamic_select(*(db.get()), acc.id).from(acc).dynamic_where();
+	auto accsSql = dynamic_select(*(db.get()), acc.id, acc.isOwn).from(acc).dynamic_where();
 
 	assert_error(!account.iban.isEmpty() || !account.bic.isEmpty() || !account.accountNumber.isEmpty() || !account.bankCode.isEmpty());
 
@@ -185,6 +198,7 @@ int StatementReader::find(Account& account) {
 		int id = accs.front().id;
 		assert_error(id >= 0);
 		account.id = id;
+		account.isOwn = accs.front().isOwn;
 		return id;
 	}
 
@@ -196,7 +210,7 @@ int StatementReader::find(Transfer& transfer) {
 	auto trs = (*db)(select(tr.id).from(tr).where(tr.date == transfer.dateMs() and
 											tr.fromId == transfer.from.id and
 											tr.toId == transfer.to.id and
-											tr.reference == str(transfer.reference) and
+											tr.reference == str(transfer.reference) and // TODO change to not empty and reference same or amount same
 											tr.amount == transfer.amount));
 	if (!trs.empty()) {
 		int id = trs.front().id;

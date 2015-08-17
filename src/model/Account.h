@@ -2,14 +2,12 @@
 #define ACCOUNT_H
 
 #include <mr/common>
-#include <QSet>
-#include <QStringList>
-#include "sql.h"
 
 struct Account {
 public:
 	int id;
 	bool isOwn;
+	int balance;
 	QString name;
 	QString owner;
 	QString iban;
@@ -20,7 +18,7 @@ public:
 
 	Account();
 	Account(cqstring owner, cqstring iban, cqstring bic);
-	Account(int id, bool isOwn, cqstring name, cqstring owner, cqstring iban, cqstring bic, cqstring accountNumber, cqstring bankCode, int initialBalance);
+	Account(int id, bool isOwn, int balance, cqstring name, cqstring owner, cqstring iban, cqstring bic, cqstring accountNumber, cqstring bankCode, int initialBalance);
 
 	bool isSpecial() const;
 	QString formattedIban() const { return mr::separateGroups(iban, 4, ' '); }

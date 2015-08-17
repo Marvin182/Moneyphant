@@ -1,12 +1,11 @@
 #ifndef TAG_HELPER_H
 #define TAG_HELPER_H
 
+#include <vector>
+#include <QRegExp>
+#include <QStringList>
 #include <mr/common>
 #include "sql.h"
-#include "db.h"
-#include <vector>
-#include <QStringList>
-#include <QRegExp>
 
 // TODO: rewrite as Template class
 class TagHelper : public QObject {

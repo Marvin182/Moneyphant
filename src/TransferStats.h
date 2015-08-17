@@ -1,14 +1,13 @@
 #ifndef TRANSFER_STATS_H
 #define TRANSFER_STATS_H
 
-#include "Transfer.h"
 #include <unordered_map>
 #include <QObject>
+#include "model/Transfer.h"
 
 class TransferStats : public QObject {
 	Q_OBJECT
 public:
-	
 	TransferStats();
 
 	int revenues() const { return revenuesSum; }

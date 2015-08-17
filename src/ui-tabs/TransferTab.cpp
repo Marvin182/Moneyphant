@@ -2,16 +2,13 @@
 #include "ui_transfertab.h"
 
 #include <QDateTime>
-#include "../AccountModel.h"
 
-TransferTab::TransferTab(QWidget *parent) :
-	QWidget(parent),
+TransferTab::TransferTab(QWidget* parent) :
+	Tab(parent),
 	ui(new Ui::TransferTab),
-	db(nullptr),
-	tagHelper(nullptr, this),
-	accountModel(nullptr),
-	currentTransferId(-1),
 	model(nullptr),
+	tagHelper(nullptr, this),
+	currentTransferId(-1),
 	proxyModel(nullptr),
 	stats()
 {
@@ -21,23 +18,20 @@ TransferTab::TransferTab(QWidget *parent) :
 TransferTab::~TransferTab()
 {
 	delete ui;
-	if (model != nullptr) delete model;
 	if (proxyModel != nullptr) delete proxyModel;
 }
 
-void TransferTab::init(Db db, AccountModel* accountModel) {
-	this->db = db;
+void TransferTab::init(Db db, std::shared_ptr<TransferModel> transferModel) {
+	Tab::init(db);
 	tagHelper.setDb(db);
-	this->accountModel = accountModel;
+	this->model = transferModel;
+	assert_error(db != nullptr && this->db != nullptr);
 
-	// model and proxy model for filtering and sorting
-	model = new TransferModel(db, this);
+	// proxy model for easier filtering and sorting
 	proxyModel = new TransferProxyModel(db, this);
-	proxyModel->setSourceModel(model);
+	proxyModel->setSourceModel(model.get());
 
 	// filter edits
-	// TODO: add filter for from own Account
-	// connect(ui->trFilterFromAccount, SIGNAL(currentIndexChanged(int)), this, SLOT(changeTransferFilter(int)));
 	createFilterMonthLinks();
 	connect(ui->filterStartDate, SIGNAL(dateTimeChanged(const QDateTime&)), proxyModel, SLOT(setStartDate(const QDateTime&)));
 	connect(ui->filterEndDate, SIGNAL(dateTimeChanged(const QDateTime&)), proxyModel, SLOT(setEndDate(const QDateTime&)));
@@ -57,12 +51,14 @@ void TransferTab::init(Db db, AccountModel* accountModel) {
 	ui->transfers->setModel(proxyModel);
 	ui->transfers->verticalHeader()->hide();
 	ui->transfers->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
 	ui->transfers->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed); // Date
 	ui->transfers->horizontalHeader()->setSectionResizeMode(4, QHeaderView::Fixed); // Amount
 	ui->transfers->horizontalHeader()->setSectionResizeMode(5, QHeaderView::Fixed); // Checked
+	ui->transfers->horizontalHeader()->resizeSection(5, 60);
 	ui->transfers->horizontalHeader()->setSectionResizeMode(6, QHeaderView::Fixed); // Internal
-	ui->transfers->horizontalHeader()->setDefaultSectionSize(100);
-	ui->transfers->horizontalHeader()->hideSection(1); // From Account
+	ui->transfers->horizontalHeader()->resizeSection(6, 60);
+	// ui->transfers->horizontalHeader()->hideSection(1); // From
 
 	// enable sorting
 	ui->transfers->setSortingEnabled(true);
@@ -87,13 +83,7 @@ void TransferTab::init(Db db, AccountModel* accountModel) {
 	connect(ui->checkSelected, SIGNAL(clicked()), SLOT(checkSelected()));
 }
 
-void TransferTab::reloadCache() {
-	assert_error(model != nullptr);
-
-	model->reloadCache();
-}
-
-void TransferTab::focuseSearchField() {
+void TransferTab::focusSearchField() {
 	ui->filterText->setFocus();
 }
 
@@ -153,9 +143,9 @@ void TransferTab::createFilterMonthLinks() {
 
 	auto addButton = [&](const QString& text) {
 		assert_error(!text.isEmpty());
-		auto button = new QPushButton(text);
-		connect(button, SIGNAL(pressed()), SLOT(clickedFilterMonthLink()));
-		ui->filterMonthLinks->addWidget(button);
+		// auto button = new QPushButton(text);
+		// connect(button, SIGNAL(pressed()), SLOT(clickedFilterMonthLink()));
+		// ui->filterMonthLinks->addWidget(button);
 	};
 
 	addButton("all");
@@ -248,7 +238,7 @@ void TransferTab::checkSelected() {
 }
 	
 void TransferTab::updateTags() {
-if (model->empty()) { return ; } // no transfers yet
+	if (model->empty()) return; // no transfers yet
 	
 	assert_error(currentTransferId >= 0);
 
@@ -293,15 +283,13 @@ void TransferTab::updateStats(int transferId, int mode) {
 	} else {
 		assert_error(transferId >= 0);
 		const auto& transfer = model->getById(transferId);
-		const auto& from = accountModel->getById(transfer.from.id);
-		const auto& to = accountModel->getById(transfer.to.id);
 
 		if (mode == -1) {
 			// remove
-			stats.remove(transfer, transfer.internal || (from.isOwn && to.isOwn));
+			stats.remove(transfer, transfer.internal);
 		} else {
 			// add
-			stats.add(transfer, transfer.internal || (from.isOwn && to.isOwn));
+			stats.add(transfer, transfer.internal);
 		}
 	}
 

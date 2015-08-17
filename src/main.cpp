@@ -1,10 +1,7 @@
-#include "MainWindow.h"
 #include <QApplication>
 #include <QMessageBox>
 #include <mr/common>
-#include <iostream>
-
-const char* messageLogFileName = "log.txt";
+#include "ui/MainWindow.h"
 
 AssertAction::AssertAction customAssertHandler(const char* file,
 									int line,
@@ -31,7 +28,7 @@ AssertAction::AssertAction customAssertHandler(const char* file,
 
 int main(int argc, char *argv[]) {
 	QApplication::setOrganizationName("Moneyphant");
-	QApplication::setOrganizationDomain("moneyphant");
+	QApplication::setOrganizationDomain("de.mr.moneyphant");
 	QApplication::setApplicationName("Moneyphant");
 
 	mr::assert::addAssertHandler(customAssertHandler);

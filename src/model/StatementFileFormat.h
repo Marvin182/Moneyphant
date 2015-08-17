@@ -1,9 +1,9 @@
 #ifndef UI_STATEMENT_FILE_FORMAT_H
 #define UI_STATEMENT_FILE_FORMAT_H
 
+#include <QMap>
 #include <mr/common>
 #include "../sql.h"
-#include <QMap>
 
 struct StatementFileFormat {
 	int id;

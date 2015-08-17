@@ -1,7 +1,6 @@
 #ifndef UPDATER_H
 #define UPDATER_H
 
-#include <mr/common>
 #include <QSettings>
 #include "sql.h"
 

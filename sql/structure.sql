@@ -10,6 +10,7 @@ create table evolution (
 create table account (
 	id integer primary key autoincrement,
 	isOwn bool not null default 0,
+	balance int not null default 0,
 	name text not null default '',
 	owner text not null,
 	iban text not null default '',

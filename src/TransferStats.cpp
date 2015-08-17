@@ -1,4 +1,5 @@
 #include "TransferStats.h"
+
 #include <cmath>
 
 TransferStats::TransferStats() :

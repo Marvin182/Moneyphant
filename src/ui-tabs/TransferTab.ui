@@ -17,7 +17,7 @@
       <item row="1" column="4">
        <widget class="QLabel" name="lblFilterText">
         <property name="text">
-         <string>Reference &amp; Tags:</string>
+         <string>Search:</string>
         </property>
        </widget>
       </item>
@@ -293,7 +293,7 @@
   <customwidget>
    <class>TagEdit</class>
    <extends>QPlainTextEdit</extends>
-   <header>src/TagEdit.h</header>
+   <header>src/ui/TagEdit.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

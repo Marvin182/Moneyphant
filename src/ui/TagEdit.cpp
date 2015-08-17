@@ -1,7 +1,7 @@
 #include "TagEdit.h"
 
 #include <QRegExp>
-#include "TagHelper.h"
+#include "../TagHelper.h"
 
 TagEdit::TagEdit(QWidget* parent) : 
 	QPlainTextEdit(parent),

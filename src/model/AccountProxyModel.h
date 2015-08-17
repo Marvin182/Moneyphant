@@ -2,11 +2,9 @@
 #define ACCOUNT_PROXY_MODEL_H
 
 #include <vector>
-#include <QDateTime>
-#include <mr/common>
-#include "sql.h"
+#include <QSortFilterProxyModel>
+#include "../sql.h"
 #include "Account.h"
-#include "QSortFilterProxyModel.h"
 
 class AccountProxyModel : public QSortFilterProxyModel {
 	Q_OBJECT

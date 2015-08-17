@@ -1,40 +1,39 @@
 #ifndef TRANSFER_TAB_H
 #define TRANSFER_TAB_H
 
-#include <QWidget>
-#include <mr/common>
+#include "Tab.h"
 #include "../sql.h"
-#include "../TransferModel.h"
-#include "../TransferProxyModel.h"
+#include "../model/AccountModel.h"
+#include "../model/TransferModel.h"
+#include "../model/TransferProxyModel.h"
 #include "../TransferStats.h"
 #include "../TagHelper.h"
 
 namespace Ui {
 	class TransferTab;
 }
-class AccountModel;
 
-class TransferTab : public QWidget {
+class TransferTab : public Tab {
 	Q_OBJECT
 public:
-	explicit TransferTab(QWidget *parent = 0);
+	explicit TransferTab(QWidget* parent = 0);
 	~TransferTab();
 
-	void init(Db db, AccountModel* accountModel);
+	using Tab::init;
+	virtual void init(Db db, std::shared_ptr<TransferModel> transferModel);
 
 public slots:
-	void reloadCache();
-	void focuseSearchField();
+	virtual void refresh() {}
+	virtual void focusSearchField();
 
 private:
 	Ui::TransferTab *ui;
 	
-	Db db;
+	std::shared_ptr<TransferModel> model;
+
 	TagHelper tagHelper;
-	AccountModel* accountModel;
 
 	int currentTransferId;
-	TransferModel* model;
 	TransferProxyModel* proxyModel;
 	TransferStats stats;
 

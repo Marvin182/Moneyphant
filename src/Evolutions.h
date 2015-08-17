@@ -1,10 +1,10 @@
 #ifndef EVOLUTIONS_H
 #define EVOLUTIONS_H
 
-#include <mr/common>
-#include "sql.h"
 #include <vector>
 #include <QStringList>
+#include <mr/common>
+#include "sql.h"
 
 struct Evolution {
 	int id;

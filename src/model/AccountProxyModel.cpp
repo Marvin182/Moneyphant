@@ -1,4 +1,6 @@
 #include "AccountProxyModel.h"
+
+#include <mr/common>
 #include "AccountModel.h"
 
 AccountProxyModel::AccountProxyModel(Db db, QObject* parent) :
@@ -82,13 +84,17 @@ bool AccountProxyModel::lessThan(const QModelIndex& left, const QModelIndex& rig
 	const auto& b = get(right.row());
 
 	switch (left.column()) {
-		case 0: return b.isOwn;
-		case 1: return a.name < b.name;
-		case 2: return a.owner < b.owner;
-		case 3: return a.iban < b.iban;
-		case 4: return a.bic < b.bic;
-		case 5: return a.accountNumber < b.accountNumber;
-		case 6: return a.bankCode < b.bankCode;
+		case 0: return a.id < b.id;
+		case 1: return b.isOwn;
+		case 2: return a.name < b.name;
+		case 3: return a.owner < b.owner;
+		case 4: return a.iban < b.iban;
+		case 5: return a.bic < b.bic;
+		case 6: return a.accountNumber < b.accountNumber;
+		case 7: return a.bankCode < b.bankCode;
+		case 8: return a.initialBalance < b.initialBalance;
+		case 9: return a.balance < b.balance;
+		case 10: assert_error("sorting accounts by tags is not supported");
 		default: assert_error(false, "invalid column %d for left index (row: %d)", left.column(), left.row());
 	}
 

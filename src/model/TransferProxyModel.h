@@ -1,12 +1,11 @@
 #ifndef TRANSFER_PROXY_MODEL_H
 #define TRANSFER_PROXY_MODEL_H
 
-#include <mr/common>
-#include "sql.h"
-#include "Transfer.h"
 #include <vector>
 #include <QDateTime>
-#include "QSortFilterProxyModel.h"
+#include <QSortFilterProxyModel>
+#include "../sql.h"
+#include "Transfer.h"
 
 class TransferProxyModel : public QSortFilterProxyModel {
 	Q_OBJECT
@@ -38,6 +37,7 @@ protected:
 	QString txtNote;
 	int trChecked;
 	int trTagged;
+	int trInternal;
 	std::vector<int> txtTags;
 	QString txtRest;
 

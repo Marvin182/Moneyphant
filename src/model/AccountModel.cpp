@@ -1,15 +1,16 @@
 #include "AccountModel.h"
-#include "sql.h"
-#include <QFile>
 
-constexpr int COLUMNS_COUNT = 5;
+#include <QFile>
+#include <mr/common>
+
+constexpr int COLUMNS_COUNT = 11;
 
 AccountModel::AccountModel(Db db, QObject* parent) :
 	QAbstractTableModel(parent),
 	db(db),
 	cachedAccounts(0)
 {
-	reloadCache();
+	invalidateCache();
 }
 
 int AccountModel::rowCount(const QModelIndex& parent) const {
@@ -32,19 +33,23 @@ QVariant AccountModel::data(const QModelIndex& index, int role) const {
 		case Qt::ToolTipRole:
 		case Qt::EditRole:
 			switch (index.column()) {
-				case 1: return a.name;
-				case 2: return a.owner;
-				case 3: return a.iban.isEmpty() ? a.accountNumber : a.formattedIban();
-				case 4: return a.bic.isEmpty() ? mr::separateGroups(a.bankCode, 3, ' ') : a.bic;
-				case 5: return a.accountNumber;
-				case 6: return a.bankCode;
-				// case 7: // tags
+				case 0: return a.id;
+				case 1: return "";
+				case 2: return a.name;
+				case 3: return a.owner;
+				case 4: return a.iban.isEmpty() ? a.accountNumber : a.formattedIban();
+				case 5: return a.bic.isEmpty() ? mr::separateGroups(a.bankCode, 3, ' ') : a.bic;
+				case 6: return a.accountNumber;
+				case 7: return mr::separateGroups(a.bankCode, 3, ' ');
 				case 8: return currency(a.initialBalance);
+				case 9: return currency(a.balance);
+				case 10: return ""; // tags
+				default: assert_unreachable();
 			}
 			break;
 		case Qt::CheckStateRole:
 			switch (index.column()) {
-				case 0:	return a.isOwn ? Qt::Checked : Qt::Unchecked;
+				case 1:	return a.isOwn ? Qt::Checked : Qt::Unchecked;
 			}
 			break;
 		case Qt::UserRole + 1:
@@ -62,15 +67,17 @@ QVariant AccountModel::headerData(int section, Qt::Orientation orientation, int 
 
 	if (orientation == Qt::Horizontal) {
 		switch (section) {
-			case 0: return tr("Own");
-			case 1: return tr("Name");
-			case 2: return tr("Owner");
-			case 3: return tr("IBAN / Account Number");
-			case 4: return tr("BIC / Bank Code");
-			case 5: return tr("Account Number");
-			case 6: return tr("Bank Code");
-			case 7: return tr("Tags");
+			case 0: return tr("ID");
+			case 1: return tr("Own");
+			case 2: return tr("Name");
+			case 3: return tr("Owner");
+			case 4: return tr("IBAN / Account Number");
+			case 5: return tr("BIC / Bank Code");
+			case 6: return tr("Account Number");
+			case 7: return tr("Bank Code");
 			case 8: return tr("Initial Balance");
+			case 9: return tr("Balance");
+			case 10: return tr("Tags");
 			default: assert_unreachable();
 		}
 	}
@@ -83,21 +90,25 @@ bool AccountModel::setData(const QModelIndex& index, const QVariant& value, int 
 	auto& a = _get(index.row());
 	
 	db::Account acc;
-	if (index.column() == 0) {
+	if (index.column() == 1) {
 		assert_error(value.canConvert<bool>());
 		assert_error(value.toBool() != a.isOwn);
 		a.isOwn = value.toBool();
 		(*db)(update(acc).set(acc.isOwn = a.isOwn).where(acc.id == a.id));
 	} else {
+		assert_error(value.canConvert<QString>());
 		switch (index.column()) {
-			case 1:
-				assert_error(value.canConvert<QString>());
+			case 2:
 				a.name = value.toString();
 				break;
-			case 2:
-				assert_error(value.canConvert<QString>());
+			case 3:
 				a.owner = value.toString();
 				break;
+			case 4:
+				a.iban = value.toString();
+				break;
+			case 5:
+				a.bic = value.toString();
 			default:
 				assert_error(false);
 				return false;
@@ -123,10 +134,12 @@ Qt::ItemFlags AccountModel::flags(const QModelIndex& index) const {
 
 	auto commonFlags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 	switch (index.column()) {
-		case 0:
-			return commonFlags | Qt::ItemIsUserCheckable;
 		case 1:
+			return commonFlags | Qt::ItemIsUserCheckable;
 		case 2:
+		case 3:
+		case 4:
+		case 5:
 			return commonFlags | Qt::ItemIsEditable;
 		default:
 			return commonFlags;
@@ -154,7 +167,7 @@ QSet<int> AccountModel::ownAccountIds(Db db) {
 }
 
 
-void AccountModel::reloadCache() {
+void AccountModel::invalidateCache() {
 	emit beginResetModel();
 
 	db::Account acc;
@@ -162,10 +175,11 @@ void AccountModel::reloadCache() {
 	cachedAccounts.clear();
 	cachedAccounts.reserve(rowCount);
 
+	id2Row.clear();
 	int row = 0;
 	for (const auto& a : (*db)(select(all_of(acc)).from(acc).where(true).order_by(acc.isOwn.desc(), acc.name.asc()))) {
 		id2Row[a.id] = row++;
-		cachedAccounts.push_back({(int)a.id, a.isOwn, qstr(a.name), qstr(a.owner), qstr(a.iban), qstr(a.bic), qstr(a.accountNumber), qstr(a.bankCode), (int)a.initialBalance});
+		cachedAccounts.push_back({(int)a.id, a.isOwn, (int)a.balance, qstr(a.name), qstr(a.owner), qstr(a.iban), qstr(a.bic), qstr(a.accountNumber), qstr(a.bankCode), (int)a.initialBalance});
 	}
 
 	emit endResetModel();
@@ -179,6 +193,17 @@ void AccountModel::createBackup(const QString& path) {
 	for (const auto& a : cachedAccounts) {
 		file.write(QString("%1;%2;%3;%4;%5;%6;%7;%8\n").arg(a.id).arg(a.isOwn ? '1' : '0').arg(a.name).arg(a.owner).arg(a.iban).arg(a.bic).arg(a.accountNumber).arg(a.bankCode).toLocal8Bit());
 	}
+}
+
+void AccountModel::setInitialBalance(int id, int value) {
+	auto& account = _getById(id);
+	if (account.initialBalance == value) return;
+	account.balance += value - account.initialBalance;
+	account.initialBalance = value;
+	save(account);
+
+	int row = id2Row[account.id];
+	emit dataChanged(createIndex(row, 0), createIndex(row, COLUMNS_COUNT -1));
 }
 
 void AccountModel::mergeAccounts(int firstId, int secondId) {
@@ -198,14 +223,8 @@ void AccountModel::mergeAccounts(int firstId, int secondId) {
 	if (first.accountNumber.isEmpty()) first.accountNumber = second.accountNumber;
 	if (first.bankCode.isEmpty()) first.bankCode = second.bankCode;
 	first.initialBalance += second.initialBalance;
-	(*db)(update(acc).set(acc.isOwn = first.isOwn,
-							acc.name = str(first.name),
-							acc.owner = str(first.owner),
-							acc.iban = str(first.iban),
-							acc.bic = str(first.bic),
-							acc.accountNumber = str(first.accountNumber),
-							acc.bankCode = str(first.bankCode)
-						).where(acc.id == first.id));
+	first.balance += second.balance;
+	save(first);
 
 	// combine tags
 	std::vector<int> firstTagsIds;
@@ -225,7 +244,21 @@ void AccountModel::mergeAccounts(int firstId, int secondId) {
 	// clean second account from db
 	(*db)(remove_from(acc).where(acc.id == second.id));
 
-	reloadCache(); // yes, too expensive, but I don't feel like writing code to update cachedAccounts and id2Row and view
+	// update cache and view
+	// by switching merged  account to the end of cachedAccounts and calling pop_back
+	emit beginResetModel();
+	{
+		// remove from id2Row
+		int idx2 = id2Row[second.id];
+		id2Row.erase(second.id);
+		id2Row[cachedAccounts.back().id] = idx2;
+		// remove from cachedAccounts
+		std::swap(cachedAccounts[idx2], cachedAccounts.back());
+		cachedAccounts.pop_back();
+	}
+	emit endResetModel();
+
+	emit accountsMerged(first, {second.id});
 }
 
 Account& AccountModel::_get(int row) {
@@ -237,6 +270,20 @@ Account& AccountModel::_getById(int id) {
 	assert_error(id >= 0 && id2Row.find(id) != id2Row.end());
 	int row = id2Row.at(id);
 	return _get(row);
+}
+
+void AccountModel::save(const Account& a) {
+	db::Account acc;
+	(*db)(sqlpp::update(acc).set(acc.isOwn = a.isOwn,
+							acc.name = str(a.name),
+							acc.owner = str(a.owner),
+							acc.iban = str(a.iban),
+							acc.bic = str(a.bic),
+							acc.accountNumber = str(a.accountNumber),
+							acc.bankCode = str(a.bankCode),
+							acc.initialBalance = a.initialBalance,
+							acc.balance = a.balance
+						).where(acc.id == a.id));
 }
 
 void AccountModel::assertValidIndex(const QModelIndex& index) const {

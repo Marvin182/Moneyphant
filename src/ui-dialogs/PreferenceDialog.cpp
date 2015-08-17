@@ -1,7 +1,5 @@
 #include "PreferenceDialog.h"
 #include "ui_PreferenceDialog.h"
-#include <QUrl>
-#include <QDesktopServices>
 
 PreferenceDialog::PreferenceDialog(QWidget *parent) :
 	QDialog(parent),

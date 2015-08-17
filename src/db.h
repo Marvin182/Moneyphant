@@ -145,6 +145,22 @@ namespace db
       };
       using _traits = sqlpp::make_traits<sqlpp::boolean>;
     };
+    struct Balance
+    {
+      struct _alias_t
+      {
+        static constexpr const char _literal[] =  "balance";
+        using _name_t = sqlpp::make_char_sequence<sizeof(_literal), _literal>;
+        template<typename T>
+        struct _member_t
+          {
+            T balance;
+            T& operator()() { return balance; }
+            const T& operator()() const { return balance; }
+          };
+      };
+      using _traits = sqlpp::make_traits<sqlpp::integer>;
+    };
     struct Name
     {
       struct _alias_t
@@ -262,6 +278,7 @@ namespace db
   struct Account: sqlpp::table_t<Account,
                Account_::Id,
                Account_::IsOwn,
+               Account_::Balance,
                Account_::Name,
                Account_::Owner,
                Account_::Iban,

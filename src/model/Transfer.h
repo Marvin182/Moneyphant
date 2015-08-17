@@ -1,25 +1,27 @@
 #ifndef OPERATION
 #define OPERATION
 
+#include <QDateTime>
 #include <mr/common>
 #include "Account.h"
-#include <QDateTime>
-#include <QStringList>
 
 struct Transfer {
 	struct Acc {
 		int id;
+		bool isOwn;
 		QString name;
 		Acc() :
-			id(-1)
+			id(-1),
+			isOwn(false)
 		{}
-		Acc(int id, cqstring name) :
+		Acc(int id, cqstring name, bool isOwn = false) :
 			id(id),
+			isOwn(isOwn),
 			name(name)
 		{}
-		operator QString() const { return QString("Acc(%1, %2").arg(id).arg(name); }
+		operator QString() const { return QString("%1(%2, %3)").arg(isOwn ? "OwnAcc" : "Acc").arg(id).arg(name); }
 		bool operator==(const Acc& other) const { return id == other.id; }
-		bool operator<(const Acc& other) const { return name < other.name; }
+		bool operator<(const Acc& other) const;
 	};
 
 	int id;

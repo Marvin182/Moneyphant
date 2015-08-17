@@ -2,6 +2,7 @@
 
 # add start balance for accounts
 alter table account add column initialBalance integer not null default 0;
+alter table account add column balance integer not null default 0;
 
 # add invert amount option for formats
 alter table format add column invertAmount integer not null default 0;

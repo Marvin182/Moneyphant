@@ -1,19 +1,22 @@
 #include "TransferModel.h"
-#include "db.h"
+
 #include <QFile>
 #include <QColor>
+#include <mr/common>
 
 constexpr int COLUMNS_COUNT = 7;
 
 SQLPP_ALIAS_PROVIDER(fromName)
+SQLPP_ALIAS_PROVIDER(fromIsOwn)
 SQLPP_ALIAS_PROVIDER(toName)
+SQLPP_ALIAS_PROVIDER(toIsOwn)
 
 TransferModel::TransferModel(Db db, QObject* parent) :
 	QAbstractTableModel(parent),
 	db(db),
 	cachedTransfers(0)
 {
-	reloadCache();
+	invalidateCache();
 }
 
 int TransferModel::rowCount(const QModelIndex& parent) const {
@@ -183,7 +186,7 @@ void TransferModel::exportTransfers(cqstring path, const std::vector<int>& trans
 	}	
 }
 
-void TransferModel::reloadCache() {
+void TransferModel::invalidateCache() {
 	emit beginResetModel();
 
 	db::Account acc;
@@ -196,10 +199,35 @@ void TransferModel::reloadCache() {
 	cachedTransfers.reserve(rowCount);
 
 	int row = 0;
-	for (const auto& t : (*db)(select(all_of(tr), accFrom.name.as(fromName), accTo.name.as(toName)).from(tr, accFrom, accTo).
-									where(tr.fromId == accFrom.id and tr.toId == accTo.id))) {
+	for (const auto& t : (*db)(select(all_of(tr),
+								accFrom.name.as(fromName), accFrom.isOwn.as(fromIsOwn), accTo.name.as(toName), accTo.isOwn.as(toIsOwn))
+								.from(tr, accFrom, accTo)
+								.where(tr.fromId == accFrom.id and tr.toId == accTo.id))) {
 		id2Row[t.id] = row++;
-		cachedTransfers.push_back({(int)t.id, QDateTime::fromMSecsSinceEpoch(t.date), Transfer::Acc(t.fromId, qstr(t.fromName)), Transfer::Acc(t.toId, qstr(t.toName)), qstr(t.reference), (int)t.amount, qstr(t.note), t.checked, t.internal});
+
+		cachedTransfers.push_back({(int)t.id,
+								QDateTime::fromMSecsSinceEpoch(t.date),
+								Transfer::Acc(t.fromId, qstr(t.fromName), t.fromIsOwn),
+								Transfer::Acc(t.toId, qstr(t.toName), t.toIsOwn),
+								qstr(t.reference), (int)t.amount, qstr(t.note), t.checked, t.internal
+		});
+	}
+
+	emit endResetModel();
+}
+
+void TransferModel::onAccountsMerged(const Account& merged, QSet<int> mergedIds) {
+	emit beginResetModel();
+
+	for (auto& t : cachedTransfers) {
+		if (mergedIds.contains(t.from.id)) {
+			t.from.id = merged.id;
+			t.from.name = merged.name;
+		}
+		if (mergedIds.contains(t.to.id)) {
+			t.to.id = merged.id;
+			t.to.name = merged.name;
+		}
 	}
 
 	emit endResetModel();
