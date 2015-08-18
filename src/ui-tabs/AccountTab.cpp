@@ -53,16 +53,20 @@ void AccountTab::init(Db db, std::shared_ptr<AccountModel> accountModel) {
 	// configure headers
 	ui->accounts->verticalHeader()->hide();
 	ui->accounts->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-	ui->accounts->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Fixed);
+	ui->accounts->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed); // id
+	ui->accounts->horizontalHeader()->resizeSection(0, 60);
+	ui->accounts->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Fixed); // checked
 	ui->accounts->horizontalHeader()->resizeSection(1, 60);
-	ui->accounts->horizontalHeader()->setSectionResizeMode(9, QHeaderView::Fixed);
+	ui->accounts->horizontalHeader()->setSectionResizeMode(9, QHeaderView::Fixed); // balance
 	ui->accounts->horizontalHeader()->resizeSection(9, 120);
-	ui->accounts->horizontalHeader()->hideSection(0); // id
+	
+	// ui->accounts->horizontalHeader()->hideSection(0); // id
 	ui->accounts->horizontalHeader()->hideSection(6); // account number
 	ui->accounts->horizontalHeader()->hideSection(7); // bank code
 	ui->accounts->horizontalHeader()->hideSection(8); // initial balance
 	ui->accounts->horizontalHeader()->hideSection(10); // tags
 
+	// move balance column to the front
 	ui->accounts->horizontalHeader()->moveSection(1, 0);
 	ui->accounts->horizontalHeader()->moveSection(9, 1);
 }
@@ -161,7 +165,6 @@ void AccountTab::updateAccountDetails() {
 
 void AccountTab::setInitialBalance(double d) {
 	if (tagHelper.accountIds().size() != 1) return;
-	int val = d * 100;
 	model->setInitialBalance(tagHelper.accountIds()[0], 100 * d);
 }
 

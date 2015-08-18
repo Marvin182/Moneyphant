@@ -24,13 +24,12 @@ public:
 
 	bool empty() const { return cachedTransfers.empty(); }
 
-	Transfer& get(int row);
 	const Transfer& get(int row) const;
-	Transfer& getById(int id);
 	const Transfer& getById(int id) const;
 
 	void setNote(int transferId, cqstring note);
-	void setChecked(const std::vector<int>& transferIds, bool checked);
+	void setChecked(const std::vector<int>& transferIds, bool checked = true);
+	void setInternal(const std::vector<int>& transferIds, bool internal = true);
 	void exportTransfers(cqstring path, const std::vector<int>& transferIds) const;
 
 public slots:
@@ -43,9 +42,13 @@ private:
 
 	std::unordered_map<int, int> id2Row;
 	std::vector<Transfer> cachedTransfers;
+	
+	Transfer& _get(int row);
+	Transfer& _getById(int id);
 
-	template <typename F>
-	void updateTransfer(int transferId, F f);
+	void save(const Transfer& t);
+	void emitChanged(int id);
+
 	void assertValidIndex(const QModelIndex& index) const;
 };
 

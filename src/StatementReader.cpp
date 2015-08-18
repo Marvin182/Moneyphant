@@ -1,10 +1,12 @@
 #include "StatementReader.h"
 
+#include <unordered_set>
 #include <QSet>
 #include <QDir>
 #include <QtDebug>
 #include <QStringList>
 #include "sql.h"
+#include "util.h"
 #include "TagHelper.h"
 #include "model/AccountModel.h"
 
@@ -21,6 +23,7 @@ void StatementReader::startWatchingFiles() {
 		fileWatcher.addPath(qstr(file.path));
 	}
 
+	recalculateBalances(db);
 	emit newStatementsImported();
 }
 
@@ -84,54 +87,61 @@ void StatementReader::importStatementFile(cqstring filename, const StatementFile
 		return ownAccountIds.contains(fromId) && ownAccountIds.contains(toId);
 	};
 
-	mr::io::parseCsvFile(filename, format.delimiter, format.textQualifier, format.skipFirstLine, [&](int lineNumber, QStringList& fields) {
-		// add suffix with additional fields (e.g. for default values)
-		fields = addFieldsFromLineSuffix(fields, format);
+	try {
+		mr::io::parseCsvFile(filename, format.delimiter, format.textQualifier, format.skipFirstLine, [&](int lineNumber, QStringList& fields) {
+			// add suffix with additional fields (e.g. for default values)
+			fields = addFieldsFromLineSuffix(fields, format);
 
-		// define a shortcut for easy access to specific fields
-		int defaultPos = fields.size();
-		fields.append("");
-		auto hasVal = [&](cqstring key) { return format.columnPositions.contains(key); };
-		auto val = [&](cqstring key) { return fields[format.columnPositions.value(key, defaultPos)]; };
+			// define a shortcut for easy access to specific fields
+			int defaultPos = fields.size();
+			fields.append("");
+			auto hasVal = [&](cqstring key) { return format.columnPositions.contains(key); };
+			auto val = [&](cqstring key) { return fields[format.columnPositions.value(key, defaultPos)]; };
 
-		// valid keys (also see ui/ColumnsChooser.cpp):
-		// "id", "date", "amount", "reference", "senderOwnerName", "senderIban", "senderBic", "senderId", "receiverOwnerName", "receiverIban", "receiverBic", "receiverId", "note", "checked", "internal"
+			// valid keys (also see ui/ColumnsChooser.cpp):
+			// "id", "date", "amount", "reference", "senderOwnerName", "senderIban", "senderBic", "senderId", "receiverOwnerName", "receiverIban", "receiverBic", "receiverId", "note", "checked", "internal"
 
-		auto date = QDateTime::fromString(val("date"), format.dateFormat);
-		if (date.date().year() < 1970) date = date.addYears(100); // QDateTime::fromString will read 06.07.15 as 06.07.1915
-		if (!date.isValid() || date.date().year() < 1970 || date.date().year() > 2070) {
-			stopWatchingFile(filename);
-			assert_error(false, "invalid transfer date detected (%s), year must be between 1970 and 2070, possibly wrong date format for %s", cstr(date.toString("dd.MM.yyyy")), cstr(val("date")));
-		}
+			auto date = QDateTime::fromString(val("date"), format.dateFormat);
+			if (date.date().year() < 1970) date = date.addYears(100); // QDateTime::fromString will read 06.07.15 as 06.07.1915
+			if (!date.isValid() || date.date().year() < 1970 || date.date().year() > 2070) {
+				throw std::runtime_error(QString("invalid transfer date detected (%s), year must be between 1970 and 2070, possibly wrong date format for %s").arg(date.toString("dd.MM.yyyy")).arg(val("date")).toStdString());
+			}
 
-		auto from = hasVal("senderId") ? Transfer::Acc(val("senderId").toInt(), "") : makeAccount(val("senderOwnerName"), val("senderIban"), val("senderBic"));
-		auto to = hasVal("receiverId") ? Transfer::Acc(val("receiverId").toInt(), "") : makeAccount(val("receiverOwnerName"), val("receiverIban"), val("receiverBic"));
-	
-		int amount = val("amount").replace(',', '.').toDouble() * 100;
-		if (format.invertAmount) amount = -amount;
+			auto from = hasVal("senderId") ? Transfer::Acc(val("senderId").toInt(), "") : makeAccount(val("senderOwnerName"), val("senderIban"), val("senderBic"));
+			auto to = hasVal("receiverId") ? Transfer::Acc(val("receiverId").toInt(), "") : makeAccount(val("receiverOwnerName"), val("receiverIban"), val("receiverBic"));
 		
-		assert_error(from.id >= 0 && to.id >= 0, "from %d, to: %d", from.id, to.id);
-		assert_debug(from.id != to.id, "accounts are not allowed to match (lineNumber: %d, from: %s, to: %s)", lineNumber, cstr(from), cstr(to));
+			int amount = val("amount").replace(',', '.').toDouble() * 100;
+			if (format.invertAmount) amount = -amount;
+			
+			assert_error(from.id >= 0 && to.id >= 0, "from %d, to: %d", from.id, to.id);
+			assert_debug(from.id != to.id, "accounts are not allowed to match (lineNumber: %d, from: %s, to: %s)", lineNumber, cstr(from), cstr(to));
 
-		Transfer t;
-		if (hasVal("id")) {
-			t = Transfer(val("id").toInt(), date, from, to, val("reference"), amount, val("reference"), val("checked") == "1", val("internal") == "1");
-			t.note = val("note");
-			insert(t);
-		} else {
-			t = Transfer(date, from, to, val("reference"), amount);
-			t.note = val("note");
-			t.checked = val("checked") == "1";
-			t.internal = hasVal("internal") ? val("internal") == "1" : isInternalTransfer(from.id, to.id);
-			updateOrAdd(t);
-		}
-		assert_error(t.id >= 0);
+			Transfer t;
+			if (hasVal("id")) {
+				t = Transfer(val("id").toInt(), date, from, to, val("reference"), amount, val("reference"), val("checked") == "1", val("internal") == "1");
+				t.note = val("note");
+				insert(t);
+			} else {
+				t = Transfer(date, from, to, val("reference"), amount);
+				t.note = val("note");
+				t.checked = val("checked") == "1";
+				t.internal = hasVal("internal") ? val("internal") == "1" : isInternalTransfer(from.id, to.id);
+				updateOrAdd(t);
+			}
+			assert_error(t.id >= 0);
 
-		if (hasVal("tags")) {
-			TagHelper th(db);
-			th.addTransferTags(TagHelper::splitTags(val("tags")), {t.id});
-		}
-	});
+			if (hasVal("tags")) {
+				TagHelper th(db);
+				th.addTransferTags(TagHelper::splitTags(val("tags")), {t.id});
+			}
+		});
+	} catch (const std::invalid_argument& e) {
+		stopWatchingFile(filename);
+		assert_error(false, "%s", e.what());
+	} catch (const std::runtime_error& e) {
+		stopWatchingFile(filename);
+		assert_warning(false, "%s", e.what());
+	}
 
 	if (emitSignal) { 
 		recalculateBalances(db);
@@ -156,13 +166,39 @@ QStringList& StatementReader::addFieldsFromLineSuffix(QStringList& fields, const
 void StatementReader::recalculateBalances(Db db) {
 	db::Account acc;
 	db::Transfer tr;
+	
+	// for internal transfer we might have two transfer entries (one from each statement file of the two accounts)
+	// therefor we will remember the hash of each internal transfer and exclude the second transfer from the calculation
+	// QSet<QString> seenTransfers;
+	std::unordered_multiset<std::string> seenTransfersFrom;
+	std::unordered_multiset<std::string> seenTransfersTo;
+	
 	QHash<int, int> balances;
-	for (const auto& t : (*db)(select(tr.fromId, tr.toId, tr.amount, tr.internal).from(tr).where(true))) {
-		balances[t.fromId] += t.amount;
-		if (!t.internal) balances[t.toId] -= t.amount;
+	for (const auto& t : (*db)(select(tr.date, tr.fromId, tr.toId, tr.amount, tr.internal).from(tr).where(true))) {
+		bool addFrom = true;
+		bool addTo = true;
+		if (t.internal) {
+			auto it = seenTransfersFrom.find(util::internalTransferHash(t.fromId, - t.amount, t.date));
+			if (it != seenTransfersFrom.end()) {
+				seenTransfersFrom.erase(it);
+				addFrom = false;
+			} else {
+				seenTransfersTo.insert(util::internalTransferHash(t.fromId, t.amount, t.date));
+			}
+
+			it = seenTransfersTo.find(util::internalTransferHash(t.toId, - t.amount, t.date));
+			if (it != seenTransfersTo.end()) {
+				seenTransfersTo.erase(it);
+				addTo = false;
+			} else {
+				seenTransfersFrom.insert(util::internalTransferHash(t.toId, t.amount, t.date));
+			}
+		}
+		if (addFrom) balances[t.fromId] += t.amount;
+		if (addTo) balances[t.toId] -= t.amount;
 	}
 	for (auto it = balances.begin(); it != balances.end(); it++) {
-		(*db)(sqlpp::update(acc).set(acc.balance = it.value()).where(acc.id == it.key()));
+		(*db)(sqlpp::update(acc).set(acc.balance = acc.initialBalance + it.value()).where(acc.id == it.key()));
 	}
 }
 
@@ -279,9 +315,9 @@ void StatementReader::update(const Transfer& transfer) {
 								tr.toId = transfer.to.id,
 								tr.reference = str(transfer.reference),
 								tr.amount = transfer.amount,
-								tr.note = str(transfer.note),
-								tr.checked = transfer.checked,
-								tr.internal = transfer.internal
+								// tr.note = str(transfer.note),
+								tr.checked = tr.checked || transfer.checked,
+								tr.internal = tr.internal || transfer.internal
 							).where(tr.id == transfer.id));
 }
 

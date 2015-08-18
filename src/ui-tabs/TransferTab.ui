@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>947</width>
-    <height>890</height>
+    <height>624</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -274,6 +274,13 @@
            </size>
           </property>
          </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="markSelectedInternal">
+          <property name="text">
+           <string>Mark Selected as Internal</string>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QPushButton" name="checkSelected">

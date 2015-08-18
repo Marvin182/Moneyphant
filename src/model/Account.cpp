@@ -10,36 +10,15 @@ Account::Account(cqstring owner, cqstring ibanOrAccountNumber, cqstring bicOrBan
 	balance(0),
 	name(owner),
 	owner(owner),
-	iban(ibanOrAccountNumber),
-	bic(bicOrBankCode),
+	iban(""),
+	bic(""),
 	accountNumber(""),
 	bankCode(""),
 	initialBalance(0)
 {
-	// remove whitespaces
-	iban = iban.remove(QRegExp("\\s"));
-	bic = bic.remove(QRegExp("\\s"));
-
-	if (isSpecial()) {
-		// iban field is used for special identifier (e-mail address or dummy account)
-	} else if (isIban(iban)) {
-		iban = iban.toUpper();
-		assert_debug(iban.length() >= 8);
-		assert_debug(iban.length() <= 30);
-	} else {
-		// iban field was used for accountNumber
-		assert_error(accountNumber.isEmpty());
-		accountNumber = iban;
-		iban = "";
-	}
-
-	if (isBic(bic)) {
-		bic = bic.toUpper();
-	} else {
-		assert_error(bankCode.isEmpty());
-		bankCode = bic;
-		bic = "";
-	}
+	setIban(ibanOrAccountNumber);
+	setBic(bicOrBankCode);
+	if (isEmailAddress(iban) && name.isEmpty()) name = iban;
 }
 
 Account::Account(int id, bool isOwn, int balance, cqstring name, cqstring owner, cqstring iban, cqstring bic, cqstring accountNumber, cqstring branchCode, int initialBalance) :
@@ -57,6 +36,28 @@ Account::Account(int id, bool isOwn, int balance, cqstring name, cqstring owner,
 
 bool Account::isSpecial() const {
 	return isDummyAccount(iban) || isEmailAddress(iban);
+}
+
+void Account::setIban(QString s) {
+	if (isDummyAccount(s) || isEmailAddress(s)) {
+		iban = s;
+		return;
+	}
+	s = s.remove(QRegExp("\\s")).toUpper();
+	if (isIban(s)) {
+		iban = s;
+	} else {
+		accountNumber = s;
+	}
+}
+
+void Account::setBic(QString s) {
+	s = s.remove(QRegExp("\\s")).toUpper();
+	if (isBic(s)) {
+		bic = s;
+	} else {
+		bankCode = s;
+	}
 }
 
 Account::operator QString() const {
@@ -93,7 +94,7 @@ bool Account::operator==(const Account& acc) const {
 }
 
 bool Account::isDummyAccount(cqstring iban) {
-	return QRegExp("#\\d+").exactMatch(iban);
+	return QRegExp("#\\d+.+").exactMatch(iban);
 }
 
 bool Account::isEmailAddress(cqstring iban) {

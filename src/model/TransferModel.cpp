@@ -57,7 +57,7 @@ QVariant TransferModel::data(const QModelIndex& index, int role) const {
 			}
 			break;
 		case Qt::UserRole + 1:
-			return t.from.name + t.to.name + t.reference;
+			return QString(t.from.name + t.to.name + t.reference);
 			break;
 	}
 
@@ -125,36 +125,29 @@ Qt::ItemFlags TransferModel::flags(const QModelIndex& index) const {
 	}
 }
 
-Transfer& TransferModel::get(int row) {
-	assert_error(row >= 0 && row < cachedTransfers.size(), "row %d not cached", row);
-	return cachedTransfers[row];
-}
-
-const Transfer& TransferModel::get(int row) const {
-	assert_error(row >= 0 && row < cachedTransfers.size(), "row %d not cached", row);
-	return cachedTransfers[row];
-}
-
-Transfer& TransferModel::getById(int id) {
-	assert_error(id >= 0 && id2Row.find(id) != id2Row.end(), "id %d not found in cache", id);
-	int row = id2Row.at(id);
-	return get(row);
-}
-
-const Transfer& TransferModel::getById(int id) const {
-	assert_error(id >= 0 && id2Row.find(id) != id2Row.end(), "id %d not found in cache", id);
-	int row = id2Row.at(id);
-	return get(row);
-}
-
 void TransferModel::setNote(int transferId, cqstring note) {
-	auto& t = getById(transferId);
+	auto& t = _getById(transferId);
 	if (t.note == note) {
 		return;
 	} else {
 		t.note = note;
 		db::Transfer tr;
 		(*db)(update(tr).set(tr.note = str(note)).where(tr.id == transferId));
+	}
+}
+
+void TransferModel::setInternal(const std::vector<int>& transferIds, bool internal) {
+	// update database
+	db::Transfer tr;
+	auto ids = value_list_t<std::vector<int>>(transferIds);
+	(*db)(update(tr).set(tr.internal = internal).where(tr.id.in(ids)));
+
+	// update cache and inform UI
+	for (int id : transferIds) {
+		auto& t = _getById(id);
+		bool changed = t.internal != internal;
+		t.internal = internal;
+		if (changed) emitChanged(id);
 	}
 }
 
@@ -165,13 +158,11 @@ void TransferModel::setChecked(const std::vector<int>& transferIds, bool checked
 	(*db)(update(tr).set(tr.checked = checked).where(tr.id.in(ids)));
 
 	// update cache and inform UI
-	QVector<int> roles(1, Qt::CheckStateRole);
 	for (int id : transferIds) {
-		getById(id).checked = checked;
-		int row = id2Row.at(id);
-		auto idx = index(row, 5);
-		assertValidIndex(idx);
-		emit dataChanged(idx, idx, roles);
+		auto& t = _getById(id);
+		bool changed = t.checked != checked;
+		t.checked = checked;
+		if (changed) emitChanged(id);
 	}
 }
 
@@ -243,10 +234,29 @@ void TransferModel::createBackup(const QString& path) {
 	}
 }
 
-template <typename F>
-void TransferModel::updateTransfer(int transferId, F f) {
-	auto& t = getById(transferId);
-	f(t);
+const Transfer& TransferModel::get(int row) const {
+	assert_error(row >= 0 && row < cachedTransfers.size(), "row %d not cached", row);
+	return cachedTransfers[row];
+}
+
+Transfer& TransferModel::_get(int row) {
+	assert_error(row >= 0 && row < cachedTransfers.size(), "row %d not cached", row);
+	return cachedTransfers[row];
+}
+
+const Transfer& TransferModel::getById(int id) const {
+	assert_error(id >= 0 && id2Row.find(id) != id2Row.end(), "id %d not found in cache", id);
+	int row = id2Row.at(id);
+	return get(row);
+}
+
+Transfer& TransferModel::_getById(int id) {
+	assert_error(id >= 0 && id2Row.find(id) != id2Row.end(), "id %d not found in cache", id);
+	int row = id2Row.at(id);
+	return _get(row);
+}
+
+void TransferModel::save(const Transfer& t) {
 	db::Transfer tr;
 	(*db)(update(tr).set(tr.date = t.dateMs(),
 							tr.fromId = t.from.id,
@@ -256,8 +266,14 @@ void TransferModel::updateTransfer(int transferId, F f) {
 							tr.note = str(t.note),
 							tr.checked = t.checked,
 							tr.internal = t.internal
-						).where(tr.id == transferId));
+						).where(tr.id == t.id));
 }
+
+void TransferModel::emitChanged(int id) {
+	int row = id2Row[id];
+	emit dataChanged(index(row, 0), index(row, COLUMNS_COUNT - 1));
+}
+
 
 void TransferModel::assertValidIndex(const QModelIndex& index) const {
 	assert_error(index.column() >= 0 || index.column() < COLUMNS_COUNT, "invalid index column %d (row :%d)", index.column(), index.row());

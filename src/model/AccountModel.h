@@ -45,7 +45,9 @@ private:
 
 	Account& _get(int row);
 	Account& _getById(int id);
+	
 	void save(const Account& a);
+	void emitChanged(int id);
 
 	void assertValidIndex(const QModelIndex& index) const;
 };

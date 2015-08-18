@@ -53,7 +53,7 @@ QVariant AccountModel::data(const QModelIndex& index, int role) const {
 			}
 			break;
 		case Qt::UserRole + 1:
-			return a.name + a.owner + a.iban;
+			return QString(a.name + a.owner + a.iban);
 			break;
 	}
 
@@ -105,10 +105,10 @@ bool AccountModel::setData(const QModelIndex& index, const QVariant& value, int 
 				a.owner = value.toString();
 				break;
 			case 4:
-				a.iban = value.toString();
+				a.setIban(value.toString());
 				break;
 			case 5:
-				a.bic = value.toString();
+				a.setBic(value.toString());
 			default:
 				assert_error(false);
 				return false;
@@ -202,8 +202,7 @@ void AccountModel::setInitialBalance(int id, int value) {
 	account.initialBalance = value;
 	save(account);
 
-	int row = id2Row[account.id];
-	emit dataChanged(createIndex(row, 0), createIndex(row, COLUMNS_COUNT -1));
+	emitChanged(account.id);
 }
 
 void AccountModel::mergeAccounts(int firstId, int secondId) {
@@ -284,6 +283,11 @@ void AccountModel::save(const Account& a) {
 							acc.initialBalance = a.initialBalance,
 							acc.balance = a.balance
 						).where(acc.id == a.id));
+}
+
+void AccountModel::emitChanged(int id) {
+	int row = id2Row[id];
+	emit dataChanged(index(row, 0), index(row, COLUMNS_COUNT -1));
 }
 
 void AccountModel::assertValidIndex(const QModelIndex& index) const {

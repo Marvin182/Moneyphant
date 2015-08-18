@@ -80,6 +80,7 @@ void TransferTab::init(Db db, std::shared_ptr<TransferModel> transferModel) {
 	connect(ui->detailsNote, SIGNAL(textChanged()), SLOT(saveNote()));
 
 	// actions
+	connect(ui->markSelectedInternal, SIGNAL(clicked()), SLOT(markSelectedInternal()));
 	connect(ui->checkSelected, SIGNAL(clicked()), SLOT(checkSelected()));
 }
 
@@ -232,6 +233,11 @@ void TransferTab::showSelected(const QItemSelection& selected, const QItemSelect
 	updateTags();
 }
 
+void TransferTab::markSelectedInternal() {
+	assert_debug(!tagHelper.transferIds().empty());
+	model->setInternal(tagHelper.transferIds(), true);
+}
+
 void TransferTab::checkSelected() {
 	assert_debug(!tagHelper.transferIds().empty());
 	model->setChecked(tagHelper.transferIds(), true);
@@ -247,6 +253,7 @@ void TransferTab::updateTags() {
 
 	ui->detailsTags->setTags(tagHelper.getTransferTags(ids), ids);
 
+	ui->markSelectedInternal->setVisible(!selectedIds.empty());
 	ui->checkSelected->setVisible(!selectedIds.empty());
 
 	updateDetails();

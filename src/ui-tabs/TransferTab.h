@@ -43,6 +43,7 @@ private slots:
 	
 	void setCurrentTransfer(const QModelIndex& index);
 	void showSelected(const QItemSelection& selected, const QItemSelection& deseceted);
+	void markSelectedInternal();
 	void checkSelected();
 	
 	void updateTags();

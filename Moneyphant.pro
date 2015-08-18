@@ -5,6 +5,8 @@ CONFIG   += c++11
 QMAKE_CFLAGS_WARN_ON -= -W
 QMAKE_CXXFLAGS_WARN_ON -= -W
 
+DEFINES *= QT_USE_QSTRINGBUILDER
+
 TARGET = Moneyphant
 TEMPLATE = app
 
@@ -20,6 +22,7 @@ SOURCES += src/main.cpp \
 	src/TagHelper.cpp \
 	src/TransferStats.cpp \
 	src/Updater.cpp \
+        src/util.cpp \
 	src/version.cpp \
 	src/model/Account.cpp \
 	src/model/AccountModel.cpp \
@@ -47,6 +50,7 @@ HEADERS += src/db.h \
 	src/TagHelper.h \
 	src/TransferStats.h \
 	src/Updater.h \
+        src/util.h \
 	src/version.h \
 	src/model/Account.h \
 	src/model/AccountModel.h \

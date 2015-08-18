@@ -23,11 +23,13 @@ public:
 	bool isSpecial() const;
 	QString formattedIban() const { return mr::separateGroups(iban, 4, ' '); }
 
+	void setIban(QString s);
+	void setBic(QString s);
+
 	operator QString() const;
 	bool operator==(const Account& acc) const;
 	bool operator!=(const Account& acc) const { return !(*this == acc); }
 
-private:
 	static bool isDummyAccount(cqstring iban);
 	static bool isEmailAddress(cqstring iban);
 	static bool isIban(cqstring iban);
