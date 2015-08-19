@@ -115,7 +115,7 @@ bool TransferProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sour
 		accepted = false;
 	} else if (!txtRef.isEmpty() && !contains(transfer.reference, txtRef)) {
 		accepted = false;
-	} else if (!txtAmount.isEmpty() && !fuzzyMatch(currency(transfer.amount), txtAmount)) {
+	} else if (!txtAmount.isEmpty() && !currency(transfer.amount).contains(txtAmount)) {
 		accepted = false;
 	} else if (!txtNote.isEmpty() && !contains(transfer.note, txtNote)) {
 		accepted = false;
