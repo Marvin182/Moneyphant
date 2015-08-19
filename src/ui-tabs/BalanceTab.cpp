@@ -13,6 +13,38 @@ BalanceTab::BalanceTab(QWidget* parent) :
 	ui(new Ui::BalanceTab)
 {
 	ui->setupUi(this);
+
+	ui->balancePlot->xAxis->setLabel("Date");
+	ui->balancePlot->xAxis->setTickLabelType(QCPAxis::ltDateTime);
+	ui->balancePlot->xAxis->setDateTimeFormat("dd.MM.yy");
+
+	ui->balancePlot->yAxis->setLabel("Balance");
+
+	ui->balancePlot->legend->setVisible(true);
+	ui->balancePlot->legend->setSelectableParts(QCPLegend::spItems);
+
+ 	auto legend = ui->balancePlot->legend;
+	auto selectedFont = legend->font();
+	selectedFont.setBold(true);
+	legend->setSelectedBorderPen(legend->borderPen());
+	legend->setSelectedIconBorderPen(legend->iconBorderPen());
+	legend->setSelectedBrush(legend->brush());
+	// legend->setSelectedFont(legend->font());
+	legend->setSelectedFont(selectedFont);
+	legend->setSelectedTextColor(legend->textColor());
+
+	ui->balancePlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectLegend | QCP::iMultiSelect);
+	ui->balancePlot->setMultiSelectModifier(Qt::NoModifier);
+
+
+	connect(ui->balancePlot, &QCustomPlot::selectionChangedByUser, [&]() {
+	 	auto legend = ui->balancePlot->legend;
+		for (int i = 0; i < legend->itemCount(); i++) {
+			assert_error(ui->balancePlot->graph(i) != nullptr);
+			ui->balancePlot->graph(i)->setVisible(legend->item(i)->selected());
+		}
+		ui->balancePlot->yAxis->rescale(true);
+	});
 }
 
 BalanceTab::~BalanceTab()
@@ -108,25 +140,12 @@ void BalanceTab::replot() {
 		ui->balancePlot->graph()->setLineStyle(QCPGraph::lsLine);
 		ui->balancePlot->graph()->setPen(pen);
 		pen.setColor(nextRandomColor(pen.color()));
+		ui->balancePlot->legend->item(ui->balancePlot->legend->itemCount() - 1)->setSelected(true);
 	}
 
-	ui->balancePlot->xAxis->setTickLabelType(QCPAxis::ltDateTime);
-	ui->balancePlot->xAxis->setDateTimeFormat("dd.MM.yy");
-
-	ui->balancePlot->xAxis->setAutoTickStep(false);
-	ui->balancePlot->xAxis->setTickStep(oneMonth);
-	ui->balancePlot->xAxis->setSubTickCount(3);
-
-	ui->balancePlot->xAxis->setLabel("Date");
-	ui->balancePlot->yAxis->setLabel("Balance");
-
-	ui->balancePlot->yAxis2->setVisible(true);
-
-	ui->balancePlot->rescaleAxes();
-
-	ui->balancePlot->legend->setVisible(true);
-
-	ui->balancePlot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom);
+	double now = QDateTime::currentMSecsSinceEpoch() / 1000.0;
+	ui->balancePlot->xAxis->setRange(now - 6 * oneMonth, now);
+	ui->balancePlot->yAxis->rescale(true);
 
 	ui->balancePlot->replot();
 }
