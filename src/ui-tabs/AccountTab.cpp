@@ -60,7 +60,7 @@ void AccountTab::init(Db db, std::shared_ptr<AccountModel> accountModel) {
 	ui->accounts->horizontalHeader()->setSectionResizeMode(9, QHeaderView::Fixed); // balance
 	ui->accounts->horizontalHeader()->resizeSection(9, 120);
 	
-	// ui->accounts->horizontalHeader()->hideSection(0); // id
+	ui->accounts->horizontalHeader()->hideSection(0); // id
 	ui->accounts->horizontalHeader()->hideSection(6); // account number
 	ui->accounts->horizontalHeader()->hideSection(7); // bank code
 	ui->accounts->horizontalHeader()->hideSection(8); // initial balance

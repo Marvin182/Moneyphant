@@ -136,21 +136,6 @@ void TransferModel::setNote(int transferId, cqstring note) {
 	}
 }
 
-void TransferModel::setInternal(const std::vector<int>& transferIds, bool internal) {
-	// update database
-	db::Transfer tr;
-	auto ids = value_list_t<std::vector<int>>(transferIds);
-	(*db)(update(tr).set(tr.internal = internal).where(tr.id.in(ids)));
-
-	// update cache and inform UI
-	for (int id : transferIds) {
-		auto& t = _getById(id);
-		bool changed = t.internal != internal;
-		t.internal = internal;
-		if (changed) emitChanged(id);
-	}
-}
-
 void TransferModel::setChecked(const std::vector<int>& transferIds, bool checked) {
 	// update database
 	db::Transfer tr;
@@ -159,11 +144,24 @@ void TransferModel::setChecked(const std::vector<int>& transferIds, bool checked
 
 	// update cache and inform UI
 	for (int id : transferIds) {
-		auto& t = _getById(id);
-		bool changed = t.checked != checked;
-		t.checked = checked;
-		if (changed) emitChanged(id);
+		_getById(id).checked = checked;
 	}
+
+	emit dataChanged(createIndex(0, 5), createIndex(cachedTransfers.size() - 1, 5), {Qt::CheckStateRole});
+}
+
+void TransferModel::setInternal(const std::vector<int>& transferIds, bool internal) {
+	// update database
+	db::Transfer tr;
+	auto ids = value_list_t<std::vector<int>>(transferIds);
+	(*db)(update(tr).set(tr.internal = internal).where(tr.id.in(ids)));
+
+	// update cache and inform UI
+	for (int id : transferIds) {
+		_getById(id).internal = internal;
+	}
+
+	emit dataChanged(createIndex(0, 6), createIndex(cachedTransfers.size() - 1, 6), {Qt::CheckStateRole});
 }
 
 void TransferModel::exportTransfers(cqstring path, const std::vector<int>& transferIds) const {

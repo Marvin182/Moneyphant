@@ -5,13 +5,7 @@ Small programm that helps you combining bank statements from different sources (
 
 The program doesn't need an internet connection and will not send any data. All your data is saved on your computer (unencrypted for now).
 
-ToDos for 0.1.0
----------------
-- start balance for account, balance overview
-- transfers between own accounts are internal automatically
-- warn on different number of fields per line in file
-
-Idea List for Version 0.2
+Roadmap for version 0.2
 --------------------------
 - [ ] good menu & tooltips
 - [ ] better export
@@ -19,8 +13,7 @@ Idea List for Version 0.2
 	- [ ] auto completion in various places
 	- [ ] list of tags
 	- [ ] auto delete unused tags (db maintenance?)
-	- [ ] hierachies?
-- [ ] expense overview with bar charts
+- [ ] expense overview with bar charts (based on tags with hierarchies)
 - [ ] binaries for Windows
 - [ ] database switching
 
@@ -31,7 +24,7 @@ Build
 - Qt 5.5
 - [sqlpp11](https://github.com/rbock/sqlpp11) 0.34
 - [sqlpp11-connector-sqlite](https://github.com/rbock/sqlpp11-connector-sqlite3) 0.15
-- [mr](https://github.com/Marvin182/mr) v0.0.2
+- [mr](https://github.com/Marvin182/mr) v0.0.3
 
 ### Steps
 TODO
