@@ -2,6 +2,7 @@
 
 #include <QFile>
 #include <mr/common>
+#include "../util.h"
 
 constexpr int COLUMNS_COUNT = 11;
 
@@ -41,8 +42,8 @@ QVariant AccountModel::data(const QModelIndex& index, int role) const {
 				case 5: return a.bic.isEmpty() ? mr::separateGroups(a.bankCode, 3, ' ') : a.bic;
 				case 6: return a.accountNumber;
 				case 7: return mr::separateGroups(a.bankCode, 3, ' ');
-				case 8: return currency(a.initialBalance);
-				case 9: return currency(a.balance);
+				case 8: return util::formatCurrency(a.initialBalance);
+				case 9: return util::formatCurrency(a.balance);
 				case 10: return ""; // tags
 				default: assert_unreachable();
 			}

@@ -2,6 +2,7 @@
 
 #include <mr/common>
 #include "TransferModel.h"
+#include "../util.h"
 
 TransferProxyModel::TransferProxyModel(Db db, QObject* parent) :
 	QSortFilterProxyModel(parent),
@@ -115,7 +116,7 @@ bool TransferProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sour
 		accepted = false;
 	} else if (!txtRef.isEmpty() && !contains(transfer.reference, txtRef)) {
 		accepted = false;
-	} else if (!txtAmount.isEmpty() && !currency(transfer.amount).contains(txtAmount)) {
+	} else if (!txtAmount.isEmpty() && !util::formatCurrency(transfer.amount).contains(txtAmount)) {
 		accepted = false;
 	} else if (!txtNote.isEmpty() && !contains(transfer.note, txtNote)) {
 		accepted = false;
@@ -141,7 +142,7 @@ bool TransferProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sour
 				break;
 			}
 		}
-	} else if (!txtRest.isEmpty() && !fuzzyMatch(transfer.from.name + transfer.to.name + currency(transfer.amount) + transfer.reference, txtRest)) {
+	} else if (!txtRest.isEmpty() && !fuzzyMatch(transfer.from.name + transfer.to.name + util::formatCurrency(transfer.amount) + transfer.reference, txtRest)) {
 		accepted = false;
 	}
 

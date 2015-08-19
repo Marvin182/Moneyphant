@@ -3,6 +3,7 @@
 #include <QFile>
 #include <QColor>
 #include <mr/common>
+#include "../util.h"
 
 constexpr int COLUMNS_COUNT = 7;
 
@@ -42,7 +43,7 @@ QVariant TransferModel::data(const QModelIndex& index, int role) const {
 				case 1: return t.from.name;
 				case 2: return t.to.name;
 				case 3: return t.reference;
-				case 4: return currency(t.amount);
+				case 4: return util::formatCurrency(t.amount);
 			}
 			break;
 		case Qt::CheckStateRole:

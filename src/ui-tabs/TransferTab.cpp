@@ -4,6 +4,7 @@
 #include <QDateTime>
 #include <QPushButton>
 #include <QShortcut>
+#include "../util.h"
 
 TransferTab::TransferTab(QWidget* parent) :
 	Tab(parent),
@@ -303,10 +304,10 @@ void TransferTab::updateStats(int transferId, int mode) {
 	}
 
 	// update ui
-	ui->statsRevenues->setText(currency(stats.revenues()));
-	ui->statsExpenses->setText(currency(stats.expenses()));
-	ui->statsInternal->setText(currency(stats.internal()));
-	ui->statsProfit->setText(currency(stats.profit()));
+	ui->statsRevenues->setText(util::formatCurrency(stats.revenues()));
+	ui->statsExpenses->setText(util::formatCurrency(stats.expenses()));
+	ui->statsInternal->setText(util::formatCurrency(stats.internal()));
+	ui->statsProfit->setText(util::formatCurrency(stats.profit()));
 }
 
 void TransferTab::resetStats() {

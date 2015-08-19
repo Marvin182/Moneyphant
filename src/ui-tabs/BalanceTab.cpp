@@ -135,7 +135,7 @@ void BalanceTab::replot() {
 	for (auto const& a : (*db)(select(acc.id, acc.name, acc.balance).from(acc).where(acc.isOwn).order_by(acc.name.asc()))) {
 		assert_warning(a.balance == balances[a.id], "calculated balances for account %s do not match, db: %d, cache: %d", cstr(qstr(a.name)), (int)a.balance, balances[a.id]);
 		ui->balancePlot->addGraph();
-		ui->balancePlot->graph()->setName(qstr(a.name) + " (" + currency(a.balance) + ")");
+		ui->balancePlot->graph()->setName(qstr(a.name) + " (" + util::formatCurrency(a.balance) + ")");
 		ui->balancePlot->graph()->setData(dateHistory[a.id], balanceHistory[a.id]);
 		ui->balancePlot->graph()->setLineStyle(QCPGraph::lsLine);
 		ui->balancePlot->graph()->setPen(pen);
