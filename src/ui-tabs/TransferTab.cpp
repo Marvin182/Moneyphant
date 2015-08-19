@@ -153,15 +153,13 @@ void TransferTab::createFilterMonthLinks() {
 
 	addButton("all");
 
-	// years
+	// all years
 	for (int y = start.year(); y <= end.year(); y++) {
 		addButton(QString::number(y));
 	}
 
-	// quarters for this and last year
-	while (start.year() < end.year() - 1) {
-		start = start.addMonths(3);
-	}
+	// last 5 quarters
+	start = end.addMonths(-13);
 	while (start <= end) {
 		if (start.month() <= 3) {
 			addButton(start.toString("yyyy Q1"));
@@ -175,7 +173,7 @@ void TransferTab::createFilterMonthLinks() {
 		start = start.addMonths(3);
 	}
 
-	// months for last 3 months
+	// last 3 months
 	start = end.addMonths(-2);
 	while (start <= end) {
 		addButton(start.toString("MMM yy"));
