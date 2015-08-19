@@ -73,6 +73,7 @@ void AccountTab::init(Db db, std::shared_ptr<AccountModel> accountModel) {
 
 void AccountTab::focusSearchField() {
 	ui->filterText->setFocus();
+	ui->filterText->selectAll();
 }
 
 void AccountTab::setCurrentAccount(const QModelIndex& idx) {

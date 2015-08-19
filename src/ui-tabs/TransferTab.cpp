@@ -2,6 +2,8 @@
 #include "ui_transfertab.h"
 
 #include <QDateTime>
+#include <QPushButton>
+#include <QShortcut>
 
 TransferTab::TransferTab(QWidget* parent) :
 	Tab(parent),
@@ -58,8 +60,6 @@ void TransferTab::init(Db db, std::shared_ptr<TransferModel> transferModel) {
 	ui->transfers->horizontalHeader()->resizeSection(5, 60);
 	ui->transfers->horizontalHeader()->setSectionResizeMode(6, QHeaderView::Fixed); // Internal
 	ui->transfers->horizontalHeader()->resizeSection(6, 60);
-	
-	// ui->transfers->horizontalHeader()->hideSection(1); // From
 
 	// enable sorting
 	ui->transfers->setSortingEnabled(true);
@@ -80,13 +80,14 @@ void TransferTab::init(Db db, std::shared_ptr<TransferModel> transferModel) {
 	// details edit
 	connect(ui->detailsNote, SIGNAL(textChanged()), SLOT(saveNote()));
 
-	// actions
-	connect(ui->markSelectedInternal, SIGNAL(clicked()), SLOT(markSelectedInternal()));
-	connect(ui->checkSelected, SIGNAL(clicked()), SLOT(checkSelected()));
+	// shortcuts
+	new QShortcut(QKeySequence("c"), this, SLOT(toggleCheckedOfSelected()));
+	new QShortcut(QKeySequence("i"), this, SLOT(toggleInternalOfSelected()));
 }
 
 void TransferTab::focusSearchField() {
 	ui->filterText->setFocus();
+	ui->filterText->selectAll();
 }
 
 // TODO: reimplement export transfers
@@ -234,14 +235,19 @@ void TransferTab::showSelected(const QItemSelection& selected, const QItemSelect
 	updateTags();
 }
 
-void TransferTab::markSelectedInternal() {
-	assert_debug(!tagHelper.transferIds().empty());
-	model->setInternal(tagHelper.transferIds(), true);
+void TransferTab::toggleCheckedOfSelected() {
+	if (tagHelper.transferIds().empty()) return;
+	model->toggleChecked(tagHelper.transferIds());
 }
 
-void TransferTab::checkSelected() {
-	assert_debug(!tagHelper.transferIds().empty());
-	model->setChecked(tagHelper.transferIds(), true);
+void TransferTab::toggleInternalOfSelected() {
+	if (tagHelper.transferIds().empty()) return;
+	model->toggleInternal(tagHelper.transferIds());
+}
+
+void TransferTab::removeSelected() {
+	if (tagHelper.transferIds().empty()) return;
+	model->remove(tagHelper.transferIds());	
 }
 	
 void TransferTab::updateTags() {
@@ -253,9 +259,6 @@ void TransferTab::updateTags() {
 	const auto& ids = selectedIds.empty() ? std::vector<int>(1, currentTransferId) : selectedIds;
 
 	ui->detailsTags->setTags(tagHelper.getTransferTags(ids), ids);
-
-	ui->markSelectedInternal->setVisible(!selectedIds.empty());
-	ui->checkSelected->setVisible(!selectedIds.empty());
 
 	updateDetails();
 }

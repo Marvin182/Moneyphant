@@ -26,6 +26,10 @@ public slots:
 	virtual void refresh() {}
 	virtual void focusSearchField();
 
+	void toggleCheckedOfSelected();
+	void toggleInternalOfSelected();
+	void removeSelected();
+
 private:
 	Ui::TransferTab *ui;
 	
@@ -43,8 +47,6 @@ private slots:
 	
 	void setCurrentTransfer(const QModelIndex& index);
 	void showSelected(const QItemSelection& selected, const QItemSelection& deseceted);
-	void markSelectedInternal();
-	void checkSelected();
 	
 	void updateTags();
 	void updateDetails();
