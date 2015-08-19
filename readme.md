@@ -7,14 +7,14 @@ The program doesn't need an internet connection and will not send any data. All 
 
 Roadmap for version 0.2
 --------------------------
-- [ ] good menu & tooltips
-- [ ] better export
 - [ ] improved tags
 	- [ ] auto completion in various places
 	- [ ] list of tags
 	- [ ] auto delete unused tags (db maintenance?)
-- [ ] expense overview with bar charts (based on tags with hierarchies)
 - [ ] binaries for Windows
+- [ ] better export
+- [ ] expense overview with bar charts (based on tags with hierarchies)
+- [ ] good menu & tooltips
 - [ ] database switching
 
 
