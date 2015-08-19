@@ -104,6 +104,9 @@
           <property name="suffix">
            <string> €</string>
           </property>
+          <property name="minimum">
+           <double>-999999999.990000009536743</double>
+          </property>
           <property name="maximum">
            <double>999999999.990000009536743</double>
           </property>

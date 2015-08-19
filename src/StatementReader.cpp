@@ -11,7 +11,8 @@
 #include "model/AccountModel.h"
 
 StatementReader::StatementReader(Db db) :
-	db(db)
+	db(db),
+	fileWatcher(0)
 {
 	connect(&fileWatcher, SIGNAL(fileChanged(const QString&)), SLOT(importStatementFile(const QString&)));
 }
@@ -28,6 +29,7 @@ void StatementReader::startWatchingFiles() {
 }
 
 void StatementReader::stopWatchingFiles() {
+	qLog() << "stop watching all files";
 	fileWatcher.removePaths(fileWatcher.files());
 }
 
@@ -57,13 +59,13 @@ void StatementReader::addFile(cqstring filename, const StatementFileFormat& form
 		(*db)(sqlpp::update(f).set(f.formatId = format.id,
 								f.watch = watch
 								).where(f.id == fs.front().id));
-		if (watch && !fs.front().watch) {
+		if (watch) {
 			// file should be watched, but isn't so far
 			qLog() << "watching file " << filename;
 			fileWatcher.addPath(filename);
-		} else if (!watch && fs.front().watch) {
-			// file shouldn't be watched, but is currently
-			fileWatcher.removePath(filename);
+		} else if (!watch) {
+			// file shouldn't be watched, but might currently be
+			stopWatchingFile(filename);
 		}
 	}
 
@@ -110,7 +112,7 @@ void StatementReader::importStatementFile(cqstring filename, const StatementFile
 			auto from = hasVal("senderId") ? Transfer::Acc(val("senderId").toInt(), "") : makeAccount(val("senderOwnerName"), val("senderIban"), val("senderBic"));
 			auto to = hasVal("receiverId") ? Transfer::Acc(val("receiverId").toInt(), "") : makeAccount(val("receiverOwnerName"), val("receiverIban"), val("receiverBic"));
 		
-			int amount = val("amount").replace(',', '.').toDouble() * 100;
+			int amount = util::parseCurrency(val("amount"));
 			if (format.invertAmount) amount = -amount;
 			
 			assert_error(from.id >= 0 && to.id >= 0, "from %d, to: %d", from.id, to.id);

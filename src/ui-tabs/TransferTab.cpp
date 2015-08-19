@@ -58,6 +58,7 @@ void TransferTab::init(Db db, std::shared_ptr<TransferModel> transferModel) {
 	ui->transfers->horizontalHeader()->resizeSection(5, 60);
 	ui->transfers->horizontalHeader()->setSectionResizeMode(6, QHeaderView::Fixed); // Internal
 	ui->transfers->horizontalHeader()->resizeSection(6, 60);
+	
 	// ui->transfers->horizontalHeader()->hideSection(1); // From
 
 	// enable sorting
@@ -144,9 +145,9 @@ void TransferTab::createFilterMonthLinks() {
 
 	auto addButton = [&](const QString& text) {
 		assert_error(!text.isEmpty());
-		// auto button = new QPushButton(text);
-		// connect(button, SIGNAL(pressed()), SLOT(clickedFilterMonthLink()));
-		// ui->filterMonthLinks->addWidget(button);
+		auto button = new QPushButton(text);
+		connect(button, SIGNAL(pressed()), SLOT(clickedFilterMonthLink()));
+		ui->filterMonthLinks->addWidget(button);
 	};
 
 	addButton("all");

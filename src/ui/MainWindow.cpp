@@ -1,15 +1,8 @@
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
 
-// #include <QDir>
-// #include <QStringList>
-// #include <QDateTime>
-// #include <QLabel>
 #include <QTimer>
 #include <QFileDialog>
-// #include <QMessageBox>
-// #include <QFileInfo>
-// #include <QRegExp>
 #include <mr/common>
 #include "../Updater.h"
 #include "../ui-dialogs/AboutDialog.h"
