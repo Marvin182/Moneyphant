@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabs">
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="TransferTab" name="transferTab">
        <attribute name="title">
@@ -79,6 +79,10 @@
      <string>Edit</string>
     </property>
     <addaction name="actionFind"/>
+    <addaction name="separator"/>
+    <addaction name="actionCheck_Transfers"/>
+    <addaction name="actionMark_Transfers_Internal"/>
+    <addaction name="actionDelete_Transfers"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -170,6 +174,24 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+3</string>
+   </property>
+  </action>
+  <action name="actionCheck_Transfers">
+   <property name="text">
+    <string>Check Transfers</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetShortcut</enum>
+   </property>
+  </action>
+  <action name="actionMark_Transfers_Internal">
+   <property name="text">
+    <string>Mark Transfers Internal</string>
+   </property>
+  </action>
+  <action name="actionDelete_Transfers">
+   <property name="text">
+    <string>Delete Transfers</string>
    </property>
   </action>
  </widget>

@@ -69,6 +69,10 @@ void MainWindow::initMenu() {
 	connect(ui->actionBalance, &QAction::triggered, [&]() { ui->tabs->setCurrentIndex(2); });
 	connect(ui->accountTab, &AccountTab::mergeAccountsEnabled, [&](bool enabled) { ui->actionMerge_Selected_Accounts->setEnabled(enabled); });
 	connect(ui->actionMerge_Selected_Accounts, &QAction::triggered, ui->accountTab, &AccountTab::mergeAccounts);
+
+	connect(ui->actionCheck_Transfers, &QAction::triggered, [&]() { ui->transferTab->toggleCheckedOfSelected(); });
+	connect(ui->actionMark_Transfers_Internal, &QAction::triggered, [&]() { ui->transferTab->toggleInternalOfSelected(); });
+	connect(ui->actionDelete_Transfers, &QAction::triggered, [&]() { ui->transferTab->removeSelected(); });
 }
 
 void MainWindow::onExportTransfers() {

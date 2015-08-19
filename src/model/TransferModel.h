@@ -28,8 +28,10 @@ public:
 	const Transfer& getById(int id) const;
 
 	void setNote(int transferId, cqstring note);
-	void setChecked(const std::vector<int>& transferIds, bool checked = true);
-	void setInternal(const std::vector<int>& transferIds, bool internal = true);
+	void toggleChecked(const std::vector<int>& transferIds);
+	void toggleInternal(const std::vector<int>& transferIds);
+	void remove(const std::vector<int>& transferIds);
+
 	void exportTransfers(cqstring path, const std::vector<int>& transferIds) const;
 
 public slots:
