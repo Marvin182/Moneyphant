@@ -30,6 +30,7 @@ private:
 
 	std::vector<int> tagIds;
 	int monthsSinceYear0;
+	int historyLen;
 	QHash<int, QVector<double>> monthlyTagExpenses;
 
 private slots:

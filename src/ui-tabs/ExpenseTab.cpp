@@ -10,13 +10,12 @@
 SQLPP_ALIAS_PROVIDER(trTagId);
 SQLPP_ALIAS_PROVIDER(accTagId);
 
-constexpr double oneMonth = 30 * 86400;
-
 ExpenseTab::ExpenseTab(QWidget* parent) :
 	Tab(parent),
 	ui(new Ui::ExpenseTab),
 	tagIds(),
 	monthsSinceYear0(12 * QDate::currentDate().year() + QDate::currentDate().month() - 1),
+	historyLen(0),
 	monthlyTagExpenses()
 {
 	ui->setupUi(this);
@@ -24,10 +23,12 @@ ExpenseTab::ExpenseTab(QWidget* parent) :
 	connect(ui->tags, SIGNAL(textEdited(const QString&)), SLOT(onTagsEdited(const QString&)));
 
 	ui->expensePlot->xAxis->setLabel("Month");
-	ui->expensePlot->xAxis->setTickLabelType(QCPAxis::ltDateTime);
-	ui->expensePlot->xAxis->setDateTimeFormat("MMM-yy");
-	double now = QDateTime::currentMSecsSinceEpoch() / 1000.0;
-	ui->expensePlot->xAxis->setRange(now - 6 * oneMonth, now);
+	ui->expensePlot->xAxis->setAutoTicks(false);
+	ui->expensePlot->xAxis->setAutoTickLabels(false);
+	ui->expensePlot->xAxis->setTickLabelRotation(60);
+	ui->expensePlot->xAxis->setSubTickCount(0);
+	ui->expensePlot->xAxis->setRange(0, 6);
+	ui->expensePlot->xAxis->setRangeReversed(true);
 
 	ui->expensePlot->yAxis->setLabel("Expenses");
 	ui->expensePlot->yAxis->grid()->setSubGridVisible(true);
@@ -124,7 +125,8 @@ void ExpenseTab::recalculateTagExpenses() {
 			int monthIdx = relativeMonthIndex(t.date);
 			auto& tagExpenses = monthlyTagExpenses[tagId];
 
-			if (tagExpenses.size() < monthIdx + 1) tagExpenses.resize(monthIdx + 1);
+			historyLen = std::max(historyLen, monthIdx + 1);
+			if (tagExpenses.size() < historyLen) tagExpenses.resize(historyLen);
 			tagExpenses[monthIdx] += t.amount / 100.0;
 		};
 
@@ -133,6 +135,11 @@ void ExpenseTab::recalculateTagExpenses() {
 		// if (!t.trTagId.is_null() && spiedTagIds.find(t.trTagId) != spiedTagIds.end()) addWithTag(t.trTagId); // see comment on spying only a few tags
 		// if (!t.accTagId.is_null() && spiedTagIds.find(t.accTagId) != spiedTagIds.end()) addWithTag(t.accTagId);  // see comment on spying only a few tags
 	}
+
+	for (auto it = monthlyTagExpenses.begin(); it != monthlyTagExpenses.end(); it++) {
+		assert_error(it.value().size() <= historyLen);
+		it.value().resize(historyLen);
+	}
 }
 
 void ExpenseTab::replot() {
@@ -140,15 +147,18 @@ void ExpenseTab::replot() {
 
 	db::Tag tg;
 
-	// QPen borderPen(QColor::fromHsv(30, 255, 255), 1.5);
+	// monthly ticks and individual labels
+	QVector<double> ticks(historyLen);
+	QVector<QString> tickLabels(historyLen);
+	for (int i = 0; i < historyLen; i++) {
+		ticks[i] = i;
+		tickLabels[i] = monthName(i);
+	}
+	ui->expensePlot->xAxis->setTickVector(ticks);
+	ui->expensePlot->xAxis->setTickVectorLabels(tickLabels);
+
 	QColor brushColor = QColor::fromHsv(30, 255, 255, 128);
-	
-	double barWidth = (30 * 86400) / (1.5 * tagIds.size() + 4);
-
 	auto barGroup = new QCPBarsGroup(ui->expensePlot);
-	barGroup->setSpacingType(QCPBarsGroup::stPlotCoords);
-	barGroup->setSpacing(0.5 * barWidth);
-
 	for (int tagId : tagIds) {
 		const auto& ts = (*db)(select(tg.name).from(tg).where(tg.id == tagId));
 		auto bar = new QCPBars(ui->expensePlot->xAxis, ui->expensePlot->yAxis);
@@ -159,21 +169,12 @@ void ExpenseTab::replot() {
 		bar->setName(qstr(ts.front().name));
 		bar->setPen(QPen(borderColor));
 		bar->setBrush(brushColor);
-		// borderPen.setColor(util::nextBeautifulColor(borderPen.color()));
 		brushColor = util::nextBeautifulColor(brushColor);
 
 		bar->setBarsGroup(barGroup);
-		bar->setWidthType(QCPBars::wtPlotCoords);
-		bar->setWidth(barWidth);
+		bar->setWidth(0.5 / tagIds.size());
 
-		const auto& x = monthlyTagExpenses[tagId];
-		QVector<double> y;
-		y.reserve(x.size());
-		for (int i = 0; i < x.size(); i++) {
-			y += mSecsSinceEpoch(i) / 1000.0;
-		}
-
-		bar->setData(y, x);
+		bar->setData(ticks, monthlyTagExpenses[tagId]);
 	}
 
 	ui->expensePlot->yAxis->rescale();
