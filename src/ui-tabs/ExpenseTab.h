@@ -1,7 +1,7 @@
 #ifndef EXPENSETAB_H
 #define EXPENSETAB_H
 
-#include <unordered_set>
+#include <vector>
 #include <QHash>
 #include <mr/common>
 #include "Tab.h"
@@ -28,7 +28,7 @@ public slots:
 private:
 	Ui::ExpenseTab *ui;
 
-	std::unordered_set<int> tagIds;
+	std::vector<int> tagIds;
 	int monthsSinceYear0;
 	QHash<int, QVector<double>> monthlyTagExpenses;
 

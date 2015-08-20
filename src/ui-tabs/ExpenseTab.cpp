@@ -67,22 +67,15 @@ void ExpenseTab::focusSearchField() {
 }
 
 QString ExpenseTab::searchField() {
-	db::Tag tg;
-	QStringList list;
-	assert_error(db != nullptr);
-	auto ids = value_list_t<std::unordered_set<int>>(tagIds);
-	for (const auto& t : (*db)(select(tg.name).from(tg).order_by(tg.id.asc()).where(tg.id.in(ids)))) {
-		list << qstr(t.name);
-	}
-	return list.join(' ');
+	return ui->tags->text();
 }
 
 void ExpenseTab::onTagsEdited(cqstring text) {
 	db::Tag tg;
-	std::unordered_set<int> newTagIds;
+	std::vector<int> newTagIds;
 	for (cqstring tagName : text.split(' ')) {
 		auto t = (*db)(select(tg.id).from(tg).where(tg.name == str(tagName)));
-		if (!t.empty()) newTagIds.insert(t.front().id);
+		if (!t.empty()) newTagIds.push_back(t.front().id);
 	}
 	if (newTagIds != tagIds) {
 		tagIds = newTagIds;
@@ -147,7 +140,7 @@ void ExpenseTab::replot() {
 
 	db::Tag tg;
 
-	QPen borderPen(QColor::fromHsv(30, 255, 255), 1.5);
+	// QPen borderPen(QColor::fromHsv(30, 255, 255), 1.5);
 	QColor brushColor = QColor::fromHsv(30, 255, 255, 128);
 	
 	double barWidth = (30 * 86400) / (1.5 * tagIds.size() + 4);
@@ -156,22 +149,24 @@ void ExpenseTab::replot() {
 	barGroup->setSpacingType(QCPBarsGroup::stPlotCoords);
 	barGroup->setSpacing(0.5 * barWidth);
 
-	auto ids = value_list_t<std::unordered_set<int>>(tagIds);
-	for (const auto& t : (*db)(select(all_of(tg)).from(tg).order_by(tg.name.asc()).where(tg.id.in(ids)))) {
+	for (int tagId : tagIds) {
+		const auto& ts = (*db)(select(tg.name).from(tg).where(tg.id == tagId));
 		auto bar = new QCPBars(ui->expensePlot->xAxis, ui->expensePlot->yAxis);
 		ui->expensePlot->addPlottable(bar);
 		
-		bar->setName(qstr(t.name));
-		bar->setPen(borderPen);
+		auto borderColor = brushColor.darker();
+		borderColor.setAlpha(255);
+		bar->setName(qstr(ts.front().name));
+		bar->setPen(QPen(borderColor));
 		bar->setBrush(brushColor);
-		borderPen.setColor(util::nextBeautifulColor(borderPen.color()));
+		// borderPen.setColor(util::nextBeautifulColor(borderPen.color()));
 		brushColor = util::nextBeautifulColor(brushColor);
 
 		bar->setBarsGroup(barGroup);
 		bar->setWidthType(QCPBars::wtPlotCoords);
 		bar->setWidth(barWidth);
 
-		const auto& x = monthlyTagExpenses[t.id];
+		const auto& x = monthlyTagExpenses[tagId];
 		QVector<double> y;
 		y.reserve(x.size());
 		for (int i = 0; i < x.size(); i++) {
