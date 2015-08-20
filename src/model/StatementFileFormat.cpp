@@ -90,7 +90,7 @@ int StatementFileFormat::save(Db db) {
 }
 
 StatementFileFormat::operator QString() const {
-	auto s = QString("StatementFileFormat %1 (delimiter: %3, text qualifier: %4, date format: %5,").arg(name).arg(delimiter).arg(textQualifier).arg(dateFormat);
+	auto s = QString("StatementFileFormat %1 (delimiter: %3, text qualifier: %4, date format: %5, invert amount: %6, line suffix: '%7'").arg(name).arg(delimiter).arg(textQualifier).arg(dateFormat).arg(invertAmount).arg(lineSuffix);
 	for (auto k : columnPositions.keys()) {
 		s += QString(" %1 => %2;").arg(k).arg(columnPositions[k]);
 	}
@@ -103,6 +103,8 @@ std::ostream& operator<<(std::ostream& os, const StatementFileFormat& f) {
 		<< "(delimiter: " << f.delimiter
 		<< ", text qualifier: " << f.textQualifier
 		<< ", date format: " << f.dateFormat
+		<< ", invert amount: " << f.invertAmount
+		<< ", line suffix: " << f.lineSuffix
 		<< ")";
 	for (auto k : f.columnPositions.keys()) {
 		os << "\n\t" << cstr(k) << " => " << f.columnPositions[k];

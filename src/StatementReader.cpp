@@ -20,11 +20,11 @@ StatementReader::StatementReader(Db db) :
 void StatementReader::startWatchingFiles() {
 	db::File f;
 	for (const auto& file : (*db)(select(all_of(f)).from(f).where(f.watch))) {
-		importStatementFile(qstr(file.path), StatementFileFormat::loadFromDb(db, file.formatId), false);
+		importStatementFile(qstr(file.path), StatementFileFormat::loadFromDb(db, file.formatId), false); // takes ~ 200 ms per file
 		fileWatcher.addPath(qstr(file.path));
 	}
 
-	recalculateBalances(db);
+	recalculateBalances(db); // takes ~ 100 ms
 	emit newStatementsImported();
 }
 

@@ -1,7 +1,7 @@
 #ifndef TRANSFER_PROXY_MODEL_H
 #define TRANSFER_PROXY_MODEL_H
 
-#include <vector>
+#include <unordered_set>
 #include <QDateTime>
 #include <QSortFilterProxyModel>
 #include "../sql.h"
@@ -38,7 +38,7 @@ protected:
 	int trChecked;
 	int trTagged;
 	int trInternal;
-	std::vector<int> txtTags;
+	std::unordered_set<int> txtTags;
 	QString txtRest;
 
 	const Transfer& get(int sourceRow) const;

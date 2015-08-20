@@ -72,7 +72,7 @@ void TransferProxyModel::setFilterText(const QString& filterText) {
 			db::Tag tag;
 			auto t = (*db)(select(tag.id).from(tag).where(tag.name == str(p)));
 			if (!t.empty()) {
-				txtTags.push_back(t.front().id);
+				txtTags.insert(t.front().id);
 			} else {
 				txtRest += txtRest.isEmpty() ? p : (" " + p);
 			}
