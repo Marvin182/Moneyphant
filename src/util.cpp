@@ -62,4 +62,21 @@ int parseCurrency(cqstring s) {
 	return 100 * before + after;
 }
 
+QColor nextBeautifulColor(const QColor& c) {
+	auto h = c.hueF() + mr::constants::goldenRatio - 1;
+	if (h > 1.0) h--;
+	return QColor::fromHsv(360 * h, c.saturation(), c.value(), c.alpha());
+}
+
+QVector<QColor> randomColors(int n, int saturation, int value, int alpha) {
+	double hue = mr::random::probability();
+	QVector<QColor> colors;
+	colors.reserve(n);
+	for (int i = 0; i < n; i++) {
+		colors += QColor(360 * hue, saturation, value, alpha);
+		hue += mr::constants::goldenRatio - 1;
+		if (hue > 1.0) hue--; 
+	}
+	return colors;
+}
 } // namespace util

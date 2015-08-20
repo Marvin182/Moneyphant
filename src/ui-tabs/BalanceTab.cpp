@@ -58,11 +58,11 @@ void BalanceTab::init(Db db) {
 }
 
 void BalanceTab::refresh() {
-	invalidateCache();
+	recalculateHistory();
 	replot();
 }
 
-void BalanceTab::invalidateCache() {
+void BalanceTab::recalculateHistory() {
 	balances.clear();
 	balanceHistory.clear();
 	dateHistory.clear();
@@ -139,7 +139,7 @@ void BalanceTab::replot() {
 		ui->balancePlot->graph()->setData(dateHistory[a.id], balanceHistory[a.id]);
 		ui->balancePlot->graph()->setLineStyle(QCPGraph::lsLine);
 		ui->balancePlot->graph()->setPen(pen);
-		pen.setColor(nextRandomColor(pen.color()));
+		pen.setColor(util::nextBeautifulColor(pen.color()));
 		ui->balancePlot->legend->item(ui->balancePlot->legend->itemCount() - 1)->setSelected(true);
 	}
 
@@ -148,23 +148,5 @@ void BalanceTab::replot() {
 	ui->balancePlot->yAxis->rescale(true);
 
 	ui->balancePlot->replot();
-}
-
-QVector<QColor> BalanceTab::randomColors(int n, int startHue, int saturation, int value, int alpha) {
-	double hue = startHue == -1 ? mr::random::probability() : startHue / 360.0;
-	QVector<QColor> colors;
-	colors.reserve(n);
-	for (int i = 0; i < n; i++) {
-		colors += QColor(360 * hue, saturation, value, alpha);
-		hue += mr::constants::goldenRatio - 1;
-		if (hue > 1.0) hue--; 
-	}
-	return colors;
-}
-
-QColor BalanceTab::nextRandomColor(const QColor& c) {
-	auto h = c.hueF() + mr::constants::goldenRatio - 1;
-	if (h > 1.0) h--;
-	return QColor::fromHsv(360 * h, c.saturation(), c.value(), c.alpha());
 }
 
