@@ -302,7 +302,11 @@ int StatementReader::add(Transfer& transfer) {
 										tr.fromId = transfer.from.id,
 										tr.toId = transfer.to.id,
 										tr.reference = str(transfer.reference),
-										tr.amount = transfer.amount));
+										tr.amount = transfer.amount,
+										tr.note = str(transfer.note),
+										tr.checked = transfer.checked,
+										tr.internal = transfer.internal
+										));
 	assert_error(id >= 0);
 	transfer.id = id;
 	qDebug() << "added " << transfer;
@@ -317,7 +321,6 @@ void StatementReader::update(const Transfer& transfer) {
 								tr.toId = transfer.to.id,
 								tr.reference = str(transfer.reference),
 								tr.amount = transfer.amount,
-								// tr.note = str(transfer.note),
 								tr.checked = tr.checked || transfer.checked,
 								tr.internal = tr.internal || transfer.internal
 							).where(tr.id == transfer.id));
