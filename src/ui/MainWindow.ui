@@ -32,7 +32,12 @@
       </widget>
       <widget class="BalanceTab" name="balanceTab">
        <attribute name="title">
-        <string>Balance</string>
+        <string>Balances</string>
+       </attribute>
+      </widget>
+      <widget class="ExpenseTab" name="expenseTab">
+       <attribute name="title">
+        <string>Expenses</string>
        </attribute>
       </widget>
      </widget>
@@ -90,7 +95,8 @@
     </property>
     <addaction name="actionTransfers"/>
     <addaction name="actionAccounts"/>
-    <addaction name="actionBalance"/>
+    <addaction name="actionBalances"/>
+    <addaction name="actionExpenses"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -168,9 +174,9 @@
     <string>Ctrl+2</string>
    </property>
   </action>
-  <action name="actionBalance">
+  <action name="actionBalances">
    <property name="text">
-    <string>Balance</string>
+    <string>Balances</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+3</string>
@@ -194,6 +200,14 @@
     <string>Delete Transfers</string>
    </property>
   </action>
+  <action name="actionExpenses">
+   <property name="text">
+    <string>Expenses</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+4</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -213,6 +227,12 @@
    <class>BalanceTab</class>
    <extends>QWidget</extends>
    <header>src/ui-tabs/BalanceTab.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ExpenseTab</class>
+   <extends>QWidget</extends>
+   <header>src/ui-tabs/ExpenseTab.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -19,6 +19,12 @@ BalanceTab::BalanceTab(QWidget* parent) :
 	ui->balancePlot->xAxis->setDateTimeFormat("dd.MM.yy");
 
 	ui->balancePlot->yAxis->setLabel("Balance");
+	ui->balancePlot->yAxis->grid()->setSubGridVisible(true);
+	QPen gridPen(QColor(0, 0, 0, 25));
+	gridPen.setStyle(Qt::SolidLine);
+	ui->balancePlot->yAxis->grid()->setPen(gridPen);
+	gridPen.setStyle(Qt::DotLine);
+	ui->balancePlot->yAxis->grid()->setSubGridPen(gridPen);
 
 	ui->balancePlot->legend->setVisible(true);
 	ui->balancePlot->legend->setSelectableParts(QCPLegend::spItems);

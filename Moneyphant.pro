@@ -22,7 +22,7 @@ SOURCES += src/main.cpp \
 	src/TagHelper.cpp \
 	src/TransferStats.cpp \
 	src/Updater.cpp \
-        src/util.cpp \
+	src/util.cpp \
 	src/version.cpp \
 	src/model/Account.cpp \
 	src/model/AccountModel.cpp \
@@ -39,6 +39,7 @@ SOURCES += src/main.cpp \
 	src/ui-dialogs/StatementImporterDialog.cpp \
 	src/ui-tabs/AccountTab.cpp \
 	src/ui-tabs/BalanceTab.cpp \
+	src/ui-tabs/ExpenseTab.cpp \
 	src/ui-tabs/TransferTab.cpp \
 	lib/qcustomplot.cpp
 
@@ -50,7 +51,7 @@ HEADERS += src/db.h \
 	src/TagHelper.h \
 	src/TransferStats.h \
 	src/Updater.h \
-        src/util.h \
+	src/util.h \
 	src/version.h \
 	src/model/Account.h \
 	src/model/AccountModel.h \
@@ -67,6 +68,7 @@ HEADERS += src/db.h \
 	src/ui-dialogs/StatementImporterDialog.h \
 	src/ui-tabs/AccountTab.h \
 	src/ui-tabs/BalanceTab.h \
+	src/ui-tabs/ExpenseTab.h \
 	src/ui-tabs/Tab.h \
 	src/ui-tabs/TransferTab.h \
 	lib/qcustomplot.h
@@ -77,6 +79,7 @@ FORMS += src/ui/MainWindow.ui \
 	src/ui-dialogs/StatementImporterDialog.ui \
 	src/ui-tabs/AccountTab.ui \
 	src/ui-tabs/BalanceTab.ui \
+	src/ui-tabs/ExpenseTab.ui \
 	src/ui-tabs/TransferTab.ui
 
 RESOURCES += sql/evolutions.qrc \

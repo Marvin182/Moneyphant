@@ -48,6 +48,7 @@ void MainWindow::init() {
 	ui->transferTab->init(db, transferModel);
 	ui->accountTab->init(db, accountModel);
 	ui->balanceTab->init(db);
+	ui->expenseTab->init(db, settings.value("expenseTab/lastSearch", "").toString());
 	connect(ui->tabs, &QTabWidget::currentChanged, [&](int index) { tab(index)->refresh(); });
 
 	initMenu();
@@ -66,7 +67,8 @@ void MainWindow::initMenu() {
 	connect(ui->actionFind, &QAction::triggered, [&]() { tab(ui->tabs->currentIndex())->focusSearchField(); });
 	connect(ui->actionTransfers, &QAction::triggered, [&]() { ui->tabs->setCurrentIndex(0); });
 	connect(ui->actionAccounts, &QAction::triggered, [&]() { ui->tabs->setCurrentIndex(1); });
-	connect(ui->actionBalance, &QAction::triggered, [&]() { ui->tabs->setCurrentIndex(2); });
+	connect(ui->actionBalances, &QAction::triggered, [&]() { ui->tabs->setCurrentIndex(2); });
+	connect(ui->actionExpenses, &QAction::triggered, [&]() { ui->tabs->setCurrentIndex(3); });
 	connect(ui->accountTab, &AccountTab::mergeAccountsEnabled, [&](bool enabled) { ui->actionMerge_Selected_Accounts->setEnabled(enabled); });
 	connect(ui->actionMerge_Selected_Accounts, &QAction::triggered, ui->accountTab, &AccountTab::mergeAccounts);
 
@@ -118,7 +120,7 @@ void MainWindow::openDb() {
 	assert_fatal(dbConfig != nullptr);
 
 	QString dbPath = mr::qt::appLocalDataLocation() + "/db.sqlite";
-	qLog() << "Opening database " << dbPath;
+	// qLog() << "Opening database " << dbPath;
 	dbConfig->path_to_database = str(dbPath);
 	dbConfig->flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
 	dbConfig->debug = false;
@@ -161,8 +163,9 @@ void MainWindow::saveSettings() {
 	settings.setValue("mainwindow/geometry", geometry());
 	settings.setValue("mainwindow/fullScreen", isFullScreen());
 	settings.setValue("mainwindow/tab", ui->tabs->currentIndex());
+	settings.setValue("expenseTab/lastSearch", ui->expenseTab->searchField());
 }
 
 Tab* MainWindow::tab(int index) const {
-	return (Tab*)ui->tabs->widget(index);
+	return static_cast<Tab*>(ui->tabs->widget(index));
 }
