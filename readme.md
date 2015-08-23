@@ -6,17 +6,37 @@ Small programm that helps you combining bank statements from different sources (
 The program doesn't need an internet connection and will not send any data. All your data is saved on your computer (unencrypted for now).
 
 Roadmap for version 0.2
---------------------------
+-----------------------
 - [ ] improved tags
 	- [ ] auto completion in various places
 	- [ ] list of tags
-	- [ ] auto delete unused tags (db maintenance?)
+	- [ ] do we need hierarchies?
 - [ ] binaries for Windows
-- [ ] better export
-- [ ] expense overview with bar charts (based on tags with hierarchies)
-- [ ] good menu & tooltips
-- [ ] database switching
+- [ ] expense overview with bar charts
+	- [x] basic chart
+	- [ ] option to view quarters instead of month
+	- [ ] show value for each bar
+	- [ ] make zooming/ scrolling more user friendly
+- [ ] db maintenance
+	- [ ] delete unused tags
+	- [ ] accounts without transfers
+- [ ] IBAN calculation
+- [ ] upload screenshots
+- [ ] complete menu
+- [ ] Export export (using filtering)
+	- [ ] transfers
+	- [ ] accounts
+	- [ ] custom format
+- [ ] German translation
 
+Feature Ideas
+-------------
+- Tutorial
+- Budgets for tags
+- Support for multiple databases switching
+- Editing and splitting of transfers
+- categories for accounts
+- auto tagging based on filters (replacing account tags)
 
 Build
 -----
@@ -39,7 +59,6 @@ Steps:
 3. update the structure in sql/structure.sql
 4. execute to `sql/ddl2cpp sql/structure.sql src/db db` to update database classes
 5. At startup the app will execute evolutions to update the database schema if necessary. You don't need to do anything.
-
 
 Thanks To ...
 -------------
