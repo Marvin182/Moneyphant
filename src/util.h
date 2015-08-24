@@ -31,6 +31,15 @@ QColor nextBeautifulColor(const QColor& c);
 /** Returns n random colors in the same manner as nextBeautifulColor(). */
 QVector<QColor> randomColors(int n, int saturation = 200, int value = 240, int alpha = 255);
 
+namespace tags {
+
+constexpr const char* validSeparators = "[\\s,;]+";
+constexpr char defaultSeparator = ' ';
+inline QString joinTags(const QStringList& tags) { return tags.join(defaultSeparator); }
+inline QStringList splitTags(cqstring tags) { return tags.split(QRegExp(validSeparators), QString::SkipEmptyParts); }
+
+} // namespace tags
+
 } // namespace util
 
 #endif // MONEYPHANT_UTIL_H
