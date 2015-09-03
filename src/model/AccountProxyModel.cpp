@@ -83,6 +83,10 @@ bool AccountProxyModel::lessThan(const QModelIndex& left, const QModelIndex& rig
 	const auto& a = get(left.row());
 	const auto& b = get(right.row());
 
+	// "Own Accounts" account should always be on top
+	if (a.id == 0) return sortOrder() == Qt::AscendingOrder;
+	if (b.id == 0) return sortOrder() == Qt::DescendingOrder;
+
 	switch (left.column()) {
 		case 0: return a.id < b.id;
 		case 1: return b.isOwn;

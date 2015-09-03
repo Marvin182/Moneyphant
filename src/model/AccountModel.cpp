@@ -133,6 +133,9 @@ bool AccountModel::setData(const QModelIndex& index, const QVariant& value, int 
 Qt::ItemFlags AccountModel::flags(const QModelIndex& index) const {
 	assertValidIndex(index);
 
+	// special account
+	if (index.row() == 0) return Qt::NoItemFlags;
+
 	auto commonFlags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 	switch (index.column()) {
 		case 1:
@@ -172,15 +175,25 @@ void AccountModel::invalidateCache() {
 	emit beginResetModel();
 
 	db::Account acc;
-	int rowCount = (*db)(select(count(acc.id)).from(acc).where(true)).front().count;
-	cachedAccounts.clear();
-	cachedAccounts.reserve(rowCount);
-
 	id2Row.clear();
-	int row = 0;
+	cachedAccounts.clear();
+
+	int rowCount = (*db)(select(count(acc.id)).from(acc).where(true)).front().count;
+	cachedAccounts.reserve(rowCount + 1);
+	id2Row.reserve(rowCount + 1);
+	
+	// add special "Own Accounts" account
+	cachedAccounts.push_back(Account(0, true, 0, "Own Accounts", "", "", "", "", "", 0));
+	id2Row[0] = 0;
+
+	int row = 1;
 	for (const auto& a : (*db)(select(all_of(acc)).from(acc).where(true).order_by(acc.isOwn.desc(), acc.name.asc()))) {
 		id2Row[a.id] = row++;
 		cachedAccounts.push_back({(int)a.id, a.isOwn, (int)a.balance, qstr(a.name), qstr(a.owner), qstr(a.iban), qstr(a.bic), qstr(a.accountNumber), qstr(a.bankCode), (int)a.initialBalance});
+		if (a.isOwn) {
+			cachedAccounts.front().balance += a.balance;
+			cachedAccounts.front().initialBalance += a.initialBalance;
+		}
 	}
 
 	emit endResetModel();
