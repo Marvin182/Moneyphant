@@ -17,7 +17,8 @@ create table account (
 	bic text not null default '',
 	accountNumber text not null default '',
 	bankCode text not null default '',
-	initialBalance integer not null default 0
+	initialBalance integer not null default 0,
+	currency text not null default 'EUR'
 );
 
 create table transfer (
@@ -27,6 +28,7 @@ create table transfer (
 	toId integer not null,	
 	reference text not null,
 	amount integer not null,
+	currency text not null default 'EUR'
 	note text not null default '',
 	checked bool not null default 0,
 	internal bool not null default 0
