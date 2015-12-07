@@ -4,11 +4,11 @@
 #include "ui/MainWindow.h"
 
 AssertAction::AssertAction customAssertHandler(const char* file,
-									int line,
-									const char* function,
-									const char* expression,
-									int level,
-									const char* message) {
+											   int line,
+											   const char* function,
+											   const char* expression,
+											   int level,
+											   const char* message) {
 	if (level < 128) {
 		return AssertAction::AssertAction::None;
 	}
@@ -26,7 +26,7 @@ AssertAction::AssertAction customAssertHandler(const char* file,
 	return AssertAction::AssertAction::Abort;
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
 	QApplication::setOrganizationName("Moneyphant");
 	QApplication::setOrganizationDomain("de.mr.moneyphant");
 	QApplication::setApplicationName("Moneyphant");

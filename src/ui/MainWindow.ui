@@ -199,6 +199,9 @@
    <property name="text">
     <string>Delete Transfers</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Backspace</string>
+   </property>
   </action>
   <action name="actionExpenses">
    <property name="text">

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>947</width>
-    <height>658</height>
+    <height>662</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -32,7 +32,7 @@
        <widget class="QDateEdit" name="filterEndDate">
         <property name="dateTime">
          <datetime>
-          <hour>0</hour>
+          <hour>5</hour>
           <minute>0</minute>
           <second>0</second>
           <year>2038</year>
@@ -42,6 +42,9 @@
         </property>
         <property name="displayFormat">
          <string>d. MMMM yyyy</string>
+        </property>
+        <property name="timeSpec">
+         <enum>Qt::UTC</enum>
         </property>
         <property name="date">
          <date>
@@ -75,7 +78,7 @@
         </property>
         <property name="dateTime">
          <datetime>
-          <hour>0</hour>
+          <hour>5</hour>
           <minute>0</minute>
           <second>0</second>
           <year>1970</year>
@@ -85,6 +88,9 @@
         </property>
         <property name="displayFormat">
          <string>d. MMMM yyyy</string>
+        </property>
+        <property name="timeSpec">
+         <enum>Qt::UTC</enum>
         </property>
        </widget>
       </item>

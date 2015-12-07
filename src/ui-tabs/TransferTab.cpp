@@ -41,8 +41,8 @@ void TransferTab::init(Db db, std::shared_ptr<TransferModel> transferModel) {
 	connect(ui->filterText, SIGNAL(textChanged(const QString&)), proxyModel, SLOT(setFilterText(const QString&)));
 
 	// set initial values
-	ui->filterStartDate->setDateTime(QDateTime::fromMSecsSinceEpoch(0));
-	ui->filterEndDate->setDateTime(QDateTime::fromMSecsSinceEpoch(4398046511104l));
+	ui->filterStartDate->setDateTime(QDateTime::fromMSecsSinceEpoch(0, Qt::UTC));
+	ui->filterEndDate->setDateTime(QDateTime::fromMSecsSinceEpoch(4398046511104l, Qt::UTC));
 	ui->filterText->setText("unchecked");
 
 	// stats
@@ -55,7 +55,7 @@ void TransferTab::init(Db db, std::shared_ptr<TransferModel> transferModel) {
 	ui->transfers->verticalHeader()->hide();
 	ui->transfers->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
-	ui->transfers->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed); // Date
+	// ui->transfers->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed); // Date
 	ui->transfers->horizontalHeader()->setSectionResizeMode(4, QHeaderView::Fixed); // Amount
 	ui->transfers->horizontalHeader()->setSectionResizeMode(5, QHeaderView::Fixed); // Checked
 	ui->transfers->horizontalHeader()->resizeSection(5, 60);
@@ -106,8 +106,8 @@ void TransferTab::clickedFilterMonthLink() {
 
 	QDateTime start, end;
 	if (text == "all") {
-		start = QDateTime::fromMSecsSinceEpoch(0);
-		end = QDateTime::fromMSecsSinceEpoch(4398046511104);// 2^42
+		start = QDateTime::fromMSecsSinceEpoch(0, Qt::UTC);
+		end = QDateTime::fromMSecsSinceEpoch(4398046511104, Qt::UTC);// 2^42
 	} else if (text.length() == 4) {
 		// year range
 		int year = text.toInt();
@@ -139,8 +139,8 @@ void TransferTab::createFilterMonthLinks() {
 	db::Transfer tr;
 	auto startEnd = (*db)(select(min(tr.date), max(tr.date)).from(tr).where(true));
 	assert_error(!startEnd.empty());
-	auto start = QDateTime::fromMSecsSinceEpoch(startEnd.front().min).date();
-	auto end = QDateTime::fromMSecsSinceEpoch(startEnd.front().max).date();
+	auto start = QDateTime::fromMSecsSinceEpoch(startEnd.front().min, Qt::UTC).date();
+	auto end = QDateTime::fromMSecsSinceEpoch(startEnd.front().max, Qt::UTC).date();
 	assert_error(start <= end, "start: %ld, end: %ld", (long)startEnd.front().min, (long)startEnd.front().max);
 	assert_error(start.year() >= 1970, "start: %ld, start year: %d", (long)startEnd.front().min, start.year());
 	assert_error(end.year() < 2070, "end: %ld, end year: %d", (long)startEnd.front().min, end.year());

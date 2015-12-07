@@ -16,6 +16,7 @@ private:
 
 	void beforeEvolutions(int build);
 	void afterEvolatuons(int build);
+	void dbMaintenance();
 };
 
 #endif // UPDATER_H

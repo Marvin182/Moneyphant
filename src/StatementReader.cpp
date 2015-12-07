@@ -104,10 +104,12 @@ void StatementReader::importStatementFile(cqstring filename, const StatementFile
 			// "id", "date", "amount", "reference", "senderOwnerName", "senderIban", "senderBic", "senderId", "receiverOwnerName", "receiverIban", "receiverBic", "receiverId", "note", "checked", "internal"
 
 			auto date = QDateTime::fromString(val("date"), format.dateFormat);
+			date.setTimeSpec(Qt::UTC);
 			if (date.date().year() < 1970) date = date.addYears(100); // QDateTime::fromString will read 06.07.15 as 06.07.1915
 			if (!date.isValid() || date.date().year() < 1970 || date.date().year() > 2070) {
-				throw std::runtime_error(QString("invalid transfer date detected (%s), year must be between 1970 and 2070, possibly wrong date format for %s").arg(date.toString("dd.MM.yyyy")).arg(val("date")).toStdString());
+				throw std::runtime_error(QString("invalid transfer date detected (%1), year must be between 1970 and 2070, possibly wrong date format for %2").arg(date.toString("dd.MM.yyyy")).arg(val("date")).toStdString());
 			}
+			assert_warning(date.toString(format.dateFormat) == val("date"));
 
 			auto from = hasVal("senderId") ? Transfer::Acc(val("senderId").toInt(), "") : makeAccount(val("senderOwnerName"), val("senderIban"), val("senderBic"));
 			auto to = hasVal("receiverId") ? Transfer::Acc(val("receiverId").toInt(), "") : makeAccount(val("receiverOwnerName"), val("receiverIban"), val("receiverBic"));
@@ -215,7 +217,7 @@ int StatementReader::find(Account& account) {
 	db::Account acc;
 	auto accsSql = dynamic_select(*(db.get()), acc.id, acc.isOwn).from(acc).dynamic_where();
 
-	assert_error(!account.iban.isEmpty() || !account.bic.isEmpty() || !account.accountNumber.isEmpty() || !account.bankCode.isEmpty());
+	assert_error(!account.iban.isEmpty() || !account.bic.isEmpty() || !account.accountNumber.isEmpty() || !account.bankCode.isEmpty(), "weird account: %s", cstr(account));
 
 	if (!account.iban.isEmpty() || account.accountNumber.isEmpty()) {
 		accsSql.where.add(acc.iban == str(account.iban));
@@ -245,7 +247,9 @@ int StatementReader::find(Account& account) {
 
 int StatementReader::find(Transfer& transfer) {
 	db::Transfer tr;
-	auto trs = (*db)(select(tr.id).from(tr).where(tr.date == transfer.dateMs() and
+	// auto trs = (*db)(select(tr.id).from(tr).where(tr.date == transfer.dateMs() and
+	auto trs = (*db)(select(tr.id).from(tr).where(tr.date >= transfer.dateMs() - 5 * 86400 * 1000 and
+											tr.date <= transfer.dateMs() + 5 * 86400 * 1000 and
 											tr.fromId == transfer.from.id and
 											tr.toId == transfer.to.id and
 											tr.reference == str(transfer.reference) and // TODO change to not empty and reference same or amount same

@@ -7,7 +7,7 @@
 namespace util {
 
 std::string internalTransferHash(int accountId, int amount, qint64 dt) {
-	auto date = QDateTime::fromMSecsSinceEpoch(dt).date();
+	auto date = QDateTime::fromMSecsSinceEpoch(dt, Qt::UTC).date();
 	int year1 = date.addDays(-14).year();
 	int month1 = date.addDays(-14).month();
 	int year2 = date.addDays(+14).year();

@@ -39,10 +39,10 @@ QVariant TransferModel::data(const QModelIndex& index, int role) const {
 		case Qt::ToolTipRole:
 		case Qt::EditRole:
 			switch (index.column()) {
-				case 0: return t.dateStr();
+				case 0: return QString("%1 %2").arg(t.id).arg(t.dateStr());
 				case 1: return t.from.name;
 				case 2: return t.to.name;
-				case 3: return t.reference;
+				case 3: return t.reference.isEmpty() ? t.note : t.reference;
 				case 4: return util::formatCurrency(t.amount);
 			}
 			break;
@@ -75,7 +75,7 @@ QVariant TransferModel::headerData(int section, Qt::Orientation orientation, int
 			case 0: return tr("Date");
 			case 1: return tr("From");
 			case 2: return tr("To");
-			case 3: return tr("Reference");
+			case 3: return tr("Reference / Note");
 			case 4: return tr("Amount");
 			case 5: return tr("Checked");
 			case 6: return tr("Internal");
@@ -221,7 +221,7 @@ void TransferModel::invalidateCache() {
 		id2Row[t.id] = row++;
 
 		cachedTransfers.push_back({(int)t.id,
-								QDateTime::fromMSecsSinceEpoch(t.date),
+								QDateTime::fromMSecsSinceEpoch(t.date, Qt::UTC),
 								Transfer::Acc(t.fromId, qstr(t.fromName), t.fromIsOwn),
 								Transfer::Acc(t.toId, qstr(t.toName), t.toIsOwn),
 								qstr(t.reference), (int)t.amount, qstr(t.note), t.checked, t.internal

@@ -16,14 +16,16 @@ Updater::Updater(Db db, QSettings& settings) :
 
 void Updater::run() {
 	int newBuild = appVersion().build;
-	int build = settings.value("update/build", newBuild).toInt();
+	int build = settings.value("updater/db_build_level", newBuild).toInt();
 	assert_error(build <= newBuild, "build from settings: %d, new build: %d", build, newBuild);
 
 	beforeEvolutions(build);
 	Evolutions(db).run();
 	afterEvolatuons(build);
 
-	settings.setValue("updater/version", newBuild);
+	dbMaintenance();
+
+	settings.setValue("updater/db_build_level", newBuild);
 }
 
 void Updater::beforeEvolutions(int build) {
@@ -71,4 +73,53 @@ void Updater::afterEvolatuons(int build) {
 		(*db)(sqlpp::update(tr).set(tr.internal = true).where(tr.fromId.in(ownIds) and tr.toId.in(ownIds)));
 		StatementReader::recalculateBalances(db);
 	}
+
+	if (build < 80) {
+		qLog() << "DB update for build 80: translate transfer dates to UTC";
+		std::vector<std::pair<long, long>> newDates;
+		for (const auto& t : (*db)(select(tr.id, tr.date, tr.fromId).from(tr).where(true))) {
+			auto dt = QDateTime::fromMSecsSinceEpoch(t.date, Qt::UTC);
+			auto dtUtc = QDateTime(dt.date(), QTime(0, 0, 0), Qt::UTC);
+			newDates.push_back({t.id, dtUtc.toMSecsSinceEpoch()});
+		}
+
+		for (const auto& p : newDates) {
+			(*db)(update(tr).set(tr.date = p.second).where(tr.id == p.first));
+		}
+	}
+
+	std::vector<int> minus_a_day = {};
+	std::vector<int> plus_a_day = {};
+
+
+	for (auto id : minus_a_day) {
+		(*db)(update(tr).set(tr.date = tr.date - 86400000).where(tr.id == id));
+	}
+
+	for (auto id : plus_a_day) {
+		(*db)(update(tr).set(tr.date = tr.date + 86400000).where(tr.id == id));
+	}
+
+}
+
+void Updater::dbMaintenance() {
+	// db::Account acc;
+	// db::Transfer tr;
+	// db::Tag tg;
+	// db::AccountTag accTg;
+	// db::TransferTag trTg;
+
+	// for (const auto& a : (*db)(select(acc.id, acc.name, count(acc.id)).from(acc.join(tr).on(tr.fromId == acc.id or tr.toId == acc.id)).group_by(acc.id).where(true).having(count(acc.id) == 0))) {
+	// 	qLog() << QString("DB Maintenance: Delete Account(%1, %2), linked to %3 transfers").arg(a.id).arg(qstr(a.name)).arg(a.count);
+	// }
+
+	
+	// db::Tag tg;
+	// db::TransferTag trTg;
+	// db::AccountTag accTg;
+
+	// qLog() << "here";
+	// for (const auto& t : (*db)(select(tg.id, tg.name, count(tg.id)).from(tg.join(trTg).on(trTg.tagId == tg.id)).group_by(tg.id).where(true))) {
+	// 	qLog().space() << t.id << qstr(t.name) << t.count;
+	// }
 }
