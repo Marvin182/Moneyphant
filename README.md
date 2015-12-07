@@ -7,36 +7,52 @@ The program doesn't need an internet connection and will not send any data. All 
 
 Roadmap for version 0.2
 -----------------------
-- [ ] improved tags
-	- [ ] auto completion in various places
-	- [ ] list of tags
-	- [ ] do we need hierarchies?
-- [ ] binaries for Windows
-- [ ] expense overview with bar charts
-	- [x] basic chart
-	- [ ] option to view quarters instead of month
-	- [ ] show value for each bar
-	- [ ] make zooming/ scrolling more user friendly
-- [ ] db maintenance
+- [ ] Improved tags
+	- [ ] Auto completion in various places
+	- [ ] List of tags (incl. number of associated transfers)
+	- [ ] Drop account tags
+- [ ] Increase user base
+	- [ ] Binaries for Windows
+	- [ ] Upload screenshots
+	- [ ] German translation
+- [ ] Expense overview with bar charts
+	- [x] Basic chart
+	- [ ] Option to view quarters instead of month
+	- [ ] Make zooming and scrolling more user friendly
+	- [ ] Show value on bar
+- [ ] Database maintenance
 	- [ ] delete unused tags
-	- [ ] accounts without transfers
 - [ ] IBAN calculation
-- [ ] upload screenshots
-- [ ] complete menu
-- [ ] Export export (using filtering)
-	- [ ] transfers
-	- [ ] accounts
-	- [ ] custom format
-- [ ] German translation
+- [ ] Special Account for total Balance of User
+- [ ] Auto tagging based on filters
+- [ ] Performance improvements
+	- [ ] only scan a statement file if it could have changed (e.g. checked date modified, file size, hash)
 
 Feature Ideas
 -------------
-- Tutorial
-- Budgets for tags
-- Support for multiple databases switching
-- Editing and splitting of transfers
-- categories for accounts
-- auto tagging based on filters (replacing account tags)
+- Usability
+	- Add tooltips
+	- Complete menu
+- Documentation
+	- Base steps and ideas
+	- Shortcuts
+	- Transfer Filtering
+	- Better license
+- Export (using filtering)
+	- transfers (all/filtered/selected), accounts
+	- custom format
+	- automated (as backup)
+- Transfers
+	- Remember source of transfer
+	- Edit transfer
+	- Add transfers manually (sync to special file)
+	- Find unmatched internal transfers
+- Accounts
+	- Categories (e.g.: own, bank, friends)
+	- Types (e.g. bank account, credit card, cash, PayPal)
+	- Find duplicates
+- Switching database
+Add no-military-use clause to license
 
 Build
 -----
@@ -44,7 +60,7 @@ Build
 - Qt 5.5
 - [sqlpp11](https://github.com/rbock/sqlpp11) 0.34
 - [sqlpp11-connector-sqlite](https://github.com/rbock/sqlpp11-connector-sqlite3) 0.15
-- [mr](https://github.com/Marvin182/mr) v0.0.3
+- [mr](https://github.com/Marvin182/mr) 0.0.3
 
 ### Steps
 TODO
