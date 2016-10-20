@@ -1,23 +1,34 @@
 #include "TransferProxyModel.h"
 
 #include <mr/common>
+#include <date.h>
 #include "TransferModel.h"
 #include "../util.h"
 
 TransferProxyModel::TransferProxyModel(Db db, QObject* parent) :
 	QSortFilterProxyModel(parent),
 	db(db),
-	startDate(QDate(2014, 1, 1)),
-	endDate(QDate(2014, 12, 31))
+	startDate(date::year{2010} / 1 / 1),
+	endDate(date::year{2020} / 12 / 31)
 {}
 
-void TransferProxyModel::setStartDate(const QDateTime& startDate) {
-	this->startDate = startDate;
+void TransferProxyModel::setStartDate(const QDate& d) {
+	this->startDate = date::year{d.year()}/d.month()/d.day();
 	resetStatsAndInvalidateFilter();
 }
 
-void TransferProxyModel::setEndDate(const QDateTime& endDate) {
-	this->endDate = endDate;
+void TransferProxyModel::setStartDate(const date::year_month_day& d) {
+	this->startDate = d;
+	resetStatsAndInvalidateFilter();
+}
+
+void TransferProxyModel::setEndDate(const QDate& d) {
+	this->endDate = date::year{d.year()}/d.month()/d.day();
+	resetStatsAndInvalidateFilter();
+}
+
+void TransferProxyModel::setEndDate(const date::year_month_day& d) {
+	this->endDate = d;
 	resetStatsAndInvalidateFilter();
 }
 
@@ -106,9 +117,9 @@ bool TransferProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sour
 	// TODO: cache tag stuff until next user change
 
 	bool accepted = true;
-	if (startDate.isValid() && transfer.date < startDate) {
+	if (startDate.ok() && transfer.ymd < startDate) {
 		accepted = false;
-	} else if (endDate.isValid() && transfer.date > endDate) {
+	} else if (endDate.ok() && transfer.ymd > endDate) {
 		accepted = false;
 	} else if (!txtFrom.isEmpty() && !contains(transfer.from.name, txtFrom)) {
 		accepted = false;
@@ -116,7 +127,7 @@ bool TransferProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sour
 		accepted = false;
 	} else if (!txtRef.isEmpty() && !contains(transfer.reference, txtRef)) {
 		accepted = false;
-	} else if (!txtAmount.isEmpty() && !util::formatCurrency(transfer.amount).contains(txtAmount)) {
+	} else if (!txtAmount.isEmpty() && !QString(transfer.value).contains(txtAmount)) {
 		accepted = false;
 	} else if (!txtNote.isEmpty() && !contains(transfer.note, txtNote)) {
 		accepted = false;
@@ -142,7 +153,7 @@ bool TransferProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex& sour
 				break;
 			}
 		}
-	} else if (!txtRest.isEmpty() && !fuzzyMatch(transfer.from.name + transfer.to.name + util::formatCurrency(transfer.amount) + transfer.reference, txtRest)) {
+	} else if (!txtRest.isEmpty() && !fuzzyMatch(transfer.from.name + transfer.to.name + QString(transfer.value) + transfer.reference, txtRest)) {
 		accepted = false;
 	}
 
@@ -161,11 +172,11 @@ bool TransferProxyModel::lessThan(const QModelIndex& left, const QModelIndex& ri
 	const auto& trRight = get(right.row());
 
 	switch (left.column()) {
-		case 0: return trLeft.date < trRight.date;
+		case 0: return trLeft.ymd < trRight.ymd;
 		case 1: return trLeft.from.name < trRight.from.name;
 		case 2: return trLeft.to.name < trRight.to.name;
 		case 3: return trLeft.reference < trRight.reference;
-		case 4: return trLeft.amount < trRight.amount;
+		case 4: return trLeft.value < trRight.value;
 		case 5: return trLeft.checked;
 		default: assert_error(false, "invalid column %d for left index (row: %d)", left.column(), left.row());
 	}

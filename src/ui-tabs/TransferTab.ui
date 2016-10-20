@@ -32,7 +32,7 @@
        <widget class="QDateEdit" name="filterEndDate">
         <property name="dateTime">
          <datetime>
-          <hour>5</hour>
+          <hour>0</hour>
           <minute>0</minute>
           <second>0</second>
           <year>2038</year>
@@ -41,7 +41,7 @@
          </datetime>
         </property>
         <property name="displayFormat">
-         <string>d. MMMM yyyy</string>
+         <string>dd. MM yyyy</string>
         </property>
         <property name="timeSpec">
          <enum>Qt::UTC</enum>
@@ -78,7 +78,7 @@
         </property>
         <property name="dateTime">
          <datetime>
-          <hour>5</hour>
+          <hour>0</hour>
           <minute>0</minute>
           <second>0</second>
           <year>1970</year>
@@ -87,7 +87,7 @@
          </datetime>
         </property>
         <property name="displayFormat">
-         <string>d. MMMM yyyy</string>
+         <string>dd. MM yyyy</string>
         </property>
         <property name="timeSpec">
          <enum>Qt::UTC</enum>

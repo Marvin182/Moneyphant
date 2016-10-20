@@ -4,6 +4,7 @@
 #include <unordered_set>
 #include <QDateTime>
 #include <QSortFilterProxyModel>
+#include <date.h>
 #include "../sql.h"
 #include "Transfer.h"
 
@@ -14,8 +15,10 @@ public:
 	TransferProxyModel(Db db, QObject* parent = 0);
 
 public slots:
-	void setStartDate(const QDateTime& startDate);
-	void setEndDate(const QDateTime& endDate);
+	void setStartDate(const QDate& startDate);
+	void setStartDate(const date::year_month_day& startDate);
+	void setEndDate(const QDate& endDate);
+	void setEndDate(const date::year_month_day& endDate);
 	void setFilterText(const QString& filterText);
 	void resetStatsAndInvalidateFilter();
 
@@ -27,8 +30,8 @@ signals:
 protected:
 	Db db;
 
-	QDateTime startDate;
-	QDateTime endDate;
+	date::year_month_day startDate;
+	date::year_month_day endDate;
 
 	QString txtFrom;
 	QString txtTo;

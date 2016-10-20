@@ -131,9 +131,9 @@ std::pair<std::vector<Evolution>, std::vector<Evolution>> Evolutions::upAndDowns
 			auto ups = qstr(result.front().ups);
 			auto upsExpected = evolution.ups.join('\n');
 			if (ups == upsExpected) {
-				if (result.front().upTs == 0) {
+				if ((long)result.front().upTs == 0) {
 					upEvos.push_back(evolution);
-					if (result.front().downTs != 0) {
+					if ((long)result.front().downTs != 0) {
 						downEvos.push_back(Evolution(result.front().id, qstr(result.front().ups), qstr(result.front().downs)));
 					}
 				}

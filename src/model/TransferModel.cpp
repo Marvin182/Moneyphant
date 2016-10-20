@@ -3,7 +3,9 @@
 #include <QFile>
 #include <QColor>
 #include <mr/common>
+#include <date.h>
 #include "../util.h"
+#include "Currency.h"
 
 constexpr int COLUMNS_COUNT = 7;
 
@@ -39,11 +41,11 @@ QVariant TransferModel::data(const QModelIndex& index, int role) const {
 		case Qt::ToolTipRole:
 		case Qt::EditRole:
 			switch (index.column()) {
-				case 0: return QString("%1 %2").arg(t.id).arg(t.dateStr());
+				case 0: return t.dateStr();
 				case 1: return t.from.name;
 				case 2: return t.to.name;
 				case 3: return t.reference.isEmpty() ? t.note : t.reference;
-				case 4: return util::formatCurrency(t.amount);
+				case 4: return QString(t.value);
 			}
 			break;
 		case Qt::CheckStateRole:
@@ -54,7 +56,7 @@ QVariant TransferModel::data(const QModelIndex& index, int role) const {
 			break;
 		case Qt::ForegroundRole:
 			switch (index.column()) {
-				case 4: return t.amount >= 0 ? QColor(Qt::green) : QColor(Qt::red);
+				case 4: return t.value.amount >= 0 ? QColor(Qt::green) : QColor(Qt::red);
 			}
 			break;
 		case Qt::UserRole + 1:
@@ -197,7 +199,7 @@ void TransferModel::exportTransfers(cqstring path, const std::vector<int>& trans
 	}
 	for (int id : transferIds) {
 		const auto& t = getById(id);
-		file.write(QString("%1;%2;%3;%4;%5\n").arg(t.dateStr()).arg(t.from.name).arg(t.to.name).arg(t.reference).arg(t.amount / 100.0, 2, 'f', 2).toUtf8());
+		file.write(QString("%1;%2;%3;%4;%5\n").arg(t.dateStr()).arg(t.from.name).arg(t.to.name).arg(t.reference).arg(t.value.amount / 100.0, 2, 'f', 2).toUtf8());
 	}	
 }
 
@@ -219,12 +221,12 @@ void TransferModel::invalidateCache() {
 								.from(tr, accFrom, accTo)
 								.where(tr.fromId == accFrom.id and tr.toId == accTo.id))) {
 		id2Row[t.id] = row++;
-
+		auto cur = Currency::get(t.currency);
 		cachedTransfers.push_back({(int)t.id,
-								QDateTime::fromMSecsSinceEpoch(t.date, Qt::UTC),
+								date::year_month_day{t.ymd},
 								Transfer::Acc(t.fromId, qstr(t.fromName), t.fromIsOwn),
 								Transfer::Acc(t.toId, qstr(t.toName), t.toIsOwn),
-								qstr(t.reference), (int)t.amount, qstr(t.note), t.checked, t.internal
+								qstr(t.reference), {t.amount.value(), cur}, qstr(t.note), t.checked, t.internal
 		});
 	}
 
@@ -254,7 +256,7 @@ void TransferModel::createBackup(const QString& path) {
 		assert_error(false, "Could not open backup file '%s'", cstr(path));
 	}
 	for (const auto& t : cachedTransfers) {
-		file.write((QString("%1;%2;%3;%4;%5;%6;%7;%8").arg(t.id).arg(t.dateMs()).arg(t.from.id).arg(t.from.name).arg(t.to.id).arg(t.to.name).arg(t.reference).arg(t.amount) + QString(";%1;%2;%3\n").arg(t.note).arg(t.checked ? "1" : "0").arg(t.internal ? "1" : "0")).toLocal8Bit());
+		file.write((QString("%1;%2;%3;%4;%5;%6;%7;%8").arg(t.id).arg(t.dateStr("yyyy-MM-dd")).arg(t.from.id).arg(t.from.name).arg(t.to.id).arg(t.to.name).arg(t.reference).arg(t.value.amount) + QString(";%1;%2;%3\n").arg(t.note).arg(t.checked ? "1" : "0").arg(t.internal ? "1" : "0")).toLocal8Bit());
 	}
 }
 
@@ -282,11 +284,12 @@ Transfer& TransferModel::_getById(int id) {
 
 void TransferModel::save(const Transfer& t) {
 	db::Transfer tr;
-	(*db)(update(tr).set(tr.date = t.dateMs(),
+	(*db)(update(tr).set(tr.ymd = t.dayPoint(),
 							tr.fromId = t.from.id,
 							tr.toId = t.to.id,
 							tr.reference = str(t.reference),
-							tr.amount = t.amount,
+							tr.amount = t.value.amount,
+							tr.currency = t.value.currency->isoCode,
 							tr.note = str(t.note),
 							tr.checked = t.checked,
 							tr.internal = t.internal

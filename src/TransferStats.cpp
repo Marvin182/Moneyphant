@@ -34,7 +34,7 @@ void TransferStats::add(const Transfer& transfer, bool isInternal) {
 
 	auto& stat = statValues[transfer.id];
 	stat.internal = isInternal;
-	stat.amount = transfer.amount;
+	stat.amount = transfer.value.amount; // TODO: currency?
 	add(stat);
 }
 

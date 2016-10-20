@@ -1,7 +1,7 @@
 #include "TransferTab.h"
 #include "ui_transfertab.h"
 
-#include <QDateTime>
+#include <QDate>
 #include <QPushButton>
 #include <QShortcut>
 #include "../util.h"
@@ -36,8 +36,8 @@ void TransferTab::init(Db db, std::shared_ptr<TransferModel> transferModel) {
 
 	// filter edits
 	createFilterMonthLinks();
-	connect(ui->filterStartDate, SIGNAL(dateTimeChanged(const QDateTime&)), proxyModel, SLOT(setStartDate(const QDateTime&)));
-	connect(ui->filterEndDate, SIGNAL(dateTimeChanged(const QDateTime&)), proxyModel, SLOT(setEndDate(const QDateTime&)));
+	connect(ui->filterStartDate, &QDateEdit::dateChanged, [&](const QDate& d) { proxyModel->setStartDate(d); });
+	connect(ui->filterEndDate, &QDateEdit::dateChanged, [&](const QDate& d) { proxyModel->setEndDate(d); });
 	connect(ui->filterText, SIGNAL(textChanged(const QString&)), proxyModel, SLOT(setFilterText(const QString&)));
 
 	// set initial values
@@ -104,31 +104,37 @@ void TransferTab::clickedFilterMonthLink() {
 	auto senderButton = (QPushButton*)sender();
 	auto text = senderButton->text();
 
-	QDateTime start, end;
+	using namespace date;
+	auto start = 1970_y/1/1;
+	auto end = 2038_y/2/7;
 	if (text == "all") {
-		start = QDateTime::fromMSecsSinceEpoch(0, Qt::UTC);
-		end = QDateTime::fromMSecsSinceEpoch(4398046511104, Qt::UTC);// 2^42
+		db::Transfer tr;
+		auto startEnd = (*db)(select(min(tr.ymd), max(tr.ymd)).from(tr).where(true));
+		assert_error(!startEnd.empty());
+		start = startEnd.front().min.value();
+		end = startEnd.front().max.value();
 	} else if (text.length() == 4) {
 		// year range
-		int year = text.toInt();
-		start = QDateTime(QDate(year, 1, 1));
-		end = QDateTime(QDate(year + 1, 1, 1)).addSecs(-1);
+		int y = text.toInt();
+		start = year(y)/1/1;
+		end = year(y)/12/last;
 	} else if (text.length() == 7) {
 		// quarter range
-		int year = text.left(4).toInt();
-		int quarter = text.right(1).toInt();
-		start = QDateTime(QDate(year, 3 * quarter - 2, 1));
-		end = start.addMonths(3).addSecs(-1);
+		int y = text.left(4).toInt();
+		int q = text.right(1).toInt();
+		start = year(y)/(3*q-2)/1;
+		end = year(y)/(3*q)/last;
 	} else {
 		// month range
-		start = QDateTime::fromString(senderButton->text(), "MMM yy");
-		if (start.date().year() < 1970) {
-			start = start.addYears(100);
-		}
-		end = start.addMonths(1).addSecs(-1);
+		auto d = QDate::fromString(text, "MMM-yy");
+		int y = d.year() < 1970 ? d.year() + 100 : d.year();
+		start = year(y)/d.month()/1;
+		end = year(y)/d.month()/last;
 	}
-	ui->filterStartDate->setDateTime(start);
-	ui->filterEndDate->setDateTime(end);
+	assert_warning(start.ok());
+	assert_warning(end.ok());
+	ui->filterStartDate->setDate(util::toQDate(start));
+	ui->filterEndDate->setDate(util::toQDate(end));
 }
 
 void TransferTab::createFilterMonthLinks() {
@@ -137,13 +143,14 @@ void TransferTab::createFilterMonthLinks() {
 	}
 
 	db::Transfer tr;
-	auto startEnd = (*db)(select(min(tr.date), max(tr.date)).from(tr).where(true));
+	auto startEnd = (*db)(select(min(tr.ymd), max(tr.ymd)).from(tr).where(true));
 	assert_error(!startEnd.empty());
-	auto start = QDateTime::fromMSecsSinceEpoch(startEnd.front().min, Qt::UTC).date();
-	auto end = QDateTime::fromMSecsSinceEpoch(startEnd.front().max, Qt::UTC).date();
-	assert_error(start <= end, "start: %ld, end: %ld", (long)startEnd.front().min, (long)startEnd.front().max);
-	assert_error(start.year() >= 1970, "start: %ld, start year: %d", (long)startEnd.front().min, start.year());
-	assert_error(end.year() < 2070, "end: %ld, end year: %d", (long)startEnd.front().min, end.year());
+	date::year_month_day start = startEnd.front().min.value();
+	date::year_month_day end = startEnd.front().max.value();
+	// TODO
+	// assert_error(start <= end, "start: %ld, end: %ld", (long)startEnd.front().min, (long)startEnd.front().max);
+	// assert_error(start.year() >= 1970, "start: %ld, start year: %d", (long)startEnd.front().min, start.year());
+	// assert_error(end.year() < 2070, "end: %ld, end year: %d", (long)startEnd.front().min, end.year());
 
 	auto addButton = [&](const QString& text) {
 		assert_error(!text.isEmpty());
@@ -155,35 +162,21 @@ void TransferTab::createFilterMonthLinks() {
 	addButton("all");
 
 	// all years
-	for (int y = start.year(); y <= end.year(); y++) {
-		addButton(QString::number(y));
+	for (auto y = start.year(); y <= end.year(); y++) {
+		addButton(QString::number(static_cast<int>(y)));
 	}
 
 	// last 5 quarters
-	start = end.addMonths(-13);
-	while (start <= end) {
-		if (start.month() <= 3) {
-			addButton(start.toString("yyyy Q1"));
-		} else if (start.month() <= 6) {
-			addButton(start.toString("yyyy Q2"));
-		} else if (start.month() <= 9) {
-			addButton(start.toString("yyyy Q3"));
-		} else {
-			addButton(start.toString("yyyy Q4"));
-		}
-		start = start.addMonths(3);
+	for (int i = 4; i >= 0; i--) {
+		auto ymd = end - date::months{3 * i};
+		int quarter = (static_cast<unsigned>(ymd.month()) + 2) / 3;
+		addButton(QString("%1 Q%2").arg(static_cast<int>(ymd.year())).arg(quarter));
 	}
 
-	// last 3 months
-	start = end.addMonths(-2);
-	while (start <= end) {
-		addButton(start.toString("MMM yy"));
-		start = start.addMonths(1);
-	}
-
-	// last month if needed
-	if (start.month() == end.month() && start.day() > end.day()) {
-		addButton(start.toString("MMM yy"));
+	// last 4 months
+	for (int i = 3; i >= 0; i--) {
+		auto ymd = end - date::months{i};
+		addButton(util::toQDate(ymd).toString("MMM-yy"));
 	}
 }
 

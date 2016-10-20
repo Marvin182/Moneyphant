@@ -23,12 +23,14 @@ create table account (
 
 create table transfer (
 	id integer primary key autoincrement,
-	date integer not null,
+	date integer not null default 0,
+	ymd date not null default '1970-01-01',
 	fromId integer not null,
 	toId integer not null,	
 	reference text not null,
 	amount integer not null,
 	currency text not null default 'EUR'
+	note text not null default '',
 	note text not null default '',
 	checked bool not null default 0,
 	internal bool not null default 0

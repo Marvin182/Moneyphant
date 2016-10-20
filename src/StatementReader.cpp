@@ -5,10 +5,12 @@
 #include <QDir>
 #include <QtDebug>
 #include <QStringList>
+#include <date.h>
 #include "sql.h"
 #include "util.h"
 #include "TagHelper.h"
 #include "model/AccountModel.h"
+#include "model/Currency.h"
 
 StatementReader::StatementReader(Db db) :
 	db(db),
@@ -101,32 +103,29 @@ void StatementReader::importStatementFile(cqstring filename, const StatementFile
 			auto val = [&](cqstring key) { return fields[format.columnPositions.value(key, defaultPos)]; };
 
 			// valid keys (also see ui/ColumnsChooser.cpp):
-			// "id", "date", "amount", "reference", "senderOwnerName", "senderIban", "senderBic", "senderId", "receiverOwnerName", "receiverIban", "receiverBic", "receiverId", "note", "checked", "internal"
+			// "id", "date", "currency", "amount", "reference", "senderOwnerName", "senderIban", "senderBic", "senderId", "receiverOwnerName", "receiverIban", "receiverBic", "receiverId", "note", "checked", "internal"
 
-			auto date = QDateTime::fromString(val("date"), format.dateFormat);
-			date.setTimeSpec(Qt::UTC);
-			if (date.date().year() < 1970) date = date.addYears(100); // QDateTime::fromString will read 06.07.15 as 06.07.1915
-			if (!date.isValid() || date.date().year() < 1970 || date.date().year() > 2070) {
-				throw std::runtime_error(QString("invalid transfer date detected (%1), year must be between 1970 and 2070, possibly wrong date format for %2").arg(date.toString("dd.MM.yyyy")).arg(val("date")).toStdString());
-			}
-			assert_warning(date.toString(format.dateFormat) == val("date"));
+			QDate d = QDate::fromString(val("date"), format.dateFormat);
+			assert_warning(d.toString(format.dateFormat) == val("date"));
+			auto ymd = date::year(d.year()) / d.month() / d.day();
 
 			auto from = hasVal("senderId") ? Transfer::Acc(val("senderId").toInt(), "") : makeAccount(val("senderOwnerName"), val("senderIban"), val("senderBic"));
 			auto to = hasVal("receiverId") ? Transfer::Acc(val("receiverId").toInt(), "") : makeAccount(val("receiverOwnerName"), val("receiverIban"), val("receiverBic"));
 		
-			int amount = util::parseCurrency(val("amount"));
+			int amount = util::parseAmount(val("amount"));
 			if (format.invertAmount) amount = -amount;
+			auto cur = hasVal("currency") ? Currency::get(cstr(val("currency"))) : Currency::getDefault();
 			
 			assert_error(from.id >= 0 && to.id >= 0, "from %d, to: %d", from.id, to.id);
 			assert_debug(from.id != to.id, "accounts are not allowed to match (lineNumber: %d, from: %s, to: %s)", lineNumber, cstr(from), cstr(to));
 
 			Transfer t;
 			if (hasVal("id")) {
-				t = Transfer(val("id").toInt(), date, from, to, val("reference"), amount, val("reference"), val("checked") == "1", val("internal") == "1");
+				t = Transfer(val("id").toInt(), ymd, from, to, val("reference"), CurrencyWithAmount(amount, cur), val("reference"), val("checked") == "1", val("internal") == "1");
 				t.note = val("note");
 				insert(t);
 			} else {
-				t = Transfer(date, from, to, val("reference"), amount);
+				t = Transfer(ymd, from, to, val("reference"), CurrencyWithAmount(amount, cur));
 				t.note = val("note");
 				t.checked = val("checked") == "1";
 				t.internal = hasVal("internal") ? val("internal") == "1" : isInternalTransfer(from.id, to.id);
@@ -178,24 +177,24 @@ void StatementReader::recalculateBalances(Db db) {
 	std::unordered_multiset<std::string> seenTransfersTo;
 	
 	QHash<int, int> balances;
-	for (const auto& t : (*db)(select(tr.date, tr.fromId, tr.toId, tr.amount, tr.internal).from(tr).where(true))) {
+	for (const auto& t : (*db)(select(tr.ymd, tr.fromId, tr.toId, tr.amount, tr.internal).from(tr).where(true))) {
 		bool addFrom = true;
 		bool addTo = true;
 		if (t.internal) {
-			auto it = seenTransfersFrom.find(util::internalTransferHash(t.fromId, - t.amount, t.date));
+			auto it = seenTransfersFrom.find(util::internalTransferHash(t.fromId, - t.amount, t.ymd));
 			if (it != seenTransfersFrom.end()) {
 				seenTransfersFrom.erase(it);
 				addFrom = false;
 			} else {
-				seenTransfersTo.insert(util::internalTransferHash(t.fromId, t.amount, t.date));
+				seenTransfersTo.insert(util::internalTransferHash(t.fromId, t.amount, t.ymd));
 			}
 
-			it = seenTransfersTo.find(util::internalTransferHash(t.toId, - t.amount, t.date));
+			it = seenTransfersTo.find(util::internalTransferHash(t.toId, - t.amount, t.ymd));
 			if (it != seenTransfersTo.end()) {
 				seenTransfersTo.erase(it);
 				addTo = false;
 			} else {
-				seenTransfersFrom.insert(util::internalTransferHash(t.toId, t.amount, t.date));
+				seenTransfersFrom.insert(util::internalTransferHash(t.toId, t.amount, t.ymd));
 			}
 		}
 		if (addFrom) balances[t.fromId] += t.amount;
@@ -247,13 +246,14 @@ int StatementReader::find(Account& account) {
 
 int StatementReader::find(Transfer& transfer) {
 	db::Transfer tr;
-	// auto trs = (*db)(select(tr.id).from(tr).where(tr.date == transfer.dateMs() and
-	auto trs = (*db)(select(tr.id).from(tr).where(tr.date >= transfer.dateMs() - 5 * 86400 * 1000 and
-											tr.date <= transfer.dateMs() + 5 * 86400 * 1000 and
+	const auto after = date::day_point{transfer.ymd} - date::days{5};
+	const auto before = date::day_point{transfer.ymd} + date::days{5};
+	auto trs = (*db)(select(tr.id).from(tr).where(tr.ymd >= after and
+											tr.ymd <= before and
 											tr.fromId == transfer.from.id and
 											tr.toId == transfer.to.id and
 											tr.reference == str(transfer.reference) and // TODO change to not empty and reference same or amount same
-											tr.amount == transfer.amount));
+											tr.amount == transfer.value.amount));
 	if (!trs.empty()) {
 		int id = trs.front().id;
 		assert_error(id >= 0);
@@ -302,11 +302,12 @@ int StatementReader::add(Account& account) {
 
 int StatementReader::add(Transfer& transfer) {
 	db::Transfer tr;
-	int id = (*db)(insert_into(tr).set(tr.date = transfer.dateMs(),
+	int id = (*db)(insert_into(tr).set(tr.ymd = transfer.dayPoint(),
 										tr.fromId = transfer.from.id,
 										tr.toId = transfer.to.id,
 										tr.reference = str(transfer.reference),
-										tr.amount = transfer.amount,
+										tr.amount = transfer.value.amount,
+										tr.currency = transfer.value.currency->isoCode,
 										tr.note = str(transfer.note),
 										tr.checked = transfer.checked,
 										tr.internal = transfer.internal
@@ -320,11 +321,12 @@ int StatementReader::add(Transfer& transfer) {
 void StatementReader::update(const Transfer& transfer) {
 	db::Transfer tr;
 	assert_error(transfer.id > 0);
-	(*db)(sqlpp::update(tr).set(tr.date = transfer.dateMs(),
+	(*db)(sqlpp::update(tr).set(tr.ymd = transfer.dayPoint(),
 								tr.fromId = transfer.from.id,
 								tr.toId = transfer.to.id,
 								tr.reference = str(transfer.reference),
-								tr.amount = transfer.amount,
+								tr.amount = transfer.value.amount,
+								tr.currency = transfer.value.currency->isoCode,
 								tr.checked = tr.checked || transfer.checked,
 								tr.internal = tr.internal || transfer.internal
 							).where(tr.id == transfer.id));
@@ -333,7 +335,7 @@ void StatementReader::update(const Transfer& transfer) {
 void StatementReader::insert(const Account& account) {
 	db::Account acc;
 	assert_error(account.id >= 0);
-	assert_error((*db)(select(count(acc.id)).from(acc).where(acc.id == account.id)).front().count == 0, "there exists already an account with id %d", account.id);
+	assert_error((int)((*db)(select(count(acc.id)).from(acc).where(acc.id == account.id)).front().count) == 0, "there exists already an account with id %d", account.id);
 	
 	(*db)(insert_into(acc).set(acc.id = account.id,
 								acc.isOwn = account.isOwn,
@@ -350,14 +352,15 @@ void StatementReader::insert(const Account& account) {
 void StatementReader::insert(const Transfer& transfer) {
 	db::Transfer tr;
 	assert_error(transfer.id >= 0);
-	assert_error((*db)(select(count(tr.id)).from(tr).where(tr.id == transfer.id)).front().count == 0, "there exists already a transfer with id %d", transfer.id);
+	assert_error((int)((*db)(select(count(tr.id)).from(tr).where(tr.id == transfer.id)).front().count) == 0, "there exists already a transfer with id %d", transfer.id);
 
 	(*db)(insert_into(tr).set(tr.id = transfer.id,
-										tr.date = transfer.dateMs(),
+										tr.ymd = transfer.dayPoint(),
 										tr.fromId = transfer.from.id,
 										tr.toId = transfer.to.id,
 										tr.reference = str(transfer.reference),
-										tr.amount = transfer.amount,
+										tr.amount = transfer.value.amount,
+										tr.currency = transfer.value.currency->isoCode,
 										tr.note = str(transfer.note),
 										tr.checked = transfer.checked,
 										tr.internal = transfer.internal

@@ -68,6 +68,11 @@ void BalanceTab::refresh() {
 	replot();
 }
 
+template <class Duration>
+constexpr std::chrono::seconds::rep secondsSinceEpoche(const std::chrono::time_point<std::chrono::system_clock, Duration>& dp) {
+	return std::chrono::duration_cast<std::chrono::seconds>(dp.time_since_epoch()).count();
+}
+
 void BalanceTab::recalculateHistory() {
 	balances.clear();
 	balanceHistory.clear();
@@ -76,15 +81,15 @@ void BalanceTab::recalculateHistory() {
 	db::Account acc;
 	db::Transfer tr;
 
-	auto startEnd = (*db)(select(min(tr.date), max(tr.date)).from(tr).where(true));
-	double startTime = startEnd.front().min;
-	double endTime = startEnd.front().max;
+	auto startEnd = (*db)(select(min(tr.ymd), max(tr.ymd)).from(tr).where(true));
+	double startTime = secondsSinceEpoche(startEnd.front().min.value());
+	double endTime = secondsSinceEpoche(startEnd.front().max.value());
 
 	// start with initial balance on first date
 	for (auto const& a : (*db)(select(acc.id, acc.initialBalance).from(acc).where(true))) {
 		balances[a.id] = a.initialBalance;
 		balanceHistory[a.id] += a.initialBalance / 100.0;
-		dateHistory[a.id] += startTime / 1000.0;
+		dateHistory[a.id] += startTime;
 	}
 
 	// for internal transfer we might have two transfer entries (one from each statement file of the two accounts)
@@ -93,43 +98,43 @@ void BalanceTab::recalculateHistory() {
 	std::unordered_multiset<std::string> seenTransfersFrom;
 	std::unordered_multiset<std::string> seenTransfersTo;
 	
-	for (const auto& t : (*db)(select(tr.date, tr.fromId, tr.toId, tr.amount, tr.internal).from(tr).order_by(tr.date.asc()).where(true))) {
+	for (const auto& t : (*db)(select(tr.ymd, tr.fromId, tr.toId, tr.amount, tr.internal).from(tr).order_by(tr.ymd.asc()).where(true))) {
 		bool addFrom = true;
 		bool addTo = true;
 		if (t.internal) {
-			auto it = seenTransfersFrom.find(util::internalTransferHash(t.fromId, - t.amount, t.date));
+			auto it = seenTransfersFrom.find(util::internalTransferHash(t.fromId, - t.amount, t.ymd));
 			if (it != seenTransfersFrom.end()) {
 				seenTransfersFrom.erase(it);
 				addFrom = false;
 			} else {
-				seenTransfersTo.insert(util::internalTransferHash(t.fromId, t.amount, t.date));
+				seenTransfersTo.insert(util::internalTransferHash(t.fromId, t.amount, t.ymd));
 			}
 
-			it = seenTransfersTo.find(util::internalTransferHash(t.toId, - t.amount, t.date));
+			it = seenTransfersTo.find(util::internalTransferHash(t.toId, - t.amount, t.ymd));
 			if (it != seenTransfersTo.end()) {
 				seenTransfersTo.erase(it);
 				addTo = false;
 			} else {
-				seenTransfersFrom.insert(util::internalTransferHash(t.toId, t.amount, t.date));
+				seenTransfersFrom.insert(util::internalTransferHash(t.toId, t.amount, t.ymd));
 			}
 		}
 
 		if (addFrom) {
 			balances[t.fromId] += t.amount;
 			balanceHistory[t.fromId].append((balances[t.fromId] / 100.0));
-			dateHistory[t.fromId].append(t.date / 1000.0);
+			dateHistory[t.fromId] += secondsSinceEpoche(t.ymd.value());
 		}
 		if (addTo) {
 			balances[t.toId] -= t.amount;
 			balanceHistory[t.toId].append((balances[t.toId] / 100.0));
-			dateHistory[t.toId].append(t.date / 1000.0);
+			dateHistory[t.toId] += secondsSinceEpoche(t.ymd.value());
 		}
 	}
 
 	// end with last balance on end date
 	for (auto id : balances.keys()) {
 		balanceHistory[id] += balances[id] / 100.0;
-		dateHistory[id] += endTime / 1000.0;
+		dateHistory[id] += endTime;
 	}
 }
 
@@ -139,7 +144,7 @@ void BalanceTab::replot() {
 	ui->balancePlot->clearGraphs();
 	QPen pen(QColor::fromHsv(200, 200, 230), 2);
 	for (auto const& a : (*db)(select(acc.id, acc.name, acc.balance).from(acc).where(acc.isOwn).order_by(acc.name.asc()))) {
-		assert_warning(a.balance == balances[a.id], "calculated balances for account %s do not match, db: %d, cache: %d", cstr(qstr(a.name)), (int)a.balance, balances[a.id]);
+		assert_warning((int)a.balance == balances[a.id], "calculated balances for account %s do not match, db: %d, cache: %d", cstr(qstr(a.name)), (int)a.balance, balances[a.id]);
 		ui->balancePlot->addGraph();
 		ui->balancePlot->graph()->setName(qstr(a.name) + " (" + util::formatCurrency(a.balance) + ")");
 		ui->balancePlot->graph()->setData(dateHistory[a.id], balanceHistory[a.id]);

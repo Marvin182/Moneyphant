@@ -6,16 +6,13 @@
 
 namespace util {
 
-std::string internalTransferHash(int accountId, int amount, qint64 dt) {
-	auto date = QDateTime::fromMSecsSinceEpoch(dt, Qt::UTC).date();
-	int year1 = date.addDays(-14).year();
-	int month1 = date.addDays(-14).month();
-	int year2 = date.addDays(+14).year();
-	int month2 = date.addDays(+14).month();
-	return QString(qnstr(accountId) % ";" % qnstr(amount) % ";" % qnstr(year1) % "." % qnstr(month1) % "-" % qnstr(year2) % "." % qnstr(month2)).toStdString();
+std::string internalTransferHash(long accountId, int amount, const date::day_point dp) {
+	const auto d1 = date::year_month_day{dp - date::days{14}};
+	const auto d2 = date::year_month_day{dp + date::days{14}};
+	return QString(qnstr(accountId) % ";" % qnstr(amount) % ";" % qnstr(static_cast<int>(d1.year())) % "." % qnstr(static_cast<unsigned>(d1.month())) % "-" % qnstr(static_cast<int>(d2.year())) % "." % qnstr(static_cast<unsigned>(d2.month()))).toStdString();
 };
 
-int parseCurrency(cqstring s) {
+long long parseAmount(cqstring s) {
 	// 1) eliminate white space
 	// 2) thousand separators (period or comma follow by at least 3 digits)
 	// 3) replace comma with period

@@ -1,27 +1,27 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 ##
  # Copyright (c) 2013-2015, Roland Bock
  # All rights reserved.
- # 
- # Redistribution and use in source and binary forms, with or without modification, 
+ #
+ # Redistribution and use in source and binary forms, with or without modification,
  # are permitted provided that the following conditions are met:
- # 
- #  * Redistributions of source code must retain the above copyright notice, 
+ #
+ #  * Redistributions of source code must retain the above copyright notice,
  #    this list of conditions and the following disclaimer.
- #  * Redistributions in binary form must reproduce the above copyright notice, 
- #    this list of conditions and the following disclaimer in the documentation 
+ #  * Redistributions in binary form must reproduce the above copyright notice,
+ #    this list of conditions and the following disclaimer in the documentation
  #    and/or other materials provided with the distribution.
- # 
- # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
- # ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
- # WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
- # IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
- # INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
- # BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
- # DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
- # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
- # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
+ #
+ # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ # ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ # WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ # IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ # INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ # BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ # DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  # OF THE POSSIBILITY OF SUCH DAMAGE.
  ##
 
@@ -29,9 +29,31 @@ from __future__ import print_function
 import sys
 import re
 import os
+import pprint
 
-from pyparsing import CaselessLiteral, SkipTo, restOfLine, oneOf, ZeroOrMore, Optional, \
+from pyparsing import CaselessLiteral, Literal, SkipTo, restOfLine, oneOf, ZeroOrMore, Optional, Combine, Suppress, \
     WordStart, WordEnd, Word, alphas, alphanums, nums, QuotedString, nestedExpr, MatchFirst, OneOrMore, delimitedList, Or, Group
+
+def usage():
+    print('Usage: ddl2cpp [-no-timestamp-warning] <path to ddl> <path to target (without extension, e.g. /tmp/MyTable)> <namespace>')
+
+if len(sys.argv) not in (4,5):
+  usage()
+  sys.exit(1)
+
+firstPositional = 1
+timestampWarning = True
+if len(sys.argv) == 5:
+    if sys.argv[1] == '-no-timestamp-warning':
+        firstPositional += 1
+        timestampWarning = False
+    else:
+        usage()
+        sys.exit(1)
+
+pathToDdl = sys.argv[firstPositional]
+pathToHeader = sys.argv[firstPositional + 1] + '.h'
+namespace = sys.argv[firstPositional + 2]
 
 INCLUDE = 'sqlpp11'
 NAMESPACE = 'sqlpp'
@@ -59,26 +81,28 @@ def ddlWord(string):
     return WordStart(alphanums + "_") + CaselessLiteral(string) + WordEnd(alphanums + "_")
 
 ddlString   = Or([QuotedString("'"), QuotedString("\"", escQuote='""'), QuotedString("`")])
-ddlNum     = Word(nums + ".")
+negativeSign = Literal('-')
+ddlNum     = Combine(Optional(negativeSign) + Word(nums + "."))
 ddlTerm     = Word(alphas, alphanums + "_$")
+ddlName     = Or([ddlTerm, ddlString])
 ddlArguments = "(" + delimitedList(Or([ddlString, ddlTerm, ddlNum])) + ")"
 ddlNotNull = Group(ddlWord("NOT") + ddlWord("NULL")).setResultsName("notNull")
 ddlDefaultValue = ddlWord("DEFAULT").setResultsName("hasDefaultValue");
 ddlAutoValue = ddlWord("AUTO_INCREMENT").setResultsName("hasAutoValue");
 ddlColumnComment  = Group(ddlWord("COMMENT") + ddlString).setResultsName("comment")
 ddlConstraint = Or([
-        ddlWord("CONSTRAINT"), 
-        ddlWord("PRIMARY"), 
-        ddlWord("FOREIGN"), 
+        ddlWord("CONSTRAINT"),
+        ddlWord("PRIMARY"),
+        ddlWord("FOREIGN"),
         ddlWord("KEY"),
-        ddlWord("INDEX"), 
-        ddlWord("UNIQUE"), 
+        ddlWord("INDEX"),
+        ddlWord("UNIQUE"),
         ])
 ddlColumn   = Group(Optional(ddlConstraint).setResultsName("isConstraint") + OneOrMore(MatchFirst([ddlNotNull, ddlAutoValue, ddlDefaultValue, ddlTerm, ddlNum, ddlColumnComment, ddlString, ddlArguments])))
-createTable = Group(ddlWord("CREATE") + ddlWord("TABLE") + ddlTerm.setResultsName("tableName") + "(" + Group(delimitedList(ddlColumn)).setResultsName("columns") + ")").setResultsName("create")
+createTable = Group(ddlWord("CREATE") + ddlWord("TABLE") + ddlName.setResultsName("tableName") + "(" + Group(delimitedList(ddlColumn)).setResultsName("columns") + ")").setResultsName("create")
 
 
-ddl = ZeroOrMore(SkipTo(createTable, True))
+ddl = ZeroOrMore(Suppress(SkipTo(createTable, False)) + createTable)
 
 ddlComment = oneOf(["--", "#"]) + restOfLine
 ddl.ignore(ddlComment)
@@ -98,42 +122,41 @@ types = {
     'mediumblob': 'blob',
     'longblob': 'blob',
     'bool': 'boolean',
+    'boolean': 'boolean',
     'double': 'floating_point',
     'float': 'floating_point',
+    'date' : 'day_point',
+    'datetime' : 'time_point',
+    'timestamp' : 'time_point',
+    'enum' : 'text', # MYSQL
+    'set' : 'text',  # MYSQL
     }
 
+
 # PROCESS DDL
-if (len(sys.argv) != 4):
-  print('Usage: ddl2cpp <path to ddl> <path to target (without extension, e.g. /tmp/MyTable)> <namespace>')
-  sys.exit(1)
+tableCreations = ddl.parseFile(pathToDdl)
 
-pathToDdl = sys.argv[1]
-pathToHeader = sys.argv[2] + '.h'
-namespace = sys.argv[3]
-ddlFile = open(pathToDdl, 'r')
 header = open(pathToHeader, 'w')
-
+print('// generated by ' + ' '.join(sys.argv), file=header)
 print('#ifndef '+get_include_guard_name(namespace, pathToHeader), file=header)
 print('#define '+get_include_guard_name(namespace, pathToHeader), file=header)
 print('', file=header)
 print('#include <' + INCLUDE + '/table.h>', file=header)
-print('#include <' + INCLUDE + '/column_types.h>', file=header)
+print('#include <' + INCLUDE + '/data_types.h>', file=header)
 print('#include <' + INCLUDE + '/char_sequence.h>', file=header)
 print('', file=header)
 print('namespace ' + namespace, file=header)
 print('{', file=header)
-
-tableCreations = ddl.parseFile(pathToDdl)
-
-for tableCreation in tableCreations:
-    sqlTableName = tableCreation.create.tableName
+DataTypeError = False;
+for create in tableCreations:
+    sqlTableName = create.tableName
     tableClass = toClassName(sqlTableName)
     tableMember = toMemberName(sqlTableName)
     tableNamespace = tableClass + '_'
     tableTemplateParameters = tableClass
     print('  namespace ' + tableNamespace, file=header)
     print('  {', file=header)
-    for column in tableCreation.create.columns:
+    for column in create.columns:
         if column.isConstraint:
             continue
         sqlColumnName = column[0]
@@ -141,6 +164,10 @@ for tableCreation in tableCreations:
         tableTemplateParameters += ',\n               ' + tableNamespace + '::' + columnClass
         columnMember = toMemberName(sqlColumnName)
         sqlColumnType = column[1].lower()
+        if sqlColumnType == 'timestamp' and timestampWarning:
+            print("Warning: timestamp is mapped to sqlpp::time_point like datetime")
+            print("Warning: You have to take care of timezones yourself")
+            print("You can disable this warning using -no-timestamp-warning")
         columnCanBeNull = not column.notNull
         print('    struct ' + columnClass, file=header)
         print('    {', file=header)
@@ -156,7 +183,11 @@ for tableCreation in tableCreations:
         print('            const T& operator()() const { return ' + columnMember + '; }', file=header)
         print('          };', file=header)
         print('      };', file=header)
-        traitslist = [NAMESPACE + '::' + types[sqlColumnType]];
+        try:
+            traitslist = [NAMESPACE + '::' + types[sqlColumnType]];
+        except KeyError as e:
+            print ('Error: datatype "'  + sqlColumnType + '"" is not supported.')
+            DataTypeError = True
         requireInsert = True
         if column.hasAutoValue:
             traitslist.append(NAMESPACE + '::tag::must_not_insert');
@@ -192,4 +223,10 @@ for tableCreation in tableCreations:
 
 print('}', file=header)
 print('#endif', file=header)
-
+if (DataTypeError):
+    print("Error: unsupported datatypes." )
+    print("Possible solutions:")
+    print("A) Implement this datatype (examples: sqlpp11/data_types)" )
+    print("B) Extend/upgrade ddl2cpp (edit types map)" )
+    print("C) Raise an issue on github" )
+    sys.exit(10) #return non-zero error code, we might need it for automation

@@ -16,9 +16,7 @@ OTHER_FILES += Info.plist
 
 GIT_DIR=$$PWD
 include(config.pri)
-include($$MR_LIB_DIR/gitversion.pri)
-
-#include(/Users/marvin/lib/QtXlsxWriter/src/xlsx/qtxlsx.pri)
+include($$MR_INCLUDE/../gitversion.pri)
 
 SOURCES += src/main.cpp \
 	src/Evolutions.cpp \
@@ -31,15 +29,17 @@ SOURCES += src/main.cpp \
 	src/model/Account.cpp \
 	src/model/AccountModel.cpp \
 	src/model/AccountProxyModel.cpp \
+        src/model/Currency.cpp \
+        src/model/CurrencyWithAmount.cpp \
 	src/model/StatementFileFormat.cpp \
-	src/model/TagModel.cpp \
+		#src/model/TagModel.cpp \
 	src/model/Transfer.cpp \
 	src/model/TransferModel.cpp \
 	src/model/TransferProxyModel.cpp \
 	src/ui/ColumnChooser.cpp \
 	src/ui/MainWindow.cpp \
 	src/ui/TagEdit.cpp \
-	src/ui/TagField.cpp \
+		#src/ui/TagField.cpp \
 	src/ui-dialogs/AboutDialog.cpp \
 	src/ui-dialogs/PreferenceDialog.cpp \
 	src/ui-dialogs/StatementImporterDialog.cpp \
@@ -62,15 +62,17 @@ HEADERS += src/db.h \
 	src/model/Account.h \
 	src/model/AccountModel.h \
 	src/model/AccountProxyModel.h \
+        src/model/Currency.h \
+        src/model/CurrencyWithAmount.h \
 	src/model/StatementFileFormat.h \
-	src/model/TagModel.h \
+		#src/model/TagModel.h \
 	src/model/Transfer.h \
 	src/model/TransferModel.h \
 	src/model/TransferProxyModel.h \
 	src/ui/ColumnChooser.h \
 	src/ui/MainWindow.h \
 	src/ui/TagEdit.h \
-	src/ui/TagField.h \
+		#src/ui/TagField.h \
 	src/ui-dialogs/AboutDialog.h \
 	src/ui-dialogs/PreferenceDialog.h \
 	src/ui-dialogs/StatementImporterDialog.h \
@@ -94,11 +96,10 @@ RESOURCES += sql/evolutions.qrc \
 	graphics/graphics.qrc
 
 # mr lib
-INCLUDEPATH += $$MR_LIB_DIR/include
-LIBS += -lmr -L$$MR_LIB_DIR/release
+INCLUDEPATH += $$MR_INCLUDE
+LIBS += $$MR_LIB
 
 # sqlpp11 + sqlite3 connector
-LIBS += -lsqlite3 -lsqlpp11-connector-sqlite3 -L$$SQLPP11_SQLITE3_CONNECTOR_LIB -L$$SQLPP11_INCLUDE
-INCLUDEPATH += $$SQLPP11_INCLUDE $$SQLPP11_INCLUDE
-DEPENDPATH += $$SQLPP11_SQLITE3_CONNECTOR_INCLUDE
-PRE_TARGETDEPS += $$SQLPP11_SQLITE3_CONNECTOR_LIB/libsqlpp11-connector-sqlite3.a
+LIBS += $$SQLPP11_SQLITE3_CONNECTOR_LIB $$SQLITE3_LIB
+INCLUDEPATH += $$SQLPP11_INCLUDE $$SQLPP11_SQLITE3_CONNECTOR_INCLUDE $$DATE_INCLUDE
+PRE_TARGETDEPS += $$SQLPP11_SQLITE3_CONNECTOR_LIB

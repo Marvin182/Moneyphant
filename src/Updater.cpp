@@ -8,6 +8,10 @@
 #include "Evolutions.h"
 #include "StatementReader.h"
 #include "model/Account.h"
+#include <chrono>
+#include <typeinfo>
+#include <date.h>
+using namespace date;
 
 Updater::Updater(Db db, QSettings& settings) :
 	db(db),
@@ -74,30 +78,17 @@ void Updater::afterEvolatuons(int build) {
 		StatementReader::recalculateBalances(db);
 	}
 
-	if (build < 80) {
-		qLog() << "DB update for build 80: translate transfer dates to UTC";
-		std::vector<std::pair<long, long>> newDates;
+	if (build < 83) {
+		qLog() << "DB update for build 83: Set transfer.ymd fields from transfer.date";
+		std::vector<std::pair<long, date::day_point>> dates;
 		for (const auto& t : (*db)(select(tr.id, tr.date, tr.fromId).from(tr).where(true))) {
-			auto dt = QDateTime::fromMSecsSinceEpoch(t.date, Qt::UTC);
-			auto dtUtc = QDateTime(dt.date(), QTime(0, 0, 0), Qt::UTC);
-			newDates.push_back({t.id, dtUtc.toMSecsSinceEpoch()});
+			auto d = QDateTime::fromMSecsSinceEpoch(t.date, Qt::UTC).date();
+			auto datum = date::year(d.year()) / d.month() / d.day();
+			dates.push_back({t.id, datum});
 		}
-
-		for (const auto& p : newDates) {
-			(*db)(update(tr).set(tr.date = p.second).where(tr.id == p.first));
+		for (const auto& p : dates) {
+			(*db)(update(tr).set(tr.ymd = p.second).where(tr.id == p.first));
 		}
-	}
-
-	std::vector<int> minus_a_day = {};
-	std::vector<int> plus_a_day = {};
-
-
-	for (auto id : minus_a_day) {
-		(*db)(update(tr).set(tr.date = tr.date - 86400000).where(tr.id == id));
-	}
-
-	for (auto id : plus_a_day) {
-		(*db)(update(tr).set(tr.date = tr.date + 86400000).where(tr.id == id));
 	}
 
 }
