@@ -3,7 +3,6 @@
 
 #include <mr/common>
 
-extern const mr::Version& appVersion();
-const mr::Version& libVersion();
+extern const mr::util::VersionInfo version;
 
 #endif // VERSION_H

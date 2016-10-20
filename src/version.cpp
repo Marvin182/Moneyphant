@@ -1,5 +1,3 @@
 #include "version.h"
 
-const mr::Version& appVersion() { return mr::Version::app(); }
-
-const mr::Version& libVersion() { return mr::Version::lib(); }
+const mr::util::VersionInfo version(0, 1, 2, 84, "21c5bb4", "develop", "a", 1);
