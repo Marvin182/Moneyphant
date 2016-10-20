@@ -1,7 +1,7 @@
 #ifndef ACCOUNT_H
 #define ACCOUNT_H
 
-#include <mr/common>
+#include <mr/qt>
 
 struct Account {
 public:
