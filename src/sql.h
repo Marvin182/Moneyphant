@@ -1,5 +1,5 @@
-#ifndef SQLPP_H
-#define SQLPP_H
+#ifndef SQL_H
+#define SQL_H
 
 #include <sqlpp11/sqlpp11.h>
 #include <sqlpp11/sqlite3/sqlite3.h>
@@ -17,7 +17,6 @@
 
 #include "db.h"
 
-using namespace sqlpp;
 using Db = std::shared_ptr<sqlpp::sqlite3::connection>;
 
 /*
@@ -28,5 +27,5 @@ Import dump into new db: cat test.dump | sqlite3 db2.sqlite
 Update database schema structure: sql/ddl2cpp sql/structure.sq src/db db
 */
 
-#endif // SQLPP_H
+#endif // SQL_H
 

@@ -121,7 +121,7 @@ void ExpenseTab::recalculateTagExpenses() {
 								.left_outer_join(tgT).on(tr.id == tgT.transferId)
 								.left_outer_join(tgA).on(tr.fromId == tgA.accountId or tr.toId == tgA.accountId))
 								.order_by(tr.ymd.asc())
-								.where(true)
+								.unconditionally()
 								// .where(tgT.tagId.in(spiedTags) or tgA.tagId.in(spiedTags)) // see comment on spying only a few tags
 								)) {
 		auto addWithTag = [&](int tagId) {

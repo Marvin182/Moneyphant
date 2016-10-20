@@ -14,7 +14,7 @@ namespace util {
  * The 'hash' string will contain the amount, year and month for dt and year and month for the previous/next month depending on whether dt is
  * in the first or second half if the month.
  */
-std::string internalTransferHash(long accountId, int amount, date::day_point dp);
+std::string internalTransferHash(long accountId, int amount, date::sys_days dp);
 
 /** Very robust parsing method for currencies with 1 or 2 decimals.
  * parseCurrency will accept different combinations of thousand (comma/period) and decimal separators (comma/period).

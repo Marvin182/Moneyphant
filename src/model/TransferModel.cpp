@@ -150,7 +150,7 @@ void TransferModel::toggleChecked(const std::vector<int>& transferIds) {
 
 	// update database
 	db::Transfer tr;
-	auto ids = value_list_t<std::vector<int>>(transferIds);
+	auto ids = sqlpp::value_list_t<std::vector<int>>(transferIds);
 	(*db)(update(tr).set(tr.checked = checked).where(tr.id.in(ids)));
 
 	// update cache and inform UI
@@ -172,7 +172,7 @@ void TransferModel::toggleInternal(const std::vector<int>& transferIds) {
 
 	// update database
 	db::Transfer tr;
-	auto ids = value_list_t<std::vector<int>>(transferIds);
+	auto ids = sqlpp::value_list_t<std::vector<int>>(transferIds);
 	(*db)(update(tr).set(tr.internal = internal).where(tr.id.in(ids)));
 
 	// update cache and inform UI
@@ -186,7 +186,7 @@ void TransferModel::toggleInternal(const std::vector<int>& transferIds) {
 void TransferModel::remove(const std::vector<int>& transferIds) {
 	// update database
 	db::Transfer tr;
-	auto ids = value_list_t<std::vector<int>>(transferIds);
+	auto ids = sqlpp::value_list_t<std::vector<int>>(transferIds);
 	(*db)(remove_from(tr).where(tr.id.in(ids)));
 
 	invalidateCache();
@@ -211,15 +211,14 @@ void TransferModel::invalidateCache() {
 	auto accFrom = acc.as(fromName);
 	auto accTo = acc.as(toName);
 	
-	int rowCount = (*db)(select(count(tr.id)).from(tr).where(true)).front().count;
+	int rowCount = (*db)(select(count(tr.id)).from(tr).unconditionally()).front().count;
 	cachedTransfers.clear();
 	cachedTransfers.reserve(rowCount);
 
 	int row = 0;
 	for (const auto& t : (*db)(select(all_of(tr),
 								accFrom.name.as(fromName), accFrom.isOwn.as(fromIsOwn), accTo.name.as(toName), accTo.isOwn.as(toIsOwn))
-								.from(tr, accFrom, accTo)
-								.where(tr.fromId == accFrom.id and tr.toId == accTo.id))) {
+								.from(tr.join(accFrom).on(tr.fromId == accFrom.id).join(accTo).on(tr.toId == accTo.id)).unconditionally())) {
 		id2Row[t.id] = row++;
 		auto cur = Currency::get(t.currency);
 		cachedTransfers.push_back({(int)t.id,

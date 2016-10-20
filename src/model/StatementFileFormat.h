@@ -3,6 +3,7 @@
 
 #include <QMap>
 #include <mr/common>
+#include <mr/qt>
 #include "../sql.h"
 
 struct StatementFileFormat {

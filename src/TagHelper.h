@@ -5,6 +5,7 @@
 #include <QRegExp>
 #include <QStringList>
 #include <mr/common>
+#include <mr/qt>
 #include "sql.h"
 
 // TODO: rewrite as Template class

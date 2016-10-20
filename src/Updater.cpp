@@ -19,7 +19,7 @@ Updater::Updater(Db db, QSettings& settings) :
 {}
 
 void Updater::run() {
-	int newBuild = appVersion().build;
+	int newBuild = version.build;
 	int build = settings.value("updater/db_build_level", newBuild).toInt();
 	assert_error(build <= newBuild, "build from settings: %d, new build: %d", build, newBuild);
 
@@ -45,7 +45,7 @@ void Updater::afterEvolatuons(int build) {
 		// preprocessing for iban, bic, accountNumber and bankCode changed
 		// apply changes to existing account => remove white spaces and transform to upper case
 		std::vector<Account> accounts;
-		for (const auto& a : (*db)(select(all_of(acc)).from(acc).where(true))) {
+		for (const auto& a : (*db)(select(all_of(acc)).from(acc).unconditionally())) {
 			accounts.push_back({(int)a.id, a.isOwn, (int)a.balance, qstr(a.name), qstr(a.owner), qstr(a.iban), qstr(a.bic), qstr(a.accountNumber), qstr(a.bankCode), (int)a.initialBalance});
 		}
 
@@ -73,15 +73,15 @@ void Updater::afterEvolatuons(int build) {
 		for (const auto& a : (*db)(select(acc.id).from(acc).where(acc.isOwn))) {
 			ids.insert(a.id);
 		}
-		auto ownIds = value_list_t<std::unordered_set<int>>(ids);
+		auto ownIds = sqlpp::value_list_t<std::unordered_set<int>>(ids);
 		(*db)(sqlpp::update(tr).set(tr.internal = true).where(tr.fromId.in(ownIds) and tr.toId.in(ownIds)));
 		StatementReader::recalculateBalances(db);
 	}
 
 	if (build < 83) {
 		qLog() << "DB update for build 83: Set transfer.ymd fields from transfer.date";
-		std::vector<std::pair<long, date::day_point>> dates;
-		for (const auto& t : (*db)(select(tr.id, tr.date, tr.fromId).from(tr).where(true))) {
+		std::vector<std::pair<long, date::sys_days>> dates;
+		for (const auto& t : (*db)(select(tr.id, tr.date, tr.fromId).from(tr).unconditionally())) {
 			auto d = QDateTime::fromMSecsSinceEpoch(t.date, Qt::UTC).date();
 			auto datum = date::year(d.year()) / d.month() / d.day();
 			dates.push_back({t.id, datum});
@@ -100,7 +100,7 @@ void Updater::dbMaintenance() {
 	// db::AccountTag accTg;
 	// db::TransferTag trTg;
 
-	// for (const auto& a : (*db)(select(acc.id, acc.name, count(acc.id)).from(acc.join(tr).on(tr.fromId == acc.id or tr.toId == acc.id)).group_by(acc.id).where(true).having(count(acc.id) == 0))) {
+	// for (const auto& a : (*db)(select(acc.id, acc.name, count(acc.id)).from(acc.join(tr).on(tr.fromId == acc.id or tr.toId == acc.id)).group_by(acc.id).unconditionally().having(count(acc.id) == 0))) {
 	// 	qLog() << QString("DB Maintenance: Delete Account(%1, %2), linked to %3 transfers").arg(a.id).arg(qstr(a.name)).arg(a.count);
 	// }
 
@@ -110,7 +110,7 @@ void Updater::dbMaintenance() {
 	// db::AccountTag accTg;
 
 	// qLog() << "here";
-	// for (const auto& t : (*db)(select(tg.id, tg.name, count(tg.id)).from(tg.join(trTg).on(trTg.tagId == tg.id)).group_by(tg.id).where(true))) {
+	// for (const auto& t : (*db)(select(tg.id, tg.name, count(tg.id)).from(tg.join(trTg).on(trTg.tagId == tg.id)).group_by(tg.id).unconditionally())) {
 	// 	qLog().space() << t.id << qstr(t.name) << t.count;
 	// }
 }

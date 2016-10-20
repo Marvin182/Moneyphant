@@ -40,7 +40,7 @@ struct Transfer {
 	Transfer(date::year_month_day ymd, const Acc& from, const Acc& to, cqstring reference, CurrencyWithAmount value);
 	Transfer(int id, const date::year_month_day& ymd, const Acc& from, const Acc& to, cqstring reference, CurrencyWithAmount value, cqstring note, bool checked, bool internal);
 
-	date::day_point dayPoint() const { return date::day_point{ymd}; }
+	date::sys_days dayPoint() const { return date::sys_days{ymd}; }
 	QString dateStr(const char* format = "dd.MM.yyyy") const;
 
 	operator QString() const;

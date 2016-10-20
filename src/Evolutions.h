@@ -4,6 +4,7 @@
 #include <vector>
 #include <QStringList>
 #include <mr/common>
+#include <mr/qt>
 #include "sql.h"
 
 struct Evolution {

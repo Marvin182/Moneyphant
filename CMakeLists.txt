@@ -40,8 +40,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 add_subdirectory(${LIBMR_DIR}/ ${CMAKE_BINARY_DIR}/lib)
 
 # Moneyphant GUI application
-file(GLOB src_model src/model/*.cpp)
-set(src_all ${src_model} src/main.cpp)
+file(GLOB_RECURSE src_all src/*.cpp)
 
 add_executable(moneyphant WIN32 MACOSX_BUNDLE ${src_all})
 set_target_properties(moneyphant PROPERTIES CXX_STANDARD 14)

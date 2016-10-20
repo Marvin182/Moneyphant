@@ -26,7 +26,7 @@ QStringList TagHelper::tagsFromAccounts(int fromId, int toId) {
 	db::AccountTag accTag;
 
 	QStringList tags;
-	for (const auto& t : (*db)(select(tag.name).from(tag, accTag).where(tag.id == accTag.tagId and (accTag.accountId == fromId or accTag.accountId == toId)))) {
+	for (const auto& t : (*db)(select(tag.name).from(tag.join(accTag).on(tag.id == accTag.tagId)).where(accTag.accountId == fromId or accTag.accountId == toId))) {
 		tags << qstr(t.name);
 	}
 	return tags;
@@ -71,7 +71,7 @@ QStringList TagHelper::getAccountTags(TagHelper::IdList& customAccIds) {
 	QStringList tags;
 
 	if (accIds.size() == 1) {
-		for (const auto& t : (*db)(select(tag.name).from(tag, accTag).where(tag.id == accTag.tagId and accTag.accountId == accIds.front()))) {
+		for (const auto& t : (*db)(select(tag.name).from(tag.join(accTag).on(tag.id == accTag.tagId)).where(accTag.accountId == accIds.front()))) {
 			tags << qstr(t.name);
 		}
 	} else {
@@ -79,8 +79,8 @@ QStringList TagHelper::getAccountTags(TagHelper::IdList& customAccIds) {
 		int currentTagId = -1;
 		QString currentTagName("");
 
-		auto ids = value_list_t<std::vector<int>>(accIds);
-		for (const auto& t : (*db)(select(tag.id, tag.name).from(tag, accTag).where(tag.id == accTag.tagId and accTag.accountId.in(ids)).order_by(tag.id.asc()))) {
+		auto ids = sqlpp::value_list_t<std::vector<int>>(accIds);
+		for (const auto& t : (*db)(select(tag.id, tag.name).from(tag.join(accTag).on(tag.id == accTag.tagId)).where(accTag.accountId.in(ids)).order_by(tag.id.asc()))) {
 			if ((int)t.id == currentTagId) {
 				seenCount++;
 			} else {
@@ -140,7 +140,7 @@ QStringList TagHelper::getTransferTags(TagHelper::IdList& customTrId) {
 	QStringList tags;
 
 	if (trIds.size() == 1) {
-		for (const auto& t : (*db)(select(tag.name).from(tag, trTag).where(tag.id == trTag.tagId and trTag.transferId == trIds.front()))) {
+		for (const auto& t : (*db)(select(tag.name).from(tag.join(trTag).on(tag.id == trTag.tagId)).where(trTag.transferId == trIds.front()))) {
 			tags << qstr(t.name);
 		}
 	} else {
@@ -148,8 +148,8 @@ QStringList TagHelper::getTransferTags(TagHelper::IdList& customTrId) {
 		int currentTagId = -1;
 		QString currentTagName("");
 
-		auto ids = value_list_t<std::vector<int>>(trIds);
-		for (const auto& t : (*db)(select(tag.id, tag.name).from(tag, trTag).where(tag.id == trTag.tagId and trTag.transferId.in(ids)).order_by(tag.id.asc()))) {
+		auto ids = sqlpp::value_list_t<std::vector<int>>(trIds);
+		for (const auto& t : (*db)(select(tag.id, tag.name).from(tag.join(trTag).on(tag.id == trTag.tagId)).where(trTag.transferId.in(ids)).order_by(tag.id.asc()))) {
 			if ((int)t.id == currentTagId) {
 				seenCount++;
 			} else {

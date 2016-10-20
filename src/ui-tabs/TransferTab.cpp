@@ -109,7 +109,7 @@ void TransferTab::clickedFilterMonthLink() {
 	auto end = 2038_y/2/7;
 	if (text == "all") {
 		db::Transfer tr;
-		auto startEnd = (*db)(select(min(tr.ymd), max(tr.ymd)).from(tr).where(true));
+		auto startEnd = (*db)(select(min(tr.ymd), max(tr.ymd)).from(tr).unconditionally());
 		assert_error(!startEnd.empty());
 		start = startEnd.front().min.value();
 		end = startEnd.front().max.value();
@@ -143,7 +143,7 @@ void TransferTab::createFilterMonthLinks() {
 	}
 
 	db::Transfer tr;
-	auto startEnd = (*db)(select(min(tr.ymd), max(tr.ymd)).from(tr).where(true));
+	auto startEnd = (*db)(select(min(tr.ymd), max(tr.ymd)).from(tr).unconditionally());
 	assert_error(!startEnd.empty());
 	date::year_month_day start = startEnd.front().min.value();
 	date::year_month_day end = startEnd.front().max.value();

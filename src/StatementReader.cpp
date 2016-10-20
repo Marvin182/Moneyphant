@@ -177,7 +177,7 @@ void StatementReader::recalculateBalances(Db db) {
 	std::unordered_multiset<std::string> seenTransfersTo;
 	
 	QHash<int, int> balances;
-	for (const auto& t : (*db)(select(tr.ymd, tr.fromId, tr.toId, tr.amount, tr.internal).from(tr).where(true))) {
+	for (const auto& t : (*db)(select(tr.ymd, tr.fromId, tr.toId, tr.amount, tr.internal).from(tr).unconditionally())) {
 		bool addFrom = true;
 		bool addTo = true;
 		if (t.internal) {
@@ -246,8 +246,8 @@ int StatementReader::find(Account& account) {
 
 int StatementReader::find(Transfer& transfer) {
 	db::Transfer tr;
-	const auto after = date::day_point{transfer.ymd} - date::days{5};
-	const auto before = date::day_point{transfer.ymd} + date::days{5};
+	const auto after = date::sys_days{transfer.ymd} - date::days{5};
+	const auto before = date::sys_days{transfer.ymd} + date::days{5};
 	auto trs = (*db)(select(tr.id).from(tr).where(tr.ymd >= after and
 											tr.ymd <= before and
 											tr.fromId == transfer.from.id and
@@ -326,10 +326,14 @@ void StatementReader::update(const Transfer& transfer) {
 								tr.toId = transfer.to.id,
 								tr.reference = str(transfer.reference),
 								tr.amount = transfer.value.amount,
-								tr.currency = transfer.value.currency->isoCode,
-								tr.checked = tr.checked || transfer.checked,
-								tr.internal = tr.internal || transfer.internal
+								tr.currency = transfer.value.currency->isoCode
 							).where(tr.id == transfer.id));
+	if (transfer.checked) {
+		(*db)(sqlpp::update(tr).set(tr.checked = true).where(!tr.checked));
+	}
+	if (transfer.internal) {
+		(*db)(sqlpp::update(tr).set(tr.internal = true).where(!tr.internal));
+	}	
 }
 
 void StatementReader::insert(const Account& account) {

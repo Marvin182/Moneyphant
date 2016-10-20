@@ -81,12 +81,12 @@ void BalanceTab::recalculateHistory() {
 	db::Account acc;
 	db::Transfer tr;
 
-	auto startEnd = (*db)(select(min(tr.ymd), max(tr.ymd)).from(tr).where(true));
+	auto startEnd = (*db)(select(min(tr.ymd), max(tr.ymd)).from(tr).unconditionally());
 	double startTime = secondsSinceEpoche(startEnd.front().min.value());
 	double endTime = secondsSinceEpoche(startEnd.front().max.value());
 
 	// start with initial balance on first date
-	for (auto const& a : (*db)(select(acc.id, acc.initialBalance).from(acc).where(true))) {
+	for (auto const& a : (*db)(select(acc.id, acc.initialBalance).from(acc).unconditionally())) {
 		balances[a.id] = a.initialBalance;
 		balanceHistory[a.id] += a.initialBalance / 100.0;
 		dateHistory[a.id] += startTime;
@@ -98,7 +98,7 @@ void BalanceTab::recalculateHistory() {
 	std::unordered_multiset<std::string> seenTransfersFrom;
 	std::unordered_multiset<std::string> seenTransfersTo;
 	
-	for (const auto& t : (*db)(select(tr.ymd, tr.fromId, tr.toId, tr.amount, tr.internal).from(tr).order_by(tr.ymd.asc()).where(true))) {
+	for (const auto& t : (*db)(select(tr.ymd, tr.fromId, tr.toId, tr.amount, tr.internal).from(tr).order_by(tr.ymd.asc()).unconditionally())) {
 		bool addFrom = true;
 		bool addTo = true;
 		if (t.internal) {

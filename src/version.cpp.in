@@ -1,0 +1,3 @@
+#include "version.h"
+
+const mr::util::VersionInfo version(${git_version_major}, ${git_version_minor}, ${git_version_revision}, ${git_version_build}, "${git_version_commit}", "${git_version_branch}", "${git_version_stage_name}", ${git_version_stage_number});

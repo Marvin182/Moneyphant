@@ -178,7 +178,7 @@ void AccountModel::invalidateCache() {
 	id2Row.clear();
 	cachedAccounts.clear();
 
-	int rowCount = (*db)(select(count(acc.id)).from(acc).where(true)).front().count;
+	int rowCount = (*db)(select(count(acc.id)).from(acc).unconditionally()).front().count;
 	cachedAccounts.reserve(rowCount + 1);
 	id2Row.reserve(rowCount + 1);
 	
@@ -187,7 +187,7 @@ void AccountModel::invalidateCache() {
 	id2Row[0] = 0;
 
 	int row = 1;
-	for (const auto& a : (*db)(select(all_of(acc)).from(acc).where(true).order_by(acc.isOwn.desc(), acc.name.asc()))) {
+	for (const auto& a : (*db)(select(all_of(acc)).from(acc).unconditionally().order_by(acc.isOwn.desc(), acc.name.asc()))) {
 		id2Row[a.id] = row++;
 		cachedAccounts.push_back({(int)a.id, a.isOwn, (int)a.balance, qstr(a.name), qstr(a.owner), qstr(a.iban), qstr(a.bic), qstr(a.accountNumber), qstr(a.bankCode), (int)a.initialBalance});
 		if (a.isOwn) {
@@ -244,7 +244,7 @@ void AccountModel::mergeAccounts(int firstId, int secondId) {
 	for (const auto& t: (*db)(select(accTag.tagId).from(accTag).where(accTag.accountId == first.id))) {
 		firstTagsIds.push_back(t.tagId);
 	}
-	auto tagIds = value_list_t<std::vector<int>>(firstTagsIds);
+	auto tagIds = sqlpp::value_list_t<std::vector<int>>(firstTagsIds);
 	for (const auto& t : (*db)(select(accTag.tagId).from(accTag).where(accTag.accountId == second.id and accTag.tagId.not_in(tagIds)))) {
 		(*db)(insert_into(accTag).set(accTag.tagId = t.tagId, accTag.accountId = first.id));
 	}
