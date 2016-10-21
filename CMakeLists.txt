@@ -47,9 +47,9 @@ set(CMAKE_AUTOMOC ON)
 # Instruct CMake to run rcc automatically for sources.
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt5Core 5.7.0 REQUIRED)
-find_package(Qt5Widgets 5.7.0 REQUIRED)
-find_package(Qt5PrintSupport 5.7.0 REQUIRED)
+find_package(Qt5Core 5.6.0 REQUIRED)
+find_package(Qt5Widgets 5.6.0 REQUIRED)
+find_package(Qt5PrintSupport 5.6.0 REQUIRED)
 
 
 ###
