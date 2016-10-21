@@ -4,6 +4,7 @@
 #include <vector>
 #include <QHash>
 #include <mr/common>
+#include <mr/qt>
 #include "Tab.h"
 
 namespace Ui {

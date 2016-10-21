@@ -1,6 +1,8 @@
 #ifndef TRANSFER_TAB_H
 #define TRANSFER_TAB_H
 
+#include <mr/common>
+#include <mr/qt>
 #include "Tab.h"
 #include "../sql.h"
 #include "../model/AccountModel.h"

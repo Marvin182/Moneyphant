@@ -3,10 +3,11 @@
 #include <QDateTime>
 #include <QRegExp>
 #include <QtDebug>
+#include <QStringBuilder>
 
 namespace util {
 
-std::string internalTransferHash(long accountId, int amount, const date::day_point dp) {
+std::string internalTransferHash(long accountId, int amount, const date::sys_days dp) {
 	const auto d1 = date::year_month_day{dp - date::days{14}};
 	const auto d2 = date::year_month_day{dp + date::days{14}};
 	return QString(qnstr(accountId) % ";" % qnstr(amount) % ";" % qnstr(static_cast<int>(d1.year())) % "." % qnstr(static_cast<unsigned>(d1.month())) % "-" % qnstr(static_cast<int>(d2.year())) % "." % qnstr(static_cast<unsigned>(d2.month()))).toStdString();

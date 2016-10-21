@@ -2,6 +2,7 @@
 #define MONEYPHANT_UTIL_H
 
 #include <mr/common>
+#include <mr/qt>
 #include <QtGlobal>
 #include <QVector>
 #include <QColor>

@@ -2,6 +2,7 @@
 #define BALANCETAB_H
 
 #include <mr/common>
+#include <mr/qt>
 #include <QHash>
 #include "Tab.h"
 

@@ -5,6 +5,7 @@
 #include <QComboBox>
 #include <QLabel>
 #include <mr/common>
+#include <mr/qt>
 
 class ColumnChooser : public QObject {
 	Q_OBJECT
