@@ -4,6 +4,28 @@ Small programm that helps you combining bank statements from different sources (
 
 The program doesn't need an internet connection and will not send any data. All your data is saved on your computer.
 
+## Build
+
+### Dependencies
+- [Qt](https://www.qt.io/download/) 5.6
+- [sqlpp11](https://github.com/rbock/sqlpp11) 0.43
+- [sqlpp11-connector-sqlite](https://github.com/rbock/sqlpp11-connector-sqlite3) 0.20
+- [libmr](https://github.com/Marvin182/libmr) v0.0.4
+
+Expect libmr the other depencies can be installed using homebrew on MacOS:
+```bash
+brew install qt5
+brew install marvin182/zapfhahn/sqlpp11 --with-sqlite3
+```
+
+### Steps
+```bash
+mkdir build
+cd build
+cmake ..
+make
+```
+
 ## Roadmap for version 0.2
 - Build system
 	- [x] Switch to CMake
@@ -38,28 +60,13 @@ The program doesn't need an internet connection and will not send any data. All 
 - Editing and splitting of transfers
 - categories for accounts
 - auto tagging based on filters (replacing account tags)
-
-## Build
-### Dependencies
-- [Qt](https://www.qt.io/download/) 5.6
-- [sqlpp11](https://github.com/rbock/sqlpp11) 0.43
-- [sqlpp11-connector-sqlite](https://github.com/rbock/sqlpp11-connector-sqlite3) 0.20
-- [libmr](https://github.com/Marvin182/libmr) v0.0.4
-
-Expect libmr the other depencies can be installed using homebrew on MacOS:
-```bash
-brew install qt5
-brew install marvin182/zapfhahn/sqlpp11 --with-sqlite3
-```
-
-### Steps
-TODO
-
 ## Devolopement
 
 ### Changing the database schema
 Moneyphant uses a sqlite3 database. The (sqlite3) database schema is defined in sql/structure.sql After changing it you must create a new evolution in sql/evolutions with update commands for the database. The schema is then managed by the app itself (via the `Evolutions` class). Once released evolutions are not allowed to change, so think twice before changing the database schema.
+
 Steps:
+
 1. add an evolution in sql/evolutions with the correct commands to update an existing database
 2. add the evolution file to evolutions.qrc
 3. update the structure in sql/structure.sql
